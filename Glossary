@@ -1,0 +1,110 @@
+Terrain Attributes:
+
+- Soil Density - 0-63
+	worse for vegetation
+	better for manmade features
+	lower water saturation (flood's easier) - saturation = moisture/(64 - density)
+	prevents erosion
+
+- Saturation - 
+
+> Evaporation
+	For every hex of saturation over 100%, move one moisture from ground to air.
+
+- Moisture - 0-63
+
+- MoistureInAir - 0-15
+	humidity = MoistureInAir/(elevation/4)
+	if humidity > 100% || (humidity > 75% && adjacent hex rains) - rain
+	
+- wind/blow
+	Pick random hex, move all MoistureInAir to adjacent hex with least MoistureInAir which moves to adjacent hex.  
+	Use black list so moisture doesn't move back.  Pick more hexes until length of black list is 75% of all hexes.
+	
+> Rain
+	Dump all moisture from air to ground if humidity > 100% || (humidity > 75% && adjacent hex rains).
+
+- Elevation - 0-63
+	determines direction of flood, movement difficulty and precipitation
+	
+> Flood - for all hexes, if not already flooded, flood, then flood all hexes flooded to.
+	if saturation>100% and saturation>adjacent hex and elevation local > elevation adjacent
+	Erodes
+
+> Grow
+	if saturation within growth boundaries for adjacent vegetation && adjacent vegetation is greater than 
+	local vegetation && enough ground moisture available && picked to grow by random grow function
+	
+- Adjacent Vegetation - The highest form of vegetation able to grow on current hex that exists on local hex 
+						or on an adjacent hex
+	
+> Erode
+	If flood from local hex to adjacent hex, get random erosion level (0- and density + rootStrength < maximum density
+	density ++ for local, density -- for adjacent
+	
+> Burn
+	Random hex, random time, start fire.  Fire deletes all plants on hex (set to null)  Fire strength = total moisture
+
+Map Attributes:
+
+- wraps both x and y
+- non-buildable zone as border (so if map is expanded, buildings and roads aren't mangled)
+
+- Vegetation
+
+	rootStrength -
+		- grants resistance to standing water
+		- increases soil stability
+		- limits growth by density
+
+	maxSaturation -
+		- reduces rot
+		
+	moistureRequired -
+		- limits growth by moisture
+		- determines fire resistance and fire strength
+		- determines plant hierarchy
+		
+		
+
+	form order: [jungle,forest,thicket,grass,null]
+	prevents erosion
+	holds water apart from moisture index
+	releases all moisture to atmosphere if destroyed or replaced
+	This requires objects of their own
+	Moisture displacement determines plant heirarchy.  Grass can only propogate grass, 
+		thicket can propogate grass or thicker, etc.
+	
+	- jungle
+		rootStrength = 16
+		Requires: saturation<120%
+		Displaces: 16 moisture
+
+	- grass
+		rootStrength = 4
+		Requires: saturation<100%
+		Displaces: 1 moisture
+
+	- forest
+		rootStrength = 24
+		Requires: saturation<110%
+		Displaces: 12 moisture
+
+	- thicket
+		rootStrength = 8
+		Requires: saturation<80%
+		Displaces: 4 moisture
+
+
+Evaporation > Wind > rain > flood > grow > burn
+
+Evolution
+
+
+ *** DISPLAY ***
+ 
+ In order of priority:
+ - if over 4 standing water, make water color
+ - Then display biggest plant
+
+	

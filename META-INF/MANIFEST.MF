@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Tooth_Valley
+Bundle-SymbolicName: Tooth_Valley
+Bundle-Version: 1.0.0.qualifier
+Bundle-ClassPath: Tooth_Valley.jar,
+ Java/lwjgl_util.jar,
+ Java/lwjgl.jar
+Export-Package: controllers,
+ enums,
+ graphics,
+ impl,
+ listeners,
+ models
