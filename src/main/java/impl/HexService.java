@@ -213,9 +213,14 @@ public class HexService {
 	 * @param hex
 	 * @return
 	 */
-	public boolean evaporate(Hex hex) {
+	public boolean evaporate(Hex hex, boolean findLeak) {
 		
 		boolean returnBool = false;
+		int total = 0;
+		
+		if (findLeak){
+			total = hex.getTotalWater();
+		}
 
 		if (hex.getStandingWater() > 1 && hex.alterMoisture(-1) > 0){// 
 			
@@ -252,6 +257,10 @@ public class HexService {
 		if (hex.getMoistureInAir() >= Environment.CLOUD){
 
 			HexMap.getInstance().addCloud(hex.getHexID());
+		}
+		
+		if (findLeak && total != hex.getTotalWater()){
+			System.out.println("evaporate leak!");
 		}
 
 		return returnBool;
@@ -468,7 +477,7 @@ public class HexService {
 	 * @param hex
 	 * @return the hex blown to, or null if it failed to blow
 	 */
-	public void blow() {
+	public void blow(boolean findLeak) {
 		
 		HexMap map = HexMap.getInstance();
 
@@ -482,9 +491,9 @@ public class HexService {
 					map.removeCloud(pair);
 					int cloudElevation = map.getHex(cloud).getElevation();
 
-					if (map.getClouds().contains(cloud) && blowSingleHex(pair, cloud, cloudElevation)){
+					if (map.getClouds().contains(cloud) && blowSingleHex(pair, cloud, cloudElevation, findLeak)){
 
-						blowCorner(direction, pair, cloudElevation);
+						blowCorner(direction, pair, cloudElevation, findLeak);
 					}
 				}
 			}
@@ -493,7 +502,7 @@ public class HexService {
 		map.reorderClouds();
 	}
 	
-	private void blowCorner(Direction direction, Pair currentPair, int cloudElevation) {
+	private void blowCorner(Direction direction, Pair currentPair, int cloudElevation, boolean findLeak) {
 
 		List<Pair> layer = new ArrayList<Pair>();
 		HexMap map = HexMap.getInstance();
@@ -510,7 +519,7 @@ public class HexService {
 					Pair pair = getHexIdFromDirection(layer.get(n), direction);
 					map.removeCloud(pair);
 
-					if (blowSingleHex(pair, layer.get(n), cloudElevation)){
+					if (blowSingleHex(pair, layer.get(n), cloudElevation, findLeak)){
 					
 						nextLayer.add(pair);
 					}
@@ -519,7 +528,7 @@ public class HexService {
 				Pair pair = getHexIdFromDirection(layer.get(n), direction.turnRight());
 				map.removeCloud(pair);
 
-				if (blowSingleHex(pair, layer.get(n), cloudElevation)){
+				if (blowSingleHex(pair, layer.get(n), cloudElevation, findLeak)){
 				
 					nextLayer.add(pair);
 				}
@@ -529,20 +538,36 @@ public class HexService {
 		}
 	}
 
-	private boolean blowSingleHex(Pair from, Pair to, int cloudElevation){
+	private boolean blowSingleHex(Pair from, Pair to, int cloudElevation, boolean findLeak){
 		
+		int total = 0;
 		Hex fromHex = HexMap.getInstance().getHex(from);
 		Hex toHex = HexMap.getInstance().getHex(to);
 		
+		if (findLeak){
+			total = fromHex.getMoistureInAir() + toHex.getMoistureInAir();
+		}
+		
 		int moisturetoMove = Math.abs(cloudElevation - fromHex.getElevation()) + fromHex.getMoistureInAir() + Environment.WIND_POWER 
 				- toHex.getMoistureInAir();
+		
+		if (moisturetoMove < 0){ // negative wind, to becomes from, etc
 			
+			fromHex.alterMoistureInAir(toHex.alterMoistureInAir(moisturetoMove));
+			return false;
+		}
+		
 		boolean returnBool = (toHex.alterMoistureInAir(fromHex.alterMoistureInAir(-moisturetoMove)) == moisturetoMove);
 	
 		if (toHex.getMoistureInAir() >= Environment.RAIN_INDEX 
 				&& !HexMap.getInstance().getRaining().containsKey(to)){
 			
 			HexMap.getInstance().getRaining().put(to, 1);
+		}
+		
+		if (findLeak && fromHex.getMoistureInAir() + toHex.getMoistureInAir() != total){
+			
+			System.out.println("blowSingleHex leak");
 		}
 		
 		return returnBool;
@@ -695,12 +720,14 @@ public class HexService {
 	/**
 	 * Attempt to flood a single hex
 	 */
-	public boolean flood(Hex hex) {
+	public boolean flood(Hex hex, boolean findLeak) {
 
 		boolean returnBool = false;
-		//List<Hex> flooded = new ArrayList<Hex>();
-		//List<Integer> need = new ArrayList<Integer>();
-		//int totalNeed = 0;
+		int total = 0;
+		
+		if (findLeak){
+			total = hex.getTotalWater();
+		}
 
 		//If there is standing water, shove it around
 		if (hex.getSaturation() > 1) {
@@ -709,6 +736,11 @@ public class HexService {
 			
 			//Kill plants that aren't strong enough
 			drownPlant(hex);
+			
+			if (findLeak && total != hex.getTotalWater()){
+				System.out.println("drown plant leak!");
+				total = hex.getTotalWater();
+			}
 
 			int lowest = elev;
 			Hex flowTo = null;
@@ -723,11 +755,6 @@ public class HexService {
 					returnBool = true;
 					lowest = adjElev;
 					flowTo = adjHex;
-					//flooded.add(adjHex);
-					//need.add(elev - adjElev);
-					//totalNeed += elev - adjElev;
-					//HexMap.getInstance().addBlackHex(adjHex.getHexID());
-					
 				}
 			}
 			
@@ -748,24 +775,19 @@ public class HexService {
 				
 				if (toDistribute > 0){
 				
+					int flowToTotal = flowTo.getTotalWater();
 					erode(hex, flowTo, toDistribute);
 					flowTo.alterMoisture(hex.alterMoisture(- toDistribute));
+					
+					if (findLeak){
+						if (total + flowToTotal != hex.getTotalWater() + flowTo.getTotalWater()){
+							System.out.println("flow leak!");
+							
+						}
+						total = hex.getTotalWater();
+					}
 				}
 			}
-			
-			/*
-			// Move water to each hex
-			for (int i = 0; i < flooded.size(); i++) {
-				
-				int waterToMove = (need.get(i) * toDistribute) / totalNeed;
-				
-				Hex toHex = flooded.get(i);
-				
-				erode(hex, toHex, waterToMove);
-				
-				//MOVE WATER
-				toHex.alterMoisture(hex.alterMoisture(- waterToMove));
-			}*/
 		}
 
 		else{
@@ -774,7 +796,15 @@ public class HexService {
 			
 			if (lowest.getElevation() < hex.getElevation() && hex.alterMoisture(- 1) > 0){
 				
+				int lowestTotal = lowest.getTotalWater();
 				lowest.alterMoisture(1);
+				
+				if (findLeak){
+					if (total + lowestTotal != hex.getTotalWater() + lowest.getTotalWater()){
+						System.out.println("seep leak!");
+						
+					}
+				}
 			}
 		}
 

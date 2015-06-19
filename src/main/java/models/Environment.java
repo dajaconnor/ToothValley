@@ -7,14 +7,11 @@ public class Environment {
 	public static final int MAX_DENSITY = 63;
 	public static final int MAX_SLOPE = 20;
 	
-	//Defines the percentage of the map that attempts to blow
-	public static final double WIND_RATE = 0.75;
-	
 	//Defines the percent of the map tht attempts to grow
 	public static final double GROW_RATE = 0.03;
 	
 	//The likelyhood that something will burn on a tick per region
-	public static final double BURN_RATE = 0.0003;
+	public static final double BURN_RATE = 0.0001;
 	
 	//The speed at which flames die
 	public static final int BURN_DOWN_RATE = 18;
@@ -24,9 +21,6 @@ public class Environment {
 	
 	//The power with which lightning strikes
 	public static final int LIGHTNING_STRENGTH = 48;
-	
-	//Defines largest strength of erosion multiplier
-	public static final float EROSION_INDEX = 2.9F;
 	
 	//Defines the power of standing water to destroy plants (bigger the deadlier)
 	public static final float ROT_RATE = 0.005F;
@@ -43,9 +37,6 @@ public class Environment {
 	//Defines the average amount of water for each hex
 	public static final int AVE_WATER = 750;
 	
-	//Defines the amount of water that can be absorbed in soil (Density)
-	public static final double DENSITY_ADJ = 15;
-	
 	//Defines the speed at which wind changes (lower is faster), must be at least 3
 	public static final int WIND_CHANGE = 250;
 	
@@ -60,13 +51,7 @@ public class Environment {
 	
 	// Determines the amount of moistureInAir required to constitute a 'cloud'
 	public static final int CLOUD = 48;
-	
-	// Determines the max number of hexes in a 'cloud'
-	public static final int CLOUD_SIZE = 128;
-	
-	//Deinfes the rate at which volcanos occur
-	public static final int volcanoFrequency = 40;
-	
+
 	// Defines the number of times a hex can topple in a single run
 	public static final int TOPPLE_DEPTH = 100;
 	
@@ -78,9 +63,6 @@ public class Environment {
 	
 	// Defines the number of hexes per edge hex
 	public static final int PLATE_EDGE_FREQUENCY = 2000;
-	
-	// Defines the minimum number of hexes allowed in a plate
-	public static final int MIN_PLATE_SIZE = 20;
 	
 	// Defines the likelihood of a straight edge on a tectonic plate
 	public static final int PERCENT_STRAIGHT_PLATE_EDGE = 80;

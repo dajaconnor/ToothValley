@@ -62,7 +62,7 @@ public class EnvironmentService {
 			totalWater = hexMapService.allWater()[0];
 		}
 		
-		hexService.blow();
+		hexService.blow(findLeak);
 		
 		if (findLeak && totalWater != hexMapService.allWater()[0] && !leak){
 			
@@ -84,25 +84,18 @@ public class EnvironmentService {
 			
 				Hex hex = map.getHex(hexID);
 				
-				hexService.evaporate(hex);
-				
-				if (findLeak && totalWater != hexMapService.allWater()[0] && !leak){
-					
-					System.out.println("evaporate leak");
-					leak = true;
-				}
-				
-				hexService.flood(hex);
-				
-				if (findLeak && totalWater != hexMapService.allWater()[0] && !leak){
-					
-					System.out.println("flood leak");
-					leak = true;
-				}
+				hexService.evaporate(hex, findLeak);
+				hexService.flood(hex, findLeak);
 				
 				map.updateHexDisplay(hex);
 
 			}
+		}
+		
+		if (findLeak && totalWater != hexMapService.allWater()[0] && !leak){
+			
+			System.out.println("evaporate or flood leak");
+			leak = true;
 		}
 	}
 	

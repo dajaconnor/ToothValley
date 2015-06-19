@@ -37,24 +37,18 @@ public class Main {
 		
 		hexMapService.createMap();
 		
-		boolean findLeak = true;
-		
+		boolean findLeak = false;
 		int ticks = 0;
-		
 			
 		OpenGLWindow window = OpenGLWindow.getInstance();
-		
 		window.printMap();
-		
+
 		int totalWater = hexMapService.allWater()[0];
 		int cycleTotal = hexMapService.allWater()[0];
 		boolean leak = false;
-		
+
 		while (window.isRunning()){
-			
-			// Check inputs
-			//window.keyInput();
-			
+
 			long burnTime = 0;
 			long waterCycleTime = 0;
 			long growTime = 0;
@@ -74,11 +68,11 @@ public class Main {
 				burnTime += new Date().getTime() - lastMark;
 				
 				if (findLeak && cycleTotal != hexMapService.allWater()[0]){
-					
+
 					System.out.println("Burn leak");
 					leak = true;
 				}
-				
+
 				lastMark = new Date().getTime();
 				environmentService.waterCycle(findLeak);
 				waterCycleTime += new Date().getTime() - lastMark;
@@ -103,15 +97,15 @@ public class Main {
 				environmentService.shiftTectonics();
 				tectonicsTime += new Date().getTime() - lastMark;
 				
-				if (ticks % 10 == 0){
+				//if (ticks % 10 == 0){
 					lastMark = new Date().getTime();
 					window.printMap();
 					printTime += new Date().getTime() - lastMark;
-				}
+				//}
 				
 				ticks ++;
 				
-				if (ticks % 1000 == 0){
+				if (ticks % 100 == 0){
 					
 					System.out.println("Ticks: " + ticks);
 					System.out.println("Burn time: " + burnTime / 1000);
