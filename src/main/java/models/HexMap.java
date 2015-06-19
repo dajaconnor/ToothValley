@@ -20,9 +20,7 @@ public class HexMap {
 	
 	private List<Pair> cloudOrder = new ArrayList<Pair>();
 	
-	private Set<Pair> clouds = new HashSet<Pair>();
-	
-	private Map<Pair, Integer> raining = new HashMap<Pair, Integer>();
+	private Map<Pair, Integer> clouds = new HashMap<Pair, Integer>();
 	
 	private SetList<Pair> greenHexes = new SetList<Pair>();
 	
@@ -83,7 +81,7 @@ public class HexMap {
 		
 		for (Pair cloud : cloudOrder){
 			
-			if (clouds.contains(cloud)){
+			if (clouds.containsKey(cloud)){
 				
 				newOrder.add(cloud);
 			}
@@ -95,7 +93,7 @@ public class HexMap {
 	public void addCloud(Pair newCloud){
 		
 		cloudOrder.add(newCloud);
-		clouds.add(newCloud);
+		clouds.put(newCloud, 1);
 	}
 	
 	public void removeCloud(Pair oldCloud){
@@ -108,16 +106,8 @@ public class HexMap {
 		return cloudOrder;
 	}
 
-	public Set<Pair> getClouds() {
+	public Map<Pair, Integer> getClouds() {
 		return clouds;
-	}
-
-	public Map<Pair, Integer> getRaining() {
-		return raining;
-	}
-	
-	public void setRaining(Map<Pair, Integer> raining) {
-		this.raining = raining;
 	}
 	
 	public void addHex(Hex hex){
@@ -235,28 +225,6 @@ public class HexMap {
 		int elevation = hex.getElevation();
 		Color color = hex.getColor();
 		
-		/*
-		if (OpenGLWindow.water.equals(color)){
-			
-			HexImpl hexImpl = new HexImpl();
-			
-			List<Hex> neighbors = hexImpl.getNeighbors(hex.getHexID());
-			
-			int count = 1;
-			int totalHeight = hex.getCombinedElevation();
-			
-			for (Hex neighbor : neighbors){
-
-				if (neighbor.getStandingWater() > 0){
-					
-					count ++;
-					totalHeight += neighbor.getCombinedElevation();
-				}
-			}
-			
-			elevation = totalHeight/count;
-		}
-		*/
 		Pair displayPair = new Pair(colorToInt(color), elevation);
 		
 		displayMap.put(hex.getHexID(), displayPair);

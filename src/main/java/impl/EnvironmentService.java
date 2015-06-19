@@ -70,13 +70,13 @@ public class EnvironmentService {
 			leak = true;
 		}
 		
-		hexService.rainAll();
+/*		hexService.rainAll();
 		
 		if (findLeak && totalWater != hexMapService.allWater()[0] && !leak){
 			
 			System.out.println("rain leak");
 			leak = true;
-		}
+		}*/
 		
 		for (Pair hexID : allHexes){
 			

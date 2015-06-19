@@ -269,7 +269,7 @@ public class HexService {
 	/**
 	 * Handles rain for the whole map
 	 */
-	public void rainAll() {
+/*	public void rainAll() {
 		
 		//HexMapImpl hexMapImpl = new HexMapImpl();
 		HexMap map = HexMap.getInstance();
@@ -281,6 +281,10 @@ public class HexService {
 			Pair pair = (Pair) objectRaining;
 			
 			if(rainSingle(map.getHex(pair), raining.get(pair))){
+				
+				if (raining.get(pair) > 1){
+					int woo = 0;
+				}
 				
 				raining.put(pair, raining.get(pair) + 1);
 				List<Pair> neighbors = getNeighbors(pair);
@@ -299,11 +303,14 @@ public class HexService {
 				map.removeCloud(pair);
 			}
 		}
-	}
+	}*/
 	
 	private boolean rainSingle(Hex hex, int amount){
 
-		return hex.alterMoisture(hex.alterMoistureInAir(-Math.abs(amount))) == amount;
+		int changed = hex.alterMoistureInAir(-Math.abs(amount));
+		hex.alterMoisture(changed);
+		
+		return changed == amount;
 	}
 
 	/**
@@ -441,36 +448,6 @@ public class HexService {
 	}
 	
 	/**
-	 * Returns direction of the hex with lowest pressure
-	 */
-/*	public Direction getWindDirection(Pair pair) {
-
-		Pair path = pair;
-		int resistance = 1000;
-
-		HexMap map = HexMap.getInstance();
-		
-		List<Pair> neighbors = getNeighbors(pair);
-
-		for (Pair neighbor : neighbors) {
-			
-			if (map.inWindWhiteHexes(neighbor)){
-				
-				Hex adjHex = map.getHex(neighbor);
-			
-				int resist = adjHex.getPressure();
-
-					if (resistance > resist){
-						
-						resistance = resist;
-						path = adjHex.getHexID();
-				}
-			}
-		}
-
-		return getDirectionBetweenHexes(pair, path);
-	}*/
-	/**
 	 * If there is any moisture in air of current hex, it all moves to the
 	 * adjacent hex with the least moisture
 	 * 
@@ -482,8 +459,19 @@ public class HexService {
 		HexMap map = HexMap.getInstance();
 
 		for (Pair cloud : map.getCloudOrder()) {
+			
+			if (map.getClouds().containsKey(cloud)){
+			
+				if (rainSingle(map.getHex(cloud), map.getClouds().get(cloud))){
+					
+					map.getClouds().put(cloud, map.getClouds().get(cloud) + 1);
+				} else {
+					
+					map.getClouds().remove(cloud);
+				}
+			}
 
-			if (map.getClouds().contains(cloud)){
+			if (map.getClouds().containsKey(cloud)){
 			
 				for (Direction direction : Direction.VALUES){
 
@@ -491,7 +479,7 @@ public class HexService {
 					map.removeCloud(pair);
 					int cloudElevation = map.getHex(cloud).getElevation();
 
-					if (map.getClouds().contains(cloud) && blowSingleHex(pair, cloud, cloudElevation, findLeak)){
+					if (map.getClouds().containsKey(cloud) && blowSingleHex(pair, cloud, cloudElevation, findLeak)){
 
 						blowCorner(direction, pair, cloudElevation, findLeak);
 					}
@@ -556,14 +544,8 @@ public class HexService {
 			fromHex.alterMoistureInAir(toHex.alterMoistureInAir(moisturetoMove));
 			return false;
 		}
-		
+
 		boolean returnBool = (toHex.alterMoistureInAir(fromHex.alterMoistureInAir(-moisturetoMove)) == moisturetoMove);
-	
-		if (toHex.getMoistureInAir() >= Environment.RAIN_INDEX 
-				&& !HexMap.getInstance().getRaining().containsKey(to)){
-			
-			HexMap.getInstance().getRaining().put(to, 1);
-		}
 		
 		if (findLeak && fromHex.getMoistureInAir() + toHex.getMoistureInAir() != total){
 			
