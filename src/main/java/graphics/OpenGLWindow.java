@@ -20,6 +20,7 @@ import static org.lwjgl.util.glu.GLU.gluPerspective;
 import impl.HexService;
 
 import java.awt.Color;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -204,8 +205,18 @@ public class OpenGLWindow {
 
 	public void printMap() {
 
-		
-		HexMap map = HexMap.getInstance();
+	   HexMap map = HexMap.getInstance();
+	   
+	   while(map.isUpdatingMap()){
+	      try {
+            Thread.sleep(5);
+         } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         }
+	   }
+	   
+		Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>(map.getDisplayMap());
 		
 		if(isAutoSpin()){
 		
@@ -224,16 +235,10 @@ public class OpenGLWindow {
 		// Start drawing triangles
 		//glBegin(GL_TRIANGLES);
 
-		for (Pair hexId : map.getDisplayMap().keySet()) {
+		for (Pair hexId : displayMap.keySet()) {
 
-			printHex(hexId);
-
+			printHex(hexId, displayMap);
 		}
-
-		
-		
-		// Stop drawing triangles
-		//glEnd();
 
 		// Check inputs
 		keyInput();
@@ -393,9 +398,8 @@ public class OpenGLWindow {
 		}
 	}
 
-	private void printHex(Pair northId) {
+	private void printHex(Pair northId, Map<Pair, Pair> map) {
 
-		Map<Pair, Pair> map = HexMap.getInstance().getDisplayMap();
 		int water = HexMap.colorToInt(Hex.WATER);
 
 		Pair northColorElev = map.get(northId);

@@ -32,6 +32,8 @@ public class HexMap {
 	
 	private int blowing = 5;
 	
+	private boolean updatingMap = false;
+	
 	private Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>();
 	
 	//For singletonhood
@@ -272,5 +274,13 @@ public class HexMap {
 	public void setPlates(List<TectonicPlate> plates) {
 		this.plates = plates;
 	}
+
+   public boolean isUpdatingMap() {
+      return updatingMap;
+   }
+
+   public void setUpdatingMap(boolean updatingMap) {
+      this.updatingMap = updatingMap;
+   }
 
 }

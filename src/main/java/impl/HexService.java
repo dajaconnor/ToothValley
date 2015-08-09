@@ -528,9 +528,30 @@ public class HexService {
 
 	private boolean blowSingleHex(Pair from, Pair to, int cloudElevation, boolean findLeak){
 		
+	   HexMap map = HexMap.getInstance();
+	   
 		int total = 0;
-		Hex fromHex = HexMap.getInstance().getHex(from);
-		Hex toHex = HexMap.getInstance().getHex(to);
+		Hex fromHex = map.getHex(from);
+		Hex toHex = map.getHex(to);
+		
+		int strangeBehaviorCount = 0;
+
+		while (fromHex == null || toHex == null){
+		   
+		   try {
+            Thread.sleep(50);
+         } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         }
+		   fromHex = map.getHex(from);
+	      toHex = map.getHex(to);
+	      strangeBehaviorCount++;
+		}
+		
+		if (strangeBehaviorCount > 0){
+		   System.out.println("Had to retry getting hex "+strangeBehaviorCount+"times");
+		}
 		
 		if (findLeak){
 			total = fromHex.getMoistureInAir() + toHex.getMoistureInAir();

@@ -78,6 +78,8 @@ public class EnvironmentService {
 			leak = true;
 		}*/
 		
+		map.setUpdatingMap(true);
+		
 		for (Pair hexID : allHexes){
 			
 			if (hexID != null){
@@ -91,6 +93,8 @@ public class EnvironmentService {
 
 			}
 		}
+		
+		map.setUpdatingMap(false);
 		
 		if (findLeak && totalWater != hexMapService.allWater()[0] && !leak){
 			
@@ -207,20 +211,25 @@ public class EnvironmentService {
 	
 	public void shiftTectonics(){
 
-		TectonicPlate plate = hexMapService.pickRandomPlate();
-		HexMap map = HexMap.getInstance();
-
-	    for (Pair keyPair : plate.getActiveEdges().keySet()){
-	    	
-	    	if (plate.getActiveEdges().get(keyPair) == TectonicEdgeDirection.UP){
-	    		
-	    		map.getHex(hexService.getAreaPair(keyPair)).setElevation(map.getHex(keyPair).getElevation() + 1);
-	    	}
-	    	
-	    	if (plate.getActiveEdges().get(keyPair) == TectonicEdgeDirection.DOWN){
-	    		
-	    		map.getHex(hexService.getAreaPair(keyPair)).setElevation(map.getHex(keyPair).getElevation() - 1);
-	    	}
-	    }
+	   HexMap map = HexMap.getInstance();
+	   
+	   if (map.getPlates().size() > 0){
+	   
+   		TectonicPlate plate = hexMapService.pickRandomPlate();
+   		
+   
+   	   for (Pair keyPair : plate.getActiveEdges().keySet()){
+   	    	
+   	    	if (plate.getActiveEdges().get(keyPair) == TectonicEdgeDirection.UP){
+   	    		
+   	    		map.getHex(hexService.getAreaPair(keyPair)).setElevation(map.getHex(keyPair).getElevation() + 1);
+   	    	}
+   	    	
+   	    	if (plate.getActiveEdges().get(keyPair) == TectonicEdgeDirection.DOWN){
+   	    		
+   	    		map.getHex(hexService.getAreaPair(keyPair)).setElevation(map.getHex(keyPair).getElevation() - 1);
+   	    	}
+   	   }
+	   }
 	}
 }
