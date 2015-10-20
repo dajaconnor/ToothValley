@@ -72,7 +72,17 @@ public class HexService {
 		return returnList;
 	}
 
-	public Pair wrap(int x, int y){
+	public Pair mergePairs(Pair pair1, Pair pair2){
+	   
+	   return wrap(new Pair(pair1.getX() + pair2.getX(), pair1.getY() + pair2.getY()));
+	}
+	
+	public Pair wrap(Pair pair) {
+
+      return wrap(pair.getX(), pair.getY());
+   }
+
+   public Pair wrap(int x, int y){
 		
 		int newX = x;
 		int newY = y;
@@ -84,24 +94,26 @@ public class HexService {
 		
 		if (x >= mapX){
 			
-			newX -= mapX;
+			newX %= mapX;
 			newY -= x / 2;
 		}
 		
 		if (x < 0){
 			
-			newX += mapX;
-			newY += newX / 2;
+			newX += (mapX * (Math.abs(newX / mapX) + 1));
+			newY += (newX + mapX * Math.abs(newX / mapX)) / 2;
 		}
 		
 		if (newY >= mapY + newX/2){
 			
-			newY -= mapY;
+			newY %= mapY;
 		}
 		
 		if (newY < newX/2){
 			
-			newY += mapY;
+		   newY = (newY - newX/2 + mapY*mapY) % mapY + newX/2;
+		   //newY = (newX/2 + newY + mapY*mapY) % mapY + newX/2;
+			//newY += mapY;
 		}
 
 		Pair pair = new Pair(newX, newY);
@@ -693,7 +705,7 @@ public class HexService {
 		int stability = from.getSoilStability();
 		boolean returnValue = false;
 		
-		if ((slope*slope > stability || Math.abs(slope) > stability)
+		if ((slope*slope*Environment.SLOPE_CONSTANT > stability || Math.abs(slope) > stability)
 				&& Math.abs(slope) > Environment.MAX_SLOPE){
 		
 			if (slope > 0){
@@ -720,6 +732,14 @@ public class HexService {
 		return returnValue;
 	}
 
+	/**
+    * Body of water:
+    * No erosion in body
+    * added or subtracted by unrelated services (grow, blow, etc)... alg might be tricky
+    * shared sum of water
+    * shared elevation
+    */
+	
 	/**
 	 * Attempt to flood a single hex
 	 */
@@ -886,19 +906,9 @@ public class HexService {
 				// replaced 'Environment.EROSION_INDEX with slope
 				int erosionStrength = rand.nextInt(strength);
 				
-				if (fromHex.getSoilStability() < erosionStrength
-				&& fromHex.setElevation(fromHex.getElevation() - 1)){
-					
-/*					if (0 == rand.nextInt(5)){
-						
-						List<Pair> shared = getSharedNeighbors(fromHex.getHexID(), toHex.getHexID());
-						toHex = HexMap.getInstance().getHex(shared.get(rand.nextInt(shared.size())));
-					}*/
-					
-/*					List<Pair> shared = getSharedNeighbors(fromHex.getHexID(), toHex.getHexID());
-					
-					toHex = HexMap.getInstance().getHex(shared.get(rand.nextInt(shared.size())));*/
-					
+				if (fromHex.getSoilStability() < erosionStrength){
+
+				   fromHex.setElevation(fromHex.getElevation() - 1);
 					toHex.setElevation(toHex.getElevation() + 1);
 		
 					if (toHex.getDensity() <= 0 && 0 == rand.nextInt(5)){
@@ -977,11 +987,13 @@ public class HexService {
 
 		//Shouldn't grow out when on fire
 		if (hex.getFire() <= 0){
-				
-			List<Pair> neighbors = getNeighbors(id);
-			
-			for (Plant plant : hex.getVegetation()){
 
+			Plant plant = hex.getRandomPlant();
+			
+			if(plant != null){
+			   
+			   List<Pair> neighbors = getNeighbors(id);
+			   
 				for (Pair neighbor : neighbors){
 					
 					Hex adjHex = map.getHex(neighbor);
@@ -995,43 +1007,6 @@ public class HexService {
 					}
 				}
 			}
-			
-			
-			
-			
-			/*
-			
-			
-			
-			// grab all adjacent hexes plus current hex
-			List<Hex> hexes = getNeighbors(id);
-			hexes.add(hex);
-	
-			int plantStrength = getStrengthOfStrongestPlantInHexes(hexes);
-	
-			// Find plant to replace
-			//Plant[] plants = hex.getVegetation();
-			//int plantIndex = getIndexOfWeakestPlant(plants);
-			//int moistureOfWeakest = 0;
-	
-			// If it's possible to grow over weakest plant
-			//if (plants[plantIndex] != null){
-			//	moistureOfWeakest = plants[plantIndex].getMoisture();
-			//}
-	
-			for (Plant plant : Plant.TYPES) {
-				
-				int strength = plant.getMoisture();
-				
-				// germinated
-				if (strength <= plantStrength) {
-					
-					hex.addPlant(plant);
-					
-					grew = true;
-					break;
-				}
-			}*/
 		}
 		
 		return grew;

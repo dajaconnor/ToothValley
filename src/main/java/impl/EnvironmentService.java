@@ -88,6 +88,7 @@ public class EnvironmentService {
 				
 				hexService.evaporate(hex, findLeak);
 				hexService.flood(hex, findLeak);
+				hexService.topple(hexID, 1);
 				
 				map.updateHexDisplay(hex);
 
@@ -122,14 +123,9 @@ public class EnvironmentService {
 				
 					hexService.grow(hexId);
 				}
-				
-				else{
-					
-					break;
-				}
 			}
 		}
-		if (map.getGreenHexes().size() < map.getHexes().size()/3){
+		if (map.getGreenHexes().size() < map.getHexes().size()/100){
 			Hex randomHex = hexMapService.pickRandomHex();
 			hexService.forceGrow(randomHex);
 		}

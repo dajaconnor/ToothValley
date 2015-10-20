@@ -21,11 +21,15 @@ public class DisplayThread implements Runnable {
       setCreatingMap(true);
       OpenGLWindow window = OpenGLWindow.getInstance();
       hexMapService.createMap();
+      int ticks = 0;
       setCreatingMap(false);
 
       while(true){
          window.printMap();
-         
+         ticks++;
+         if (ticks % 10000 == 0){
+            System.out.println("Print ticks: " + ticks);
+         }
       }
    }
 		   

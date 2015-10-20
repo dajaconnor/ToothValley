@@ -42,13 +42,10 @@ public class Main {
 		boolean leak = false;
 		
 		while (display.isCreatingMap()){
-		   try {
-            Thread.sleep(1000);
-         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-         }
+		   sleep();
 		}
+		
+		sleep();
 		
 		int totalWater = hexMapService.allWater()[0];
       int cycleTotal = hexMapService.allWater()[0];
@@ -105,7 +102,7 @@ public class Main {
 			
 			if (ticks % 10000 == 0){
 				
-				System.out.println("Ticks: " + ticks);
+				System.out.println("Run ticks: " + ticks);
 				System.out.println("Burn time: " + burnTime / 1000);
 				System.out.println("Water cycle time: " + waterCycleTime / 1000);
 				System.out.println("Grow time: " + growTime / 1000);
@@ -124,5 +121,14 @@ public class Main {
 				
 			}
 		}
+	}
+	
+	private void sleep(){
+	   try {
+         Thread.sleep(1000);
+      } catch (InterruptedException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
 	}
 }

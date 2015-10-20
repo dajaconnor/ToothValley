@@ -43,6 +43,10 @@ public class Hex {
 	public Plant[] getVegetation() {
 		return vegetation;
 	}
+	
+	public Plant getRandomPlant(){
+	   return vegetation[new Random().nextInt(3)];
+	}
 
 	public void setVegetation(Plant[] vegetation) {
 		this.vegetation = vegetation;
@@ -223,26 +227,9 @@ public class Hex {
 		return this.elevation;
 	}
 
-	public boolean setElevation(int elevation) {
+	public void setElevation(int elevation) {
 
-		boolean success = true;
-/*
-		if (elevation < 0) {
-
-			elevation = 0;
-			success = false;
-		}
-		if (elevation > Environment.MAX_ELEVATION) {
-
-			elevation = Environment.MAX_ELEVATION;
-			success = false;
-		}
-
-		else {*/
-			this.elevation = elevation;
-		//}
-
-		return success;
+		this.elevation = elevation;
 	}
 
 	public double getHumidity() {
@@ -270,7 +257,7 @@ public class Hex {
 	}
 
 	public int getCombinedElevation() {
-		return getStandingWater() / 4 + elevation;
+		return getStandingWater() / Environment.WATER_PER_ELEVATION + elevation;
 	}
 	
 	public int getPrintElevation() {

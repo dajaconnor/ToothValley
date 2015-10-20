@@ -5,7 +5,10 @@ public class Environment {
 	//Maximum values
 	public static final int MAX_ELEVATION = 255;
 	public static final int MAX_DENSITY = 63;
-	public static final int MAX_SLOPE = 20;
+	public static final int MAX_SLOPE = 5;
+	
+	// The smaller this is, the steeper stuff gets
+	public static final int SLOPE_CONSTANT = 1;
 	
 	//Defines the percent of the map tht attempts to grow
 	public static final double GROW_RATE = 0.03;
@@ -85,4 +88,5 @@ public class Environment {
 	public static final int COLOR_CHANGE_CONSTANT = 1/2; // 0 is no color change with evolution
 	public static final int TECTONIC_FIRST_STRETCH = 5;
 	public static final int TECTONIC_MIN_STRAIGHT = 3;
+   public static final int WATER_PER_ELEVATION = 4;
 }

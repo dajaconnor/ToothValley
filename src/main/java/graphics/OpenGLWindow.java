@@ -46,7 +46,7 @@ import enums.DisplayType;
  */
 public class OpenGLWindow {
 
-	HexService hexImpl = new HexService();
+	HexService hexService = new HexService();
 
 	public static int Y = 1500;
 	public static int X = 1800;
@@ -75,6 +75,7 @@ public class OpenGLWindow {
 	private boolean paused = false;
 	private boolean autoSpin = false;
 	private int waterChange = 1; // 1 stays the same.
+	private Pair offset = new Pair(0,0);
 	
 
 	private DisplayType displayType = DisplayType.NORMAL;
@@ -209,7 +210,7 @@ public class OpenGLWindow {
 	   
 	   while(map.isUpdatingMap()){
 	      try {
-            Thread.sleep(5);
+            Thread.sleep(1);
          } catch (InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -234,11 +235,9 @@ public class OpenGLWindow {
 		
 		// Start drawing triangles
 		//glBegin(GL_TRIANGLES);
+		
 
-		for (Pair hexId : displayMap.keySet()) {
-
-			printHex(hexId, displayMap);
-		}
+		printAllPairs(displayMap, offset);
 
 		// Check inputs
 		keyInput();
@@ -247,6 +246,13 @@ public class OpenGLWindow {
 		Display.update();
 
 	}
+
+   private void printAllPairs(Map<Pair, Pair> displayMap, Pair localOffset) {
+      for (Pair hexId : displayMap.keySet()) {
+
+			printHex(hexId, displayMap, localOffset);
+		}
+   }
 
 	public void keyInput() {
 		
@@ -346,7 +352,7 @@ public class OpenGLWindow {
 					
 				}else{
 				
-					glRotatef(1f,-1f,0f,0f);
+				   shiftUp();
 				}
 			}
 			
@@ -358,7 +364,7 @@ public class OpenGLWindow {
 					
 				}else{
 				
-					glRotatef(1f,1f,0f,0f);
+				   shiftDown();
 				}
 			}
 			
@@ -370,7 +376,7 @@ public class OpenGLWindow {
 					
 				}else{
 				
-					glRotatef(1f,0f,1f,0f);
+					shiftLeft();
 				}
 			}
 			
@@ -382,7 +388,7 @@ public class OpenGLWindow {
 					
 				}else{
 					
-					glRotatef(1f,0f,-1f,0f);
+				   shiftRight();
 				}
 			}
 			
@@ -395,29 +401,75 @@ public class OpenGLWindow {
 				
 				glRotatef(1f,0f,0f,-1f);
 			}
+			
+			if (Keyboard.isKeyDown(Keyboard.KEY_UP)){
+			   
+			   shiftUp();
+			}
+			
+         if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)){
+            
+            shiftDown();
+         }
+         
+         if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)){
+            
+            shiftLeft();
+         }
+         
+         if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)){
+            
+            shiftRight();
+         }
 		}
 	}
 
-	private void printHex(Pair northId, Map<Pair, Pair> map) {
+	private void shiftUp(){
+	   
+	   offset.setY(offset.getY() + 1);
+	}
+	
+	private void shiftDown(){
+      
+	   offset.setY(offset.getY() - 1);
+   }
+
+	private void shiftLeft(){
+   
+	   offset.setX(offset.getX() - 1);
+	   if (offset.getX() % 2 == 0){
+         offset.setY(offset.getY() - 1);
+      }
+	}
+
+	private void shiftRight(){
+   
+	   offset.setX(offset.getX() + 1);
+	   if (offset.getX() % 2 == 0){
+	      offset.setY(offset.getY() + 1);
+	   }
+	}
+	
+	private void printHex(Pair northId, Map<Pair, Pair> map, Pair localOffset) {
 
 		int water = HexMap.colorToInt(Hex.WATER);
 
 		Pair northColorElev = map.get(northId);
 
-		Pair southId = hexImpl.S(northId);
+		Pair southId = hexService.S(northId);
 		Pair southColorElev = map.get(southId);
 
-		Pair eastId = hexImpl.SE(northId);
+		Pair eastId = hexService.SE(northId);
 		Pair eastColorElev = map.get(eastId);
 
 		// Outer elevation guides
-		int NE_Elev = map.get(hexImpl.N(eastId)).getY();
-		int SE_Elev = map.get(hexImpl.S(eastId)).getY();
-		int W_Elev = map.get(hexImpl.NW(southId)).getY();
+		int NE_Elev = map.get(hexService.N(eastId)).getY();
+		int SE_Elev = map.get(hexService.S(eastId)).getY();
+		int W_Elev = map.get(hexService.NW(southId)).getY();
 
-		DPair north = getBasePrintCoords(northId);
-		DPair south = getBasePrintCoords(southId);
-		DPair east = getBasePrintCoords(eastId);
+		DPair north = getBasePrintCoords(northId, localOffset);
+		DPair south = getBasePrintCoords(southId, localOffset);
+		DPair east = getBasePrintCoords(eastId, localOffset);
 
 		//DPair epicenter = realSE(north);
 
@@ -479,20 +531,46 @@ public class OpenGLWindow {
 	 * 
 	 * @param x
 	 * @param y
+	 * @param localOffset 
 	 * @return
 	 */
-	public DPair getBasePrintCoords(double x, double y) {
+	public DPair getBasePrintCoords(double x, double y, Pair localOffset) {
 
-		double xCoord = x * (bodyWidth + sideWidth)
-				+ (bodyWidth / 2 + sideWidth); // removed +sideWidth
+		double xCoord = x * (bodyWidth + sideWidth);
 		double yCoord = y * height + height / 2 - x * height / 2;
+		
+/*		if (localOffset.getX() > x){
+
+		   yCoord -= (double) (localOffset.getX() - x + 1) * height;
+		}
+		
+		double xFromEnd = x - HexMap.getInstance().getSize()[0];
+		
+		if (localOffset.getX() < xFromEnd){
+
+         yCoord += (double) (xFromEnd - localOffset.getX() + 1) * height;
+      }*/
 
 		return new DPair(xCoord, yCoord);
 	}
 
-	public DPair getBasePrintCoords(Pair pair) {
+	public DPair getBasePrintCoords(Pair pair, Pair localOffset) {
 
-		return getBasePrintCoords(pair.getX(), pair.getY());
+	   Pair printPair = hexService.mergePairs(pair,  localOffset);
+
+/*      if (printPair.getX() == 0){
+         if (printPair.getY() == 0){
+            Display.update();
+            try {
+               Thread.sleep(1000);
+            } catch (InterruptedException e) {
+               // TODO Auto-generated catch block
+               e.printStackTrace();
+            }
+         }
+      }*/
+	   
+		return getBasePrintCoords(printPair.getX(), printPair.getY(), localOffset);
 	}
 
 	private DPair realNW(DPair middle) {
@@ -568,4 +646,9 @@ public class OpenGLWindow {
 	public void alterWaterChangeBy(int changeBy) {
 		this.waterChange += changeBy;
 	}
+
+   public DPair getBasePrintCoords(int x, int y) {
+
+      return getBasePrintCoords(x, y, new Pair(0,0));
+   }
 }
