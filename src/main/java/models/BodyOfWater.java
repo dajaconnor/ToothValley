@@ -1,6 +1,7 @@
 package models;
 
 import impl.HexService;
+import impl.WaterService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,14 +13,13 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import enums.Direction;
-
-// BIG PROBLEM!
-// What do we do with bodies that split?  How do we know when yo split?  Merge?
 public class BodyOfWater {
    
    @Autowired
    private HexService hexService;
+   
+   @Autowired
+   private WaterService waterService;
 	
 	private Set<Pair> allMembers;
 	private int floorElevation; // sum of elevation of all members
@@ -30,28 +30,34 @@ public class BodyOfWater {
 
 	   setAllMembers(newMembers);
 	   computeFloorElevation();
-	   computeWater();
-	   computeElevationMap();
+      computeWater();
+      computeElevationMap();
 	}
 	
-	static public Set<Pair> computeBodyOfWaterMembers(Pair startingMember){
+	public BodyOfWater(Pair startingMember){
+
+      computeAndSetMembers(startingMember);
+   }
+	
+	public void computeAndSetMembers(Pair startingMember){
 	   
 	   HexMap map = HexMap.getInstance();
 	   
 	   if (map.getHexes().get(startingMember).getStandingWater() == 0){
 	      
-	      return null;
+	      return;
 	   }
+	   
+	   waterService.addNode(startingMember);
+
 	   
 	   List<Pair> nextList = new ArrayList<Pair>();
       nextList.add(startingMember);
-      Set<Pair> members = new HashSet<Pair>();
-      members.add(startingMember);
+      addMember(startingMember);
       
-      do{
+      while(nextList.size() > 0){
          
          Set<Pair> neighbors = new HashSet<Pair>();
-         HexService hexService = new HexService();
          
          for (Pair pair : nextList){
             
@@ -62,15 +68,13 @@ public class BodyOfWater {
          
          for (Pair pair : neighbors){
             
-            if (!members.contains(pair) && map.getHexes().get(pair).getStandingWater() > 0){
+            if (!getAllMembers().contains(pair) && map.getHexes().get(pair).getStandingWater() > 0){
                
-               members.add(pair);
+               addMember(pair);
                nextList.add(pair);
             }
          }
-      } while(nextList.size() > 0);
-      
-      return members;
+      }
 	}
 	
 	public void handleSplits(){
@@ -193,6 +197,34 @@ public class BodyOfWater {
       }
    }
 
+   public void addMember(Pair member){
+      
+      getAllMembers().add(member);
+      waterService.addNode(member);
+      
+      HexMap map = HexMap.getInstance();
+
+      adjustWater(map.getHex(member).getStandingWater());
+      
+      int elevation = map.getHex(member).getElevation();
+      adjustFloorElevation(elevation);
+      addToElevationMap(member, elevation);
+   }
+   
+   public void removeMember(Pair member){
+
+      getAllMembers().remove(member);
+      waterService.removeNode(member); // TODO handle split
+      
+      HexMap map = HexMap.getInstance();
+      
+      adjustWater(-map.getHex(member).getStandingWater());
+      
+      int elevation = map.getHex(member).getElevation();
+      adjustFloorElevation(-elevation);
+      removeFromElevationMap(member, elevation);
+   }
+   
    public Set<Pair> getAllMembers() {
 		return allMembers;
 	}
@@ -205,15 +237,33 @@ public class BodyOfWater {
    public void setFloorElevation(int floorElevation) {
       this.floorElevation = floorElevation;
    }
+   public void adjustFloorElevation(int change){
+      this.floorElevation += change;
+   }
    public int getWater() {
       return water;
    }
    public void setWater(int water) {
       this.water = water;
    }
+   public void adjustWater(int change){
+      this.water += change;
+   }
 	public int getWaterLine(){
 	   return (getWater() / Environment.WATER_PER_ELEVATION + getFloorElevation()) / getAllMembers().size();
 	}
+	public void addToElevationMap(Pair member, int elevation){
+	   if (!getElevationMap().containsKey(elevation)){
+	      getElevationMap().put(elevation, new HashSet<Pair>());
+	   }
+	   getElevationMap().get(elevation).add(member);
+	}
+	public void removeFromElevationMap(Pair member, int elevation){
+	   if (getElevationMap().containsKey(elevation)){
+	      getElevationMap().get(elevation).remove(member);
+	   }
+	}
+	// TODO removeElevationFromBody
    public Map<Integer,Set<Pair>> getElevationMap() {
       return elevationMap;
    }

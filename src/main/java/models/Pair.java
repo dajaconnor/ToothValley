@@ -33,6 +33,12 @@ public class Pair {
 		
 		return false;
 	}
+	
+	@Override
+   public Pair clone() {
+
+      return new Pair(x, y);
+   }
 
     public String toString()
     { 
