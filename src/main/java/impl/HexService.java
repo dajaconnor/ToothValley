@@ -3,20 +3,18 @@ package impl;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import org.springframework.stereotype.Component;
+
+import enums.Direction;
 import models.Environment;
 import models.Hex;
 import models.HexMap;
 import models.Jungle;
 import models.Pair;
 import models.Plant;
-
-import org.springframework.stereotype.Component;
-
-import enums.Direction;
 
 @Component
 public class HexService {

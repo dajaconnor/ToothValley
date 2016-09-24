@@ -48,8 +48,8 @@ public class OpenGLWindow {
 
 	HexService hexService = new HexService();
 
-	public static int Y = 1500;
-	public static int X = 1800;
+	public static int Y = Environment.MAP_HEIGHT;
+	public static int X = Environment.MAP_WIDTH;
 	public static Random rand = new Random();
 
 	public static int xBuffer = 5;
@@ -63,7 +63,7 @@ public class OpenGLWindow {
 	public static Color forest = new Color(21, 181, 51);
 	public static Color jungle = new Color(6, 102, 23);
 
-	public double zoom = 8;
+	public double zoom = Environment.ZOOM;
 	public double height = ((double) zoom * Math.pow(3D, 0.5D));
 	public double sideWidth = zoom / 2;
 	public double bodyWidth = zoom;
@@ -120,8 +120,7 @@ public class OpenGLWindow {
 	 *             if init fails
 	 */
 	private static void init(boolean fullscreen) throws Exception {
-		// Create a fullscreen window with 1:1 orthographic 2D projection
-		// (default)
+
 		Display.setTitle(GAME_TITLE);
 		Display.setFullscreen(fullscreen);
 
@@ -142,7 +141,7 @@ public class OpenGLWindow {
 		
 		//I don't know why, but this puts the map on the screen...
 		//glTranslatef(-500, -500, -2000);
-		glTranslatef(-X/2, -100, -2000);
+		glTranslatef(-X/2, -300, -2000);
 		
 		//glTranslatef(X/2, Y/2, 100);
 		

@@ -87,10 +87,10 @@ public class HexMapService {
 				
 				Pair pair = OpenGLWindow.getInstance().getBasePrintCoords(x, Y).toPair();
 				
-				if (pair.getX() > elevations.length){
+				if (pair.getX() >= elevations.length){
 					 pair.setX(pair.getX() - elevations.length);
 				}
-				if (pair.getY() > elevations[pair.getX()].length){
+				if (pair.getY() >= elevations[pair.getX()].length){
 					pair.setY(pair.getY() - elevations[pair.getX()].length);
 				}
 				if (pair.getY() < 0){

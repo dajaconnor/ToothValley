@@ -58,8 +58,8 @@ public class TestGraphics extends JPanel {
     	Window window = Window.getInstance();
     	
     	int[] size = new int[2];
-    	size[0] = window.X;
-    	size[1] = window.Y;
+    	size[0] = Window.X;
+    	size[1] = Window.Y;
     	
     	//must equal 256
     	int[][] slopeNoise = twoDNoise(0.1F, 180, size);

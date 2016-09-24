@@ -1,7 +1,6 @@
 package impl;
 
 import graphics.OpenGLWindow;
-import graphics.Window;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,84 +10,6 @@ import javax.swing.JPanel;
 
 public class PerlinNoise extends JPanel {
 
-    public void drawHexPerlin() {
-
-    	Window window = Window.getInstance();
-    	
-    	int height = ((Window.Y - Window.yBuffer * 2) / window.height) -1;
-    	int width = ((Window.X - Window.xBuffer * 2 - window.sideWidth) / (window.sideWidth + window.bodyWidth));
-    	
-    	int[] size = new int[2];
-    	size[0] = Window.X;
-    	size[1] = Window.Y;
-    	
-    	int[][] slopeNoise = twoDNoise(0.1F, 180, size);
-    	int[][] noise = twoDNoise(0.022F, 100, size);
-    	int[][] elevations = combineNoise(noise, slopeNoise);
-
-    
-    	for (int x = 0; x < width; x++){
-    		
-    		for (int y = 0; y < height; y++){
-    			
-    			Window.getInstance().drawHex(x, y+x/2, elevations);
-    			
-    			if (y == height - 1 && x % 2 == 1){
-    				
-    				Window.getInstance().drawHex(x, y+1+x/2, elevations);
-    			}
-    		}
-    	}
-		
-	}
-
-	public void drawOneDPerlin(){
-    	
-    	Window window = Window.getInstance();
-    	
-    	List<Integer> noise = oneDNoise();
-    	
-    	for (int x = 0; x < noise.size(); x++){
-    		
-    		window.drawPixel(x, noise.get(x)+50);
-    	}
-    }
-    
-    
-    public void drawTwoDPerlin(){
-    	
-    	Window window = Window.getInstance();
-    	
-    	int[] size = new int[2];
-    	size[0] = Window.X;
-    	size[1] = Window.Y;
-    	
-    	//must equal 256
-    	int[][] slopeNoise = twoDNoise(0.1F, 180, size);
-    	int[][] noise = twoDNoise(0.022F, 100, size);
-    	//int[][] smallNoise = twoDNoise(0.003F, 120);
-    	
-    	int[][] combinedNoise = combineNoise(noise, slopeNoise);
-    	//combinedNoise = combineNoise(combinedNoise, slopeNoise);
-    			
-    	for (int x = 0; x < noise.length; x++){
-    		
-    		for (int y = 0; y < noise[x].length; y++){
-    			
-    			int volume = combinedNoise[x][y] - 12;
-    			
-    			if (volume > 255){
-    				volume = 255;
-    			}
-    			
-    			if (volume < 0){
-    				volume = 0;
-    			}
-    			
-    			window.drawPixel(x, y, volume);
-    		}
-    	}
-    }
 	
 	/**
 	 * This returns all y values for perlin noise
@@ -96,14 +17,14 @@ public class PerlinNoise extends JPanel {
 	 */
 	public List<Integer> oneDNoise(){
 		
-		int amp = (Window.Y * 3/4);
+		int amp = (OpenGLWindow.Y * 3/4);
 		List<Integer> noise = perlin(0.1F, amp, new ArrayList<Integer>());
 		
 		
-		amp = (Window.Y * 1/4);
+		amp = (OpenGLWindow.Y * 1/4);
 		noise = perlin(0.05F, amp, noise);
 		
-		amp = (Window.Y * 1/8);
+		amp = (OpenGLWindow.Y * 1/8);
 		noise = perlin(0.01F, amp, noise);
 		
 		
@@ -345,7 +266,7 @@ public class PerlinNoise extends JPanel {
 	public List<Integer> perlin(float frequency, int amp, List<Integer> Ylist){
 		
 		int numWaves = (int) (1.0 / frequency);
-		int waveLength = (int) (frequency * Window.X);
+		int waveLength = (int) (frequency * OpenGLWindow.X);
 		List<Integer> wavePoints = getWavePoints(numWaves+4, amp);
 		
 		for (int wave = 0; wave < numWaves; wave++){
@@ -392,7 +313,7 @@ public class PerlinNoise extends JPanel {
 		List<Integer> wavePoints = new ArrayList<Integer>();
 		
 		for (int i = 0; i < numWaves; i++){
-			wavePoints.add(amp - (int) (amp * Window.rand.nextFloat()));
+			wavePoints.add(amp - (int) (amp * OpenGLWindow.rand.nextFloat()));
 			
 		}
 		

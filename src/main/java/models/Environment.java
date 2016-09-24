@@ -11,7 +11,7 @@ public class Environment {
 	public static final int SLOPE_CONSTANT = 1;
 	
 	//Defines the percent of the map tht attempts to grow
-	public static final double GROW_RATE = 0.03;
+	public static final double GROW_RATE = 0.8;
 	
 	//The likelyhood that something will burn on a tick per region
 	public static final double BURN_RATE = 0.0001;
@@ -35,10 +35,10 @@ public class Environment {
 	public static final float FLOOD_STRENGTH = 2;
 	
 	//Defines the change in water level required to alter hex color
-	public static final int WATER_BUFFER = 4;
+	public static final int WATER_BUFFER = 0;
 	
 	//Defines the average amount of water for each hex
-	public static final int AVE_WATER = 750;
+	public static final int AVE_WATER = 700;
 	
 	//Defines the speed at which wind changes (lower is faster), must be at least 3
 	public static final int WIND_CHANGE = 250;
@@ -65,10 +65,13 @@ public class Environment {
 	public static final int EVOLUTION_DESIRE = 1;
 	
 	// Defines the number of hexes per edge hex
-	public static final int PLATE_EDGE_FREQUENCY = 2000;
+	public static final int PLATE_EDGE_FREQUENCY = 800;
+	
+	// Number of tectonic movements per tick
+	public static final int TECTONIC_ACTIVITY = 100;
 	
 	// Defines the likelihood of a straight edge on a tectonic plate
-	public static final int PERCENT_STRAIGHT_PLATE_EDGE = 80;
+	public static final int PERCENT_STRAIGHT_PLATE_EDGE = 95;
 	
 	//The next set is all default variables for vegetation
 	public static final double GRASS_SATURATION = 1;
@@ -88,5 +91,9 @@ public class Environment {
 	public static final int COLOR_CHANGE_CONSTANT = 1/2; // 0 is no color change with evolution
 	public static final int TECTONIC_FIRST_STRETCH = 5;
 	public static final int TECTONIC_MIN_STRAIGHT = 3;
-   public static final int WATER_PER_ELEVATION = 4;
+	public static final int WATER_PER_ELEVATION = 4;
+	public static final int MAP_HEIGHT = 1100; // should correlate with screen size in pixels
+	public static final int MAP_WIDTH = 1900;
+	public static final double ZOOM = 6;
+
 }
