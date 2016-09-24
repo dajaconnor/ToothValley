@@ -96,4 +96,6 @@ public class Environment {
 	public static final int MAP_WIDTH = 1900;
 	public static final double ZOOM = 6;
 
+	public static final int FAST_PAN = 6;
+	public static final int SLOW_PAN = 1;
 }

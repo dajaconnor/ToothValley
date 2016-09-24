@@ -343,51 +343,63 @@ public class OpenGLWindow {
 		
 		if (!isAutoSpin()){
 			
-			if (Keyboard.isKeyDown(Keyboard.KEY_W)){
+			if (Keyboard.isKeyDown(Keyboard.KEY_W) || Keyboard.isKeyDown(Keyboard.KEY_UP)){
 				
 				if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
 					
 					glTranslatef(0, 5, 0);
 					
+				}else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
+					
+					shiftUp(Environment.FAST_PAN);
 				}else{
 				
-				   shiftUp();
+				   shiftUp(Environment.SLOW_PAN);
 				}
 			}
 			
-			if (Keyboard.isKeyDown(Keyboard.KEY_S)){
+			if (Keyboard.isKeyDown(Keyboard.KEY_S) || Keyboard.isKeyDown(Keyboard.KEY_DOWN)){
 				
 				if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
 					
 					glTranslatef(0, -5, 0);
 					
+				}else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
+					
+					shiftDown(Environment.FAST_PAN);
 				}else{
 				
-				   shiftDown();
+				   shiftDown(Environment.SLOW_PAN);
 				}
 			}
 			
-			if (Keyboard.isKeyDown(Keyboard.KEY_A)){
+			if (Keyboard.isKeyDown(Keyboard.KEY_A) || Keyboard.isKeyDown(Keyboard.KEY_LEFT)){
 				
 				if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
 					
 					glTranslatef(-5, 0, 0);
 					
+				}else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
+					
+					shiftLeft(Environment.FAST_PAN);
 				}else{
 				
-					shiftLeft();
+					shiftLeft(Environment.SLOW_PAN);
 				}
 			}
 			
-			if (Keyboard.isKeyDown(Keyboard.KEY_D)){
+			if (Keyboard.isKeyDown(Keyboard.KEY_D) || Keyboard.isKeyDown(Keyboard.KEY_RIGHT)){
 				
 				if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
 					
 					glTranslatef(5, 0, 0);
 					
+				}else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
+					
+					shiftRight(Environment.FAST_PAN);
 				}else{
 					
-				   shiftRight();
+				   shiftRight(Environment.SLOW_PAN);
 				}
 			}
 			
@@ -400,53 +412,27 @@ public class OpenGLWindow {
 				
 				glRotatef(1f,0f,0f,-1f);
 			}
-			
-			if (Keyboard.isKeyDown(Keyboard.KEY_UP)){
-			   
-			   shiftUp();
-			}
-			
-         if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)){
-            
-            shiftDown();
-         }
-         
-         if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)){
-            
-            shiftLeft();
-         }
-         
-         if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)){
-            
-            shiftRight();
-         }
 		}
 	}
 
-	private void shiftUp(){
+	private void shiftUp(int amount){
 	   
-	   offset.setY(offset.getY() + 1);
+	   offset.setY(offset.getY() + amount);
 	}
 	
-	private void shiftDown(){
+	private void shiftDown(int amount){
       
-	   offset.setY(offset.getY() - 1);
+	   offset.setY(offset.getY() - amount);
    }
 
-	private void shiftLeft(){
+	private void shiftLeft(int amount){
    
-	   offset.setX(offset.getX() - 1);
-	   if (offset.getX() % 2 == 0){
-         offset.setY(offset.getY() - 1);
-      }
+	   offset.setX(offset.getX() - amount);
 	}
 
-	private void shiftRight(){
+	private void shiftRight(int amount){
    
-	   offset.setX(offset.getX() + 1);
-	   if (offset.getX() % 2 == 0){
-	      offset.setY(offset.getY() + 1);
-	   }
+	   offset.setX(offset.getX() + amount);
 	}
 	
 	private void printHex(Pair northId, Map<Pair, Pair> map, Pair localOffset) {
@@ -533,55 +519,31 @@ public class OpenGLWindow {
 	 * @param localOffset 
 	 * @return
 	 */
-	public DPair getBasePrintCoords(double x, double y, Pair localOffset) {
+	public DPair getBasePrintCoords(double x, double y) {
 
 		double xCoord = x * (bodyWidth + sideWidth);
 		double yCoord = y * height + height / 2 - x * height / 2;
-		
-/*		if (localOffset.getX() > x){
-
-		   yCoord -= (double) (localOffset.getX() - x + 1) * height;
-		}
-		
-		double xFromEnd = x - HexMap.getInstance().getSize()[0];
-		
-		if (localOffset.getX() < xFromEnd){
-
-         yCoord += (double) (xFromEnd - localOffset.getX() + 1) * height;
-      }*/
 
 		return new DPair(xCoord, yCoord);
 	}
 
 	public DPair getBasePrintCoords(Pair pair, Pair localOffset) {
+		
+		Pair yOffsetDifferential = new Pair(localOffset.getX(), localOffset.getYbyXdifferential());
 
-	   Pair printPair = hexService.mergePairs(pair,  localOffset);
+		Pair printPair = hexService.mergePairs(pair,  yOffsetDifferential);
 
-/*      if (printPair.getX() == 0){
-         if (printPair.getY() == 0){
-            Display.update();
-            try {
-               Thread.sleep(1000);
-            } catch (InterruptedException e) {
-               // TODO Auto-generated catch block
-               e.printStackTrace();
-            }
-         }
-      }*/
-	   
-		return getBasePrintCoords(printPair.getX(), printPair.getY(), localOffset);
+		return getBasePrintCoords(printPair.getX(), printPair.getY());
 	}
 
 	private DPair realNW(DPair middle) {
 
-		return new DPair(middle.getX() - bodyWidth / 2, middle.getY() - height
-				/ 2);
+		return new DPair(middle.getX() - bodyWidth / 2, middle.getY() - height / 2);
 	}
 
 	private DPair realNE(DPair middle) {
 
-		return new DPair(middle.getX() + bodyWidth / 2, middle.getY() - height
-				/ 2);
+		return new DPair(middle.getX() + bodyWidth / 2, middle.getY() - height / 2);
 	}
 
 	private DPair realE(DPair middle) {
@@ -645,9 +607,4 @@ public class OpenGLWindow {
 	public void alterWaterChangeBy(int changeBy) {
 		this.waterChange += changeBy;
 	}
-
-   public DPair getBasePrintCoords(int x, int y) {
-
-      return getBasePrintCoords(x, y, new Pair(0,0));
-   }
 }

@@ -52,6 +52,15 @@ public class Pair {
     public void setX(int x) {
     	this.x = x;
     }
+    
+    public int getYbyXdifferential(){
+    	
+    	return getY() + getX() / 2;
+    	
+    	/*if (offset.getX() % 2 == 0){
+            offset.setY(offset.getY() - 1);
+         }*/
+    }
 
     public int getY() {
     	return y;

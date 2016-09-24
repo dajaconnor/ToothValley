@@ -93,13 +93,11 @@ public class HexService {
 		if (x >= mapX){
 			
 			newX %= mapX;
-			newY -= x / 2;
 		}
 		
 		if (x < 0){
 			
 			newX += (mapX * (Math.abs(newX / mapX) + 1));
-			newY += (newX + mapX * Math.abs(newX / mapX)) / 2;
 		}
 		
 		if (newY >= mapY + newX/2){
@@ -110,8 +108,6 @@ public class HexService {
 		if (newY < newX/2){
 			
 		   newY = (newY - newX/2 + mapY*mapY) % mapY + newX/2;
-		   //newY = (newX/2 + newY + mapY*mapY) % mapY + newX/2;
-			//newY += mapY;
 		}
 
 		Pair pair = new Pair(newX, newY);

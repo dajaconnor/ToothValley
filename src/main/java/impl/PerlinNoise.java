@@ -1,16 +1,16 @@
 package impl;
 
-import graphics.OpenGLWindow;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JPanel;
 
+import graphics.OpenGLWindow;
 
+@SuppressWarnings("serial")
 public class PerlinNoise extends JPanel {
 
-	
+		
 	/**
 	 * This returns all y values for perlin noise
 	 * @return
