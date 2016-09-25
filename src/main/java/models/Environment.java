@@ -38,7 +38,7 @@ public class Environment {
 	public static final int WATER_BUFFER = 0;
 	
 	//Defines the average amount of water for each hex
-	public static final int AVE_WATER = 1000;
+	public static final int AVE_WATER = 1300;
 	
 	public static final int AVE_DENSITY = 40;
 	
@@ -68,7 +68,7 @@ public class Environment {
 	
 	// Number of tectonic movements per tick
 	public static final int TECTONIC_ACTIVITY = 1;
-	public static final int TECTONIC_AMPLITUDE = 5;
+	public static final int TECTONIC_AMPLITUDE = 2;
 	
 	// Defines the number of times a hex can topple in a single run
    public static final int TOPPLE_DEPTH = 1;

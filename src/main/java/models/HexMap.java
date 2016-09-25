@@ -34,10 +34,8 @@ public class HexMap {
 	
 	private boolean updatingMap = false;
 	
-	private Map<Pair,Pair> waterConnectivity = new HashMap<Pair,Pair>();
-	
-	private Map<Pair,List<Pair>> waterChildren = new HashMap<Pair,List<Pair>>();
-	
+	private Map<Pair,BodyOfWater> waterBodies = new HashMap<Pair,BodyOfWater>();
+
 	private Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>();
 	
 	//For singletonhood
@@ -287,20 +285,7 @@ public class HexMap {
       this.updatingMap = updatingMap;
    }
 
-   public Map<Pair,Pair> getWaterConnectivity() {
-      return waterConnectivity;
+   public Map<Pair,BodyOfWater> getWaterBodies() {
+      return waterBodies;
    }
-
-   public void setWaterConnectivity(Map<Pair,Pair> waterConnectivity) {
-      this.waterConnectivity = waterConnectivity;
-   }
-
-   public Map<Pair,List<Pair>> getWaterChildren() {
-      return waterChildren;
-   }
-
-   public void setWaterChildren(Map<Pair,List<Pair>> waterChildren) {
-      this.waterChildren = waterChildren;
-   }
-
 }

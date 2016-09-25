@@ -22,7 +22,12 @@ public class Propogator {
    {
       Set<Pair> traversedPairs = new HashSet<Pair>();
       List<Pair> nextList = new ArrayList<Pair>();
-      nextList.add(startingPair);
+      
+      if (evaluator.evaluate(startingPair)){
+         
+         evaluator.onSuccess(startingPair);
+         nextList.add(startingPair);
+      }
 
       while(nextList.size() > 0){
 
@@ -37,9 +42,15 @@ public class Propogator {
 
          for (Pair pair : neighbors){
 
-            if (!traversedPairs.contains(pair) && evaluator.actAndEvaluate(pair)){
-
-               nextList.add(pair);
+            if (!traversedPairs.contains(pair)){
+               
+               if (evaluator.evaluate(pair)){
+                  
+                  evaluator.onSuccess(pair);
+                  nextList.add(pair);
+               } else{
+                  evaluator.onFail(pair);
+               }
             }
          }
       }
@@ -50,7 +61,14 @@ public class Propogator {
       Set<Pair> traversedPairs = new HashSet<Pair>();
       
       List<Pair> thisList = new ArrayList<Pair>();
-      thisList.add(startingPair);
+
+      if (evaluator.initialEvaluate(startingPair)){
+         
+         evaluator.onInitialSuccess(startingPair);
+         thisList.add(startingPair);
+      }else{
+         evaluator.onInitialFail(startingPair);
+      }
 
       while(thisList.size() > 0){
 
@@ -62,9 +80,14 @@ public class Propogator {
             
             for (Pair neighbor : neighbors){
                
-               if (!traversedPairs.contains(neighbor) && evaluator.actAndEvaluate(neighbor, thisPair)){
-                  
-                  nextList.add(neighbor);
+               if (!traversedPairs.contains(neighbor)){
+                  if (evaluator.evaluate(neighbor, thisPair)){
+                     
+                     evaluator.onSuccess(neighbor, thisPair);
+                     nextList.add(neighbor);
+                  }else{
+                     evaluator.onFail(neighbor, thisPair);
+                  }
                }
             }
          }

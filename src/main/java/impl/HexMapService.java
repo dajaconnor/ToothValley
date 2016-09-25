@@ -29,12 +29,11 @@ public class HexMapService {
 	public void createMap() {
 
 		HexMap map = HexMap.getInstance();
-		//Window window = Window.getInstance();
 		OpenGLWindow openGL = OpenGLWindow.getInstance();
 		
 
-		int height = (OpenGLWindow.Y * 3/2) / (int) openGL.height;
-		int width = OpenGLWindow.X / (int) (openGL.sideWidth + openGL.bodyWidth);
+		int height = (OpenGLWindow.Y * 3/2) / (int) OpenGLWindow.height;
+		int width = OpenGLWindow.X / (int) (OpenGLWindow.sideWidth + OpenGLWindow.bodyWidth);
 		
 		if (width % 2 == 1){
 			

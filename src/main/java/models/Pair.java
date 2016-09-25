@@ -16,9 +16,8 @@ public class Pair {
 	 */
 	@Override
 	public int hashCode() {
-		final int prime = 31;
 
-		return prime * x * x + y;
+		return Environment.MAP_WIDTH * y + x;
 	}
 
 	@Override
