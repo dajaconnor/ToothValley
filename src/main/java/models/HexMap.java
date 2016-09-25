@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import enums.DisplayType;
+import graphics.OpenGLWindow;
+
 public class HexMap {
 
 	private int mapID;
@@ -34,7 +37,11 @@ public class HexMap {
 	
 	private boolean updatingMap = false;
 	
-	private Map<Pair,BodyOfWater> waterBodies = new HashMap<Pair,BodyOfWater>();
+	private Map<Pair,BodyOfWater> pairToWaterBodies = new HashMap<Pair,BodyOfWater>();
+	
+	private Set<BodyOfWater> allWaterBodies = new HashSet<BodyOfWater>();
+	
+	private List<List<BodyOfWater>> bodiesThatNeedToBeJoined = new ArrayList<List<BodyOfWater>>();
 
 	private Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>();
 	
@@ -227,12 +234,37 @@ public class HexMap {
 	public void updateHexDisplay(Hex hex){
 		
 		int elevation = hex.getElevation();
-		Color color = hex.getColor();
+		int standingBodyWater = getStaleHexBodyStandingWater(hex);
+		
+		// Not until we can avoid those stupid water pyramids
+		if (OpenGLWindow.getInstance().getDisplayType() == DisplayType.NORMAL && standingBodyWater != 0){
+		   elevation = hex.getCombinedElevation(standingBodyWater);
+		}
+		
+		Color color = hex.getColor(standingBodyWater);
 		
 		Pair displayPair = new Pair(colorToInt(color), elevation);
 		
 		displayMap.put(hex.getHexID(), displayPair);
 	}
+	
+	public int getStaleHexBodyStandingWater(Pair id){
+	   Hex hex = getHexes().get(id);
+	   return getStaleHexBodyStandingWater(hex);
+	}
+	
+	public int getStaleHexBodyStandingWater(Hex hex){
+	   BodyOfWater body = getPairToWaterBodies().get(hex.getHexID());
+	   
+	   if (body == null) return 0;
+	   int bodyWaterline = body.getSlightlyStaleWaterLine();
+	   
+	   int standingWaterElevation = bodyWaterline - hex.getElevation();
+	   
+	   if (standingWaterElevation <= 0) return 0;
+	   
+	   return standingWaterElevation * Environment.WATER_PER_ELEVATION;
+   }
 	
 	public static int colorToInt(Color color){
 		
@@ -285,7 +317,31 @@ public class HexMap {
       this.updatingMap = updatingMap;
    }
 
-   public Map<Pair,BodyOfWater> getWaterBodies() {
-      return waterBodies;
+   public Map<Pair,BodyOfWater> getPairToWaterBodies() {
+      return pairToWaterBodies;
+   }
+
+   public int alterMoisture(Hex hex, int change) {
+
+      BodyOfWater body = getPairToWaterBodies().get(hex.getHexID());
+      if (body == null) return hex.alterMoisture(change, false);
+      return body.adjustWater(change);
+   }
+   
+   public int alterMoisture(Pair hexId, int change) {
+
+      return alterMoisture(getHex(hexId), change);
+   }
+
+   public List<List<BodyOfWater>> getBodiesThatNeedToBeJoined() {
+      return bodiesThatNeedToBeJoined;
+   }
+
+   public void resetBodiesThatNeedToBeJoined() {
+      this.bodiesThatNeedToBeJoined = new ArrayList<List<BodyOfWater>>();
+   }
+
+   public Set<BodyOfWater> getAllWaterBodies() {
+      return allWaterBodies;
    }
 }

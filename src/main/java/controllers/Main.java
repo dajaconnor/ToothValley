@@ -4,6 +4,7 @@ package controllers;
 import graphics.DisplayThread;
 import impl.EnvironmentService;
 import impl.HexMapService;
+import impl.WaterService;
 
 import java.util.Date;
 
@@ -21,6 +22,9 @@ public class Main {
 	@Autowired
 	HexMapService hexMapService;
 	
+	@Autowired
+   WaterService waterService;
+	
     public static void main(String[] args) {
     	
     	ApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring.xml");
@@ -37,9 +41,9 @@ public class Main {
 	   DisplayThread display = new DisplayThread("displayThread", hexMapService);
 	   display.start();
 
-		boolean findLeak = false;
+		boolean findLeak = true;
 		int ticks = 0;
-		boolean leak = false;
+		boolean foundLeak = false;
 		
 		while (display.isCreatingMap()){
 		   sleep();
@@ -59,39 +63,38 @@ public class Main {
 
 		while (true){
 
-			if (findLeak){
+			if (findLeak && !foundLeak){
 				cycleTotal = hexMapService.allWater()[0];
-				leak = false;
 			}
 			
 			lastMark = new Date().getTime();
 			environmentService.burn();
 			burnTime += new Date().getTime() - lastMark;
 			
-			if (findLeak && cycleTotal != hexMapService.allWater()[0]){
+			if (findLeak && cycleTotal != hexMapService.allWater()[0] && !foundLeak){
 
 				System.out.println("Burn leak");
-				leak = true;
+				foundLeak = true;
 			}
 
 			lastMark = new Date().getTime();
-			environmentService.waterCycle(findLeak);
+			waterService.waterCycle(findLeak, foundLeak);
 			waterCycleTime += new Date().getTime() - lastMark;
 
-			if (findLeak && cycleTotal != hexMapService.allWater()[0] && !leak){
+			if (findLeak && cycleTotal != hexMapService.allWater()[0] && !foundLeak){
 				
 				System.out.println("water leak");
-				leak = true;
+				foundLeak = true;
 			}
 			
 			lastMark = new Date().getTime();
 			environmentService.grow(ticks);
 			growTime += new Date().getTime() - lastMark;
 			
-			if (findLeak && cycleTotal != hexMapService.allWater()[0] && !leak){
+			if (findLeak && cycleTotal != hexMapService.allWater()[0] && !foundLeak){
 				
 				System.out.println("Grow leak");
-				leak = true;
+				foundLeak = true;
 			}
 			
 			lastMark = new Date().getTime();

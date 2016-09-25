@@ -101,7 +101,7 @@ public class HexMapService {
 //					pair.setX(pair.getX() + elevations.length);
 //				}
 				
-				Hex hex = makeHex(x, Y, elevations[pair.getX()][pair.getY()], (densityMap[pair.getX()][pair.getY()]) / 4, 
+				Hex hex = makeHex(x, Y, elevations[pair.getX()][pair.getY()] * 2 - Environment.MAX_ELEVATION / 2, (densityMap[pair.getX()][pair.getY()]) / 4, 
 				      Environment.AVE_WATER / 2, Environment.AVE_WATER / 2, plant);
 				map.addHex(hex);
 				map.updateHexDisplay(hex);
@@ -166,7 +166,7 @@ public class HexMapService {
 
 		}
 		
-		Hex hex = new Hex(hexID, setToRange(elevations, 255), setToRange(density, 63), moistureMap, moistureInAirMap, newPlant);	
+		Hex hex = new Hex(hexID, setToRange(elevations, Environment.MAX_ELEVATION), setToRange(density, Environment.MAX_DENSITY), moistureMap, moistureInAirMap, newPlant);	
 
 		return hex;
 	}
@@ -252,8 +252,8 @@ public class HexMapService {
 			
 			if (hexID != null){
 				
-				water[0] += map.getHex(hexID).getTotalWater();
-				water[1] += map.getHex(hexID).getMoisture();
+				water[0] += map.getHex(hexID).getTotalWater(map.getStaleHexBodyStandingWater(hexID));
+				water[1] += map.getHex(hexID).getMoisture(map.getStaleHexBodyStandingWater(hexID));
 				water[2] += map.getHex(hexID).getPlantMoisture();
 				water[3] += map.getHex(hexID).getMoistureInAir();
 				

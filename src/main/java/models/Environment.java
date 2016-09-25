@@ -3,15 +3,21 @@ package models;
 public class Environment {
 	
 	//Maximum values
-	public static final int MAX_ELEVATION = 255;
+	public static final int MAX_ELEVATION = 512;
 	public static final int MAX_DENSITY = 127;
 	public static final int MAX_SLOPE = 30;
 	
 	// The smaller this is, the steeper stuff gets
 	public static final int SLOPE_CONSTANT = 1;
 	
-	//Defines the percent of the map tht attempts to grow
-	public static final double GROW_RATE = 0.8;
+	//Defines the percent of the plants that attempt to grow
+	public static final double GROW_RATE = 0.2;
+	
+	// The percent of the map that quick grow will fill
+	public static final double QUICK_GROW_LIMIT = 0.03;
+	
+// The percent of the map that quick grow will fill
+   public static final double QUICK_GROW_RATE = 1;
 	
 	//The likelyhood that something will burn on a tick per region
 	public static final double BURN_RATE = 0.0001;
@@ -37,6 +43,9 @@ public class Environment {
 	//Defines the change in water level required to alter hex color
 	public static final int WATER_BUFFER = 0;
 	
+	//Defines the water level required to be body of water candidate
+   public static final int WATER_BODY_MIN = 10;
+	
 	//Defines the average amount of water for each hex
 	public static final int AVE_WATER = 1600;
 	
@@ -55,7 +64,10 @@ public class Environment {
 	public static final double AIR_DENSITY = 20;
 	
 	// Determines the amount of moistureInAir required to constitute a 'cloud'
-	public static final int CLOUD = 48;
+	public static final int CLOUD = 24;
+
+   // Plant resistance to evaporation
+   public static final int EVAPORATION_RESISTANCE = 8;
 	
 	//Defines the rate at which unneeded evolution occurs
 	public static final float EVOLUTION_RATE = 1F;//0.9F;
@@ -104,5 +116,8 @@ public class Environment {
 	
 	// defines the number of ticks between force grows
    public static final int FORCE_GROW_INTERVAL = 100;
+   public final static boolean LOWEST = false;
+   public final static boolean HIGHEST = true;
+   public static final float BODY_EVAPORATION = 0.1F;
    
 }

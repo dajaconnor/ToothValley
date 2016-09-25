@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import enums.Direction;
 import enums.TectonicEdgeDirection;
+import models.BodyOfWater;
 import models.Environment;
 import models.Hex;
 import models.HexMap;
@@ -30,80 +31,8 @@ public class EnvironmentService {
    @Autowired
    private HexMapService hexMapService;
 
-   public void waterCycle(boolean findLeak) {
-
-      HexMap map = HexMap.getInstance();
-      int totalWater = 0;
-      boolean leak = false;
-
-      List<Pair> allHexes = new ArrayList<Pair>(map.getHexes().keySet());
-
-      // Attempt to alter wind direction
-      TheRandom rand = TheRandom.getInstance();
-      switch (rand.get().nextInt(Environment.WIND_CHANGE)) {
-
-      case 0:
-         map.setWindDirection(-1);
-         break;
-
-      case 1: // Just toggles wind
-         map.setWindDirection(0);
-         break;
-
-      case 2:
-         map.setWindDirection(1);
-         break;
-
-      default:
-
-      }
-
-      if (findLeak) {
-
-         totalWater = hexMapService.allWater()[0];
-      }
-
-      blow(findLeak);
-
-      if (findLeak && totalWater != hexMapService.allWater()[0] && !leak) {
-
-         System.out.println("blow leak");
-         leak = true;
-      }
-
-      /*
-       * hexService.rainAll();
-       * 
-       * if (findLeak && totalWater != hexMapService.allWater()[0] && !leak){
-       * 
-       * System.out.println("rain leak"); leak = true; }
-       */
-
-      map.setUpdatingMap(true);
-
-      for (Pair hexID : allHexes) {
-
-         if (hexID != null) {
-
-            Hex hex = map.getHex(hexID);
-
-            hexService.evaporate(hex, findLeak);
-            hexService.flood(hex, findLeak);
-            hexService.topple(hexID, 0);
-
-            map.updateHexDisplay(hex);
-
-         }
-      }
-
-      map.setUpdatingMap(false);
-
-      if (findLeak && totalWater != hexMapService.allWater()[0] && !leak) {
-
-         System.out.println("evaporate or flood leak");
-         leak = true;
-      }
-   }
+   @Autowired
+   private WaterService waterService;
 
    /**
     * Grows the whole map
@@ -111,10 +40,13 @@ public class EnvironmentService {
    public void grow(int ticks) {
 
       HexMap map = HexMap.getInstance();
+      boolean quickGrow = quickGrowMode();
+      int hexesToGrow = quickGrow ? (int) (map.getGreenHexes().size() * Environment.QUICK_GROW_RATE)
+            : (int) (map.getGreenHexes().size() * Environment.GROW_RATE);
 
       if (map.getGreenHexes().size() > 0) {
 
-         for (int i = 0; i < map.getGreenHexes().size() * Environment.GROW_RATE; i++) {
+         for (int i = 0; i < hexesToGrow; i++) {
 
             Pair hexId = map.getGreenHexes().getRandom();
 
@@ -125,14 +57,29 @@ public class EnvironmentService {
          }
       }
       
-      if ((ticks % Environment.FORCE_GROW_INTERVAL == 0 || map.getGreenHexes().size() < map.getHexes().size() / 8)
-            && map.getHexes().size() > 0){
+      if (ticks % Environment.FORCE_GROW_INTERVAL == 0 && map.getHexes().size() > 0){
 
          Hex randomHex = hexMapService.pickRandomHex();
          hexService.forceGrow(randomHex);
       }
+      
+      if (quickGrow){
+         
+         for (int i = 0; i < 10; i++){
+            
+            Hex randomHex = hexMapService.pickRandomHex();
+            hexService.forceGrow(randomHex);
+         }
+      }
    }
    
+   private boolean quickGrowMode(){
+      
+      HexMap map = HexMap.getInstance();
+      
+      return map.getGreenHexes().size() < map.getHexes().size() * Environment.QUICK_GROW_LIMIT
+            && map.getHexes().size() > 0;
+   }
    
 
    /**
@@ -189,6 +136,7 @@ public class EnvironmentService {
 
       for (Pair hexID : allHexes) {
 
+         BodyOfWater body = waterService.inBody(hexID);
          count++;
 
          if (count == randomHex) {
@@ -196,14 +144,21 @@ public class EnvironmentService {
             int elev = map.getHex(hexID).getElevation();
             elev += lowestElevation * (numberOfHexes - 1);
 
-            map.getHex(hexID).setElevation(elev);
+            if (map.getHex(hexID).setElevation(elev, body != null)){
+               
+               body.addToHexesToCheckForElevation(hexID);
+            }
 
             hexService.topple(hexID, 0);
          }
 
          else {
 
-            map.getHex(hexID).setElevation(map.getHex(hexID).getElevation() - lowestElevation);
+            if (map.getHex(hexID).setElevation(map.getHex(hexID).getElevation() - lowestElevation, 
+                  body != null)){
+               
+               body.addToHexesToCheckForElevation(hexID);
+            }
          }
       }
    }
@@ -224,154 +179,23 @@ public class EnvironmentService {
 
                if (plate.getActiveEdges().get(keyPair) == TectonicEdgeDirection.UP) {
 
-                  map.getHex(hexService.getAreaPair(keyPair))
-                  .setElevation(map.getHex(keyPair).getElevation() + Environment.TECTONIC_AMPLITUDE);
+                  BodyOfWater body = waterService.inBody(keyPair);
+                  
+                  boolean needsChecking = map.getHex(hexService.getAreaPair(keyPair))
+                  .setElevation(map.getHex(keyPair).getElevation() + Environment.TECTONIC_AMPLITUDE, body != null);
+                  
+                  if (needsChecking) body.addToHexesToCheckForElevation(keyPair);
                }
 
                if (plate.getActiveEdges().get(keyPair) == TectonicEdgeDirection.DOWN) {
 
                   map.getHex(hexService.getAreaPair(keyPair))
-                  .setElevation(map.getHex(keyPair).getElevation() - Environment.TECTONIC_AMPLITUDE);
+                  .setElevation(map.getHex(keyPair).getElevation() - Environment.TECTONIC_AMPLITUDE, false);
                }
             }
          }
       }
    }
 
-   /**
-    * If there is any moisture in air of current hex, it all moves to the
-    * adjacent hex with the least moisture
-    * 
-    * @param hex
-    * @return the hex blown to, or null if it failed to blow
-    */
-   public void blow(boolean findLeak) {
 
-      HexMap map = HexMap.getInstance();
-
-      for (Pair cloud : map.getCloudOrder()) {
-
-         if (map.getClouds().containsKey(cloud)) {
-
-            if (rainSingle(map.getHex(cloud), map.getClouds().get(cloud))) {
-
-               map.getClouds().put(cloud, map.getClouds().get(cloud) + 1);
-            } else {
-
-               map.getClouds().remove(cloud);
-            }
-         }
-
-         if (map.getClouds().containsKey(cloud)) {
-
-            for (Direction direction : Direction.VALUES) {
-
-               Pair pair = hexService.getHexIdFromDirection(cloud, direction);
-               map.removeCloud(pair);
-               int cloudElevation = map.getHex(cloud).getElevation();
-
-               if (map.getClouds().containsKey(cloud) && blowSingleHex(pair, cloud, cloudElevation, findLeak)) {
-
-                  blowCorner(direction, pair, cloudElevation, findLeak);
-               }
-            }
-         }
-      }
-
-      map.reorderClouds();
-   }
-
-   private void blowCorner(Direction direction, Pair currentPair, int cloudElevation, boolean findLeak) {
-
-      List<Pair> layer = new ArrayList<Pair>();
-      HexMap map = HexMap.getInstance();
-      layer.add(currentPair);
-
-      while (layer.size() > 0) {
-
-         List<Pair> nextLayer = new ArrayList<Pair>();
-
-         for (int n = 0; n < layer.size(); n++) {
-
-            if (n == 0) {
-
-               Pair pair = hexService.getHexIdFromDirection(layer.get(n), direction);
-               map.removeCloud(pair);
-
-               if (blowSingleHex(pair, layer.get(n), cloudElevation, findLeak)) {
-
-                  nextLayer.add(pair);
-               }
-            }
-
-            Pair pair = hexService.getHexIdFromDirection(layer.get(n), direction.turnRight());
-            map.removeCloud(pair);
-
-            if (blowSingleHex(pair, layer.get(n), cloudElevation, findLeak)) {
-
-               nextLayer.add(pair);
-            }
-         }
-
-         layer = nextLayer;
-      }
-   }
-
-   private boolean blowSingleHex(Pair from, Pair to, int cloudElevation, boolean findLeak) {
-
-      HexMap map = HexMap.getInstance();
-
-      int total = 0;
-      Hex fromHex = map.getHex(from);
-      Hex toHex = map.getHex(to);
-
-      int strangeBehaviorCount = 0;
-
-      while (fromHex == null || toHex == null) {
-
-         try {
-            Thread.sleep(50);
-         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-         }
-         fromHex = map.getHex(from);
-         toHex = map.getHex(to);
-         strangeBehaviorCount++;
-      }
-
-      if (strangeBehaviorCount > 0) {
-         System.out.println("Had to retry getting hex " + strangeBehaviorCount + "times");
-      }
-
-      if (findLeak) {
-         total = fromHex.getMoistureInAir() + toHex.getMoistureInAir();
-      }
-
-      int moisturetoMove = Math.abs(cloudElevation - fromHex.getElevation()) + fromHex.getMoistureInAir()
-      + Environment.WIND_POWER - toHex.getMoistureInAir();
-
-      if (moisturetoMove < 0) { // negative wind, to becomes from, etc
-
-         fromHex.alterMoistureInAir(toHex.alterMoistureInAir(moisturetoMove));
-         return false;
-      }
-
-      boolean returnBool = (toHex.alterMoistureInAir(fromHex.alterMoistureInAir(-moisturetoMove)) == moisturetoMove);
-
-      if (findLeak && fromHex.getMoistureInAir() + toHex.getMoistureInAir() != total) {
-
-         System.out.println("blowSingleHex leak");
-      }
-
-      return returnBool;
-   }
-
-   private boolean rainSingle(Hex hex, int amount) {
-
-      int changed = hex.alterMoistureInAir(-Math.abs(amount));
-      hex.alterMoisture(changed);
-
-      return changed == amount;
-   }
 }

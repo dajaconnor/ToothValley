@@ -137,7 +137,7 @@ public class Hex {
 		this.moistureInAir = air;
 		this.vegetation = plants;
 
-		int standingWater = getStandingWater();
+		int standingWater = getStandingWater(0);
 
 		if (standingWater > 0) {
 
@@ -157,20 +157,24 @@ public class Hex {
 		this.hexID = hexID;
 	}
 
-	public int getMoisture() {
-		return this.moisture;
+	public int getMoisture(int standingBodyWater) {
+		return this.moisture + standingBodyWater;
 	}
 
-	public int alterMoisture(int change) {
+	public int alterMoisture(int change, boolean isInBody) {
 
+	   if (isInBody){
+	      return 0;
+	   }
+	   
 		int changed = 0;
 
 		// change is negative
 		if (change < 0) {
 
-			if (moisture + change < 0) {
+			if (getMoisture(0) + change < 0) {
 
-				changed = moisture;
+				changed = getMoisture(0);
 				moisture = 0;
 			} else {
 
@@ -222,13 +226,23 @@ public class Hex {
 		return this.elevation;
 	}
 
-	public void setElevation(int elevation) {
+	// returns true if it needs to be evaluated for a body
+	public boolean setElevation(int elevation, boolean isInBody) {
+	   
+	   boolean evaluateThis = false;
 
+	   if (isInBody && elevation > this.elevation){
+	      
+	      evaluateThis= true;
+	   }
+	   
 		this.elevation = elevation;
+		
+		return evaluateThis;
 	}
 
 	public double getHumidity() {
-		return ((double) this.moistureInAir * ((double) this.elevation / Environment.MAX_ELEVATION+1))
+		return ((double) this.moistureInAir * ((double) this.elevation / Environment.MAX_ELEVATION))
 				/ Environment.AIR_DENSITY;
 	}
 
@@ -237,12 +251,13 @@ public class Hex {
 	 * 
 	 * @return
 	 */
-	public double getSaturation() {
-		return ((double) this.moisture) / (double) (Environment.MAX_DENSITY + 1 - this.density);
+	public double getSaturation(int standingBodyWater) {
+		return ((double) getMoisture(standingBodyWater)) / (double) (Environment.MAX_DENSITY + 1 - this.density);
 	}
 
-	public int getStandingWater() {
-		int standingWater = moisture - (Environment.MAX_DENSITY + 1 - this.density);
+	public int getStandingWater(int standingBodyWater) {
+	   
+		int standingWater = getMoisture(standingBodyWater) - (Environment.MAX_DENSITY + 1 - this.density);
 
 		if (standingWater < 0) {
 			standingWater = 0;
@@ -251,13 +266,13 @@ public class Hex {
 		return standingWater;
 	}
 
-	public int getCombinedElevation() {
-		return getStandingWater() / Environment.WATER_PER_ELEVATION + elevation;
+	public int getCombinedElevation(int standingBodyWater) {
+		return getStandingWater(standingBodyWater) / Environment.WATER_PER_ELEVATION + elevation;
 	}
 	
-	public int getPrintElevation() {
+	public int getPrintElevation(int standingBodyWater) {
 		
-		return getStandingWater() + elevation;
+		return getStandingWater(standingBodyWater) + elevation;
 	}
 
 	public int getSoilStability() {
@@ -277,13 +292,13 @@ public class Hex {
 	 * 
 	 * @param plant
 	 */
-	public boolean addPlant(Plant plant) {
+	public boolean addPlant(Plant plant, int standingBodyWater) {
 
 		boolean success = false;
 		TheRandom rand = TheRandom.getInstance();
 		
 		// If the new plant can tolerate the saturation range
-		if (plant != null && getSoil() >= plant.getRootstrength() - 1 && plant.getMoistureRequired() - 1 <= this.moisture){
+		if (plant != null && getSoil() >= plant.getRootstrength() - 1 && plant.getMoistureRequired() - 1 <= getMoisture(standingBodyWater)){
 			
 			Plant newPlant = null;
 			
@@ -322,13 +337,13 @@ public class Hex {
 				}
 				
 				// Evolve for drier environment
-				if (plant.getMoistureRequired() - 1 == this.moisture && this.moisture > 1) {
+				if (plant.getMoistureRequired() - 1 == getMoisture(standingBodyWater) && getMoisture(standingBodyWater) > 1) {
 					
-					newPlant.setMoistureRequired(this.moisture - 1);
+					newPlant.setMoistureRequired(getMoisture(standingBodyWater) - 1);
 				}
 				
 				// Evolve for better hierarchy
-				else if(plant.getMoistureRequired() + Environment.EVOLUTION_DESIRE <= this.moisture && rand.get().nextFloat() < Environment.EVOLUTION_RATE){
+				else if(plant.getMoistureRequired() + Environment.EVOLUTION_DESIRE <= getMoisture(standingBodyWater) && rand.get().nextFloat() < Environment.EVOLUTION_RATE){
 					
 					newPlant.setMoistureRequired(plant.getMoistureRequired() + 1);
 				}
@@ -349,17 +364,17 @@ public class Hex {
 			
 			if (plant instanceof Jungle){
 				
-				addPlant(new Forest());
+				addPlant(new Forest(), standingBodyWater);
 			}
 		
 			else if (plant instanceof Forest){
 				
-				addPlant(new Thicket());
+				addPlant(new Thicket(), standingBodyWater);
 			}
 			
 			else if (plant instanceof Thicket){
 				
-				addPlant(new Grass());
+				addPlant(new Grass(), standingBodyWater);
 			}
 		}
 
@@ -371,7 +386,7 @@ public class Hex {
 	 * @param maxPlantStrength
 	 * @return boolean (success)
 	 */
-	public boolean addPlant(int maxPlantStrength) {
+	public boolean addPlant(int maxPlantStrength, int standingBodyWater) {
 
 		boolean success = false;
 		Plant lowestPlant = getLowestVegetation();
@@ -387,7 +402,7 @@ public class Hex {
 		}
 
 		// It's conceivable for something to grow
-		if (lowStrength < moisture || maxPlantStrength > lowStrength){
+		if (lowStrength < getMoisture(standingBodyWater) || maxPlantStrength > lowStrength){
 			
 			Plant plant = new Jungle();
 			
@@ -399,8 +414,8 @@ public class Hex {
 				}
 				
 				if (maxPlantStrength >= plant.getMoistureRequired()
-						&& moisture >= plant.getMoistureRequired()
-						&& getSaturation() <= plant.getMaxSaturation()) {
+						&& getMoisture(standingBodyWater) >= plant.getMoistureRequired()
+						&& getSaturation(standingBodyWater) <= plant.getMaxSaturation()) {
 					
 					// For all plant spots
 					for (int index = 0; index < 3; index++) {
@@ -433,7 +448,7 @@ public class Hex {
 	 * @param index
 	 * @return true if successful
 	 */
-	public boolean addPlantAtIndex(Plant plant, int index) {
+	private boolean addPlantAtIndex(Plant plant, int index) {
 
 		boolean success = false;
 
@@ -557,9 +572,9 @@ public class Hex {
 	 * @param hex
 	 * @return
 	 */
-	public int hexFireResistence() {
+	public int hexFireResistence(int standingBodyWater) {
 
-		return (int) (this.getTotalWater() / Environment.FLAMABILITY);
+		return (int) (this.getTotalWater(standingBodyWater) / Environment.FLAMABILITY);
 	}
 
 	/**
@@ -584,9 +599,9 @@ public class Hex {
 	/**
 	 * Gets the total water on the hex
 	 */
-	public int getTotalWater() {
+	public int getTotalWater(int standingBodyWater) {
 
-		return getPlantMoisture() + getMoisture() + getMoistureInAir();
+		return getPlantMoisture() + getMoisture(standingBodyWater) + getMoistureInAir();
 	}
 
 	/**
@@ -595,7 +610,7 @@ public class Hex {
 	 * @param hex
 	 * @return
 	 */
-	public int getFireStrength() {
+	public int getFireStrength(int standingBodyWater) {
 
 		Plant[] plants = this.getVegetation();
 		int fireStrength = 0;
@@ -606,13 +621,13 @@ public class Hex {
 			}
 		}
 
-		return fireStrength + this.getMoisture();
+		return fireStrength + getMoisture(standingBodyWater);
 	}
 
 	/**
 	 * Returns the color this hex should be
 	 */
-	public Color getColor() {
+	public Color getColor(int standingBodyWater) {
 
 		switch (OpenGLWindow.getInstance().getDisplayType()) {
 
@@ -631,15 +646,15 @@ public class Hex {
 
 		case MOISTURE:
 			
-			if (moisture * 4 > 255) {
+			if (getMoisture(standingBodyWater) * 4 > 255) {
 
 				return new Color(0, 0, 255);
 			}
-			if (moisture < 0) {
+			if (getMoisture(standingBodyWater) < 0) {
 
 				return new Color(0, 0, 0);
 			} else {
-				return new Color(0, 0, moisture * 4);
+				return new Color(0, 0, getMoisture(standingBodyWater) * 4);
 			}
 
 		case HUMIDITY:
@@ -711,7 +726,7 @@ public class Hex {
 			Plant plant = getHighestVegetation();
 
 			// Check if the color should be water
-			if (isWater(color == WATER || color == MARSH)) {
+			if (isWater(color == WATER || color == MARSH, standingBodyWater)) {
 
 				if (plant != null && plant instanceof Jungle) {
 
@@ -813,9 +828,9 @@ public class Hex {
 	 *            current color is water (or marsh)
 	 * @return true is color should be water (or marsh)
 	 */
-	public boolean isWater(boolean water) {
+	public boolean isWater(boolean water, int standingBodyWater) {
 
-		int standingWater = getStandingWater();
+		int standingWater = getStandingWater(standingBodyWater);
 
 		if (water) {
 
