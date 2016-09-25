@@ -4,8 +4,8 @@ public class Environment {
 	
 	//Maximum values
 	public static final int MAX_ELEVATION = 255;
-	public static final int MAX_DENSITY = 63;
-	public static final int MAX_SLOPE = 5;
+	public static final int MAX_DENSITY = 127;
+	public static final int MAX_SLOPE = 30;
 	
 	// The smaller this is, the steeper stuff gets
 	public static final int SLOPE_CONSTANT = 1;
@@ -38,7 +38,7 @@ public class Environment {
 	public static final int WATER_BUFFER = 0;
 	
 	//Defines the average amount of water for each hex
-	public static final int AVE_WATER = 1300;
+	public static final int AVE_WATER = 1600;
 	
 	public static final int AVE_DENSITY = 40;
 	
@@ -49,7 +49,7 @@ public class Environment {
 	public static final int WIND_POWER = 50;
 	
 	//Defines the humidity at which rain starts by itself
-	public static final int RAIN_INDEX = 32;
+	public static final int RAIN_INDEX = 16;
 	
 	//Defines the point of condensation (when moistureInAir + elevation/4 == AIR_DENSITY, it rains
 	public static final double AIR_DENSITY = 20;
@@ -68,10 +68,10 @@ public class Environment {
 	
 	// Number of tectonic movements per tick
 	public static final int TECTONIC_ACTIVITY = 1;
-	public static final int TECTONIC_AMPLITUDE = 2;
+	public static final int TECTONIC_AMPLITUDE = 1;
 	
 	// Defines the number of times a hex can topple in a single run
-   public static final int TOPPLE_DEPTH = 1;
+   public static final int TOPPLE_DEPTH = 2;
 	
 	// Defines the likelihood of a straight edge on a tectonic plate
 	public static final int PERCENT_STRAIGHT_PLATE_EDGE = 95;
@@ -94,12 +94,15 @@ public class Environment {
 	public static final int COLOR_CHANGE_CONSTANT = 1/2; // 0 is no color change with evolution
 	public static final int TECTONIC_FIRST_STRETCH = 5;
 	public static final int TECTONIC_MIN_STRAIGHT = 3;
-	public static final int WATER_PER_ELEVATION = 4;
+	public static final int WATER_PER_ELEVATION = 8;
 	public static final int MAP_HEIGHT = 1100; // should correlate with screen size in pixels
 	public static final int MAP_WIDTH = 1900;
 	public static final double ZOOM = 8;
 
 	public static final int FAST_PAN = 6;
 	public static final int SLOW_PAN = 1;
+	
+	// defines the number of ticks between force grows
+   public static final int FORCE_GROW_INTERVAL = 100;
    
 }

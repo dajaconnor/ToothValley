@@ -55,12 +55,10 @@ public class Hex {
 	}
 	
 	public int getSoil(){
-		return 64 - density;
+		return Environment.MAX_DENSITY + 1 - density;
 	}
 
 	public int setDensity(int density) {
-
-		int leftover = 0;
 
 		if (density < 0) {
 			this.density = 0;
@@ -68,7 +66,12 @@ public class Hex {
 			return density;
 		}
 
-		else {
+		int leftover = 0;
+		
+		if (density > Environment.MAX_DENSITY){
+		   this.density = Environment.MAX_DENSITY;
+		   leftover = density - Environment.MAX_DENSITY;
+		}else{
 			this.density = density;
 		}
 

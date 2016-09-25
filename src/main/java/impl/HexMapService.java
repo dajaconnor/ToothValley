@@ -26,6 +26,9 @@ public class HexMapService {
 	@Autowired
 	TectonicPlateService plateService;
 	
+	@Autowired
+   HexService hexService;
+	
 	public void createMap() {
 
 		HexMap map = HexMap.getInstance();
@@ -82,7 +85,8 @@ public class HexMapService {
 				TheRandom rand = TheRandom.getInstance();
 				int plant = rand.get().nextInt(7) - 2;
 				
-				Pair pair = OpenGLWindow.getInstance().getBasePrintCoords(x, Y).toPair();
+				Pair pairCoordinates = hexService.wrap(x, y + x/5);// new Pair(x, Y).getYbyXdifferential());
+				Pair pair = OpenGLWindow.getInstance().getBasePrintCoords(pairCoordinates.getX(), pairCoordinates.getY()).toPair();
 				
 //				if (pair.getX() >= elevations.length){
 //					 pair.setX(pair.getX() - elevations.length);

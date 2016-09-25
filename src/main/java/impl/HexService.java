@@ -567,7 +567,7 @@ public class HexService {
       int stability = from.getSoilStability();
       boolean returnValue = false;
 
-      if ((slope*slope*Environment.SLOPE_CONSTANT > stability || Math.abs(slope) > stability)
+      if (Math.abs(slope) > stability
             && Math.abs(slope) > Environment.MAX_SLOPE){
 
          if (slope > 0){
@@ -577,7 +577,7 @@ public class HexService {
 
          else{
 
-            handleAvalanche(to, from, slope);
+            handleAvalanche(to, from, Math.abs(slope));
          }
 
          returnValue = true;
@@ -591,8 +591,8 @@ public class HexService {
       from.setElevation(from.getElevation() - slope/4);
       to.setElevation(to.getElevation() + slope/4);
       
-      int left = from.setDensity(from.getDensity() - slope/4);
-      to.setDensity(to.getDensity() + slope/4 + left);
+      int left = to.setDensity(to.getDensity() - 1);
+      from.setDensity(from.getDensity() + 1 + left);
 
       removeAllVegetation(from);
       removeAllVegetation(to);

@@ -85,7 +85,7 @@ public class Main {
 			}
 			
 			lastMark = new Date().getTime();
-			environmentService.grow();
+			environmentService.grow(ticks);
 			growTime += new Date().getTime() - lastMark;
 			
 			if (findLeak && cycleTotal != hexMapService.allWater()[0] && !leak){

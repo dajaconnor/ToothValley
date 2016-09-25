@@ -111,10 +111,12 @@ public class PerlinNoise extends JPanel {
 	 */
 	public int[][] twoDNoise(float frequency, int amp, Pair size){
 		
-		int numWaves = (int) (1.0 / frequency);
-		int waveLength = size.getX() / numWaves;
+		int numXWaves = (int) (1.0 / frequency);
+		int waveXLength = size.getX() / numXWaves;
+		int numYWaves = size.getY()/waveXLength;
+		int waveYLength = size.getY() / numYWaves;
 		int[][] ZArray = new int[size.getX()][size.getY()];
-		int[][] wavePoints = new int[numWaves][size.getY()/waveLength];
+		int[][] wavePoints = new int[numXWaves][numYWaves];
 		
 		//Make the grid wavePoints
 		for (int i = 0; i < wavePoints.length; i++){
@@ -129,7 +131,7 @@ public class PerlinNoise extends JPanel {
 		//Create vertical splines
 		for (int i = 0; i < wavePoints.length; i++){
 			
-			splines[i] = makeSpline(wavePoints[i], waveLength, amp, size.getY());
+			splines[i] = makeSpline(wavePoints[i], waveYLength, amp, size.getY());
 			
 			for (int n = 0; n < splines[i].length; n++){
 				
@@ -151,19 +153,19 @@ public class PerlinNoise extends JPanel {
 			//For every value of x
 			for (int xIndex = 0; xIndex < size.getX(); xIndex++){
 				
-				int wave = xIndex/waveLength;
+				int wave = xIndex/waveXLength;
 				
-				double xVar = (((float) xIndex - (wave * (float) waveLength))/waveLength);
+				double xVar = (((float) xIndex - (wave * (float) waveXLength))/waveXLength);
 				
 				//If remaining space is less than two full wavelengths
-				if (wave >= numWaves - 1){
+				if (wave >= numXWaves - 1){
 					
 					
-					xVar = (double) (xIndex - wave * waveLength) / (double) ((size.getX() % waveLength) + waveLength);
+					xVar = (double) (xIndex - wave * waveXLength) / (double) ((size.getX() % waveXLength) + waveXLength);
 					
 					
-					if (wave > numWaves - 1){
-						wave = numWaves;
+					if (wave > numXWaves - 1){
+						wave = numXWaves;
 					}
 				}
 				
@@ -171,18 +173,6 @@ public class PerlinNoise extends JPanel {
 				int[] interPoints = getInterPoints(splines, wave, yIndex);
 				
 				ZArray[xIndex][yIndex] = (int) interpolate(interPoints[0], interPoints[1], interPoints[2], interPoints[3], xVar);
-				
-				//Print out the results
-				int shade = ZArray[xIndex][yIndex];
-				
-				if (shade < 0){
-					shade = 0;
-				}
-				if (shade > 255){
-					shade = 255;
-				}
-				
-				//window.drawPixel(xIndex, yIndex, shade);
 			}
 		}
 		
