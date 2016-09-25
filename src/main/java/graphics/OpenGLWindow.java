@@ -17,18 +17,10 @@ import static org.lwjgl.opengl.GL11.glRotatef;
 import static org.lwjgl.opengl.GL11.glTranslatef;
 import static org.lwjgl.opengl.GL11.glVertex3d;
 import static org.lwjgl.util.glu.GLU.gluPerspective;
-import impl.HexService;
 
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
-
-import models.DPair;
-import models.Environment;
-import models.Hex;
-import models.HexMap;
-import models.Pair;
 
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
@@ -37,6 +29,12 @@ import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 
 import enums.DisplayType;
+import impl.HexService;
+import models.DPair;
+import models.Environment;
+import models.Hex;
+import models.HexMap;
+import models.Pair;
 
 /**
  * Basic game
@@ -50,7 +48,6 @@ public class OpenGLWindow {
 
 	public static int Y = Environment.MAP_HEIGHT;
 	public static int X = Environment.MAP_WIDTH;
-	public static Random rand = new Random();
 
 	public static int xBuffer = 5;
 	public static int yBuffer = 5;
@@ -63,11 +60,11 @@ public class OpenGLWindow {
 	public static Color forest = new Color(21, 181, 51);
 	public static Color jungle = new Color(6, 102, 23);
 
-	public double zoom = Environment.ZOOM;
-	public double height = ((double) zoom * Math.pow(3D, 0.5D));
-	public double sideWidth = zoom / 2;
-	public double bodyWidth = zoom;
-	public double radius = zoom;
+	public static double zoom = Environment.ZOOM;
+	public static double height = ((double) zoom * Math.pow(3D, 0.5D));
+	public static double sideWidth = zoom / 2;
+	public static double bodyWidth = zoom;
+	public static double radius = zoom;
 
 	public double panx = 0;
 	public double pany = 0;
@@ -347,7 +344,13 @@ public class OpenGLWindow {
 				
 				if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
 					
-					glTranslatef(0, 5, 0);
+				   if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
+				      
+				      glTranslatef(0, 5*Environment.FAST_PAN, 0);
+				   }else{
+				   
+				      glTranslatef(0, 5*Environment.SLOW_PAN, 0);
+				   }
 					
 				}else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
 					
@@ -362,7 +365,13 @@ public class OpenGLWindow {
 				
 				if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
 					
-					glTranslatef(0, -5, 0);
+				   if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
+                  
+                  glTranslatef(0, -5*Environment.FAST_PAN, 0);
+               }else{
+               
+                  glTranslatef(0, -5*Environment.SLOW_PAN, 0);
+               }
 					
 				}else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
 					
@@ -377,7 +386,13 @@ public class OpenGLWindow {
 				
 				if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
 					
-					glTranslatef(-5, 0, 0);
+				   if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
+                  
+                  glTranslatef(-5*Environment.FAST_PAN, 0, 0);
+               }else{
+               
+                  glTranslatef(-5*Environment.SLOW_PAN, 0, 0);
+               }
 					
 				}else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
 					
@@ -392,7 +407,13 @@ public class OpenGLWindow {
 				
 				if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
 					
-					glTranslatef(5, 0, 0);
+					if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
+                  
+                  glTranslatef(5*Environment.FAST_PAN, 0, 0);
+               }else{
+               
+                  glTranslatef(5*Environment.SLOW_PAN, 0, 0);
+               }
 					
 				}else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
 					

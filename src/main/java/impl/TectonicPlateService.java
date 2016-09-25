@@ -3,19 +3,18 @@ package impl;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
-
-import models.Environment;
-import models.HexMap;
-import models.Pair;
-import models.PlateBucket;
-import models.TectonicPlate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import enums.Direction;
+import models.Environment;
+import models.HexMap;
+import models.Pair;
+import models.PlateBucket;
+import models.TectonicPlate;
+import models.TheRandom;
 
 @Component
 public class TectonicPlateService {
@@ -23,7 +22,7 @@ public class TectonicPlateService {
 	@Autowired
 	HexService hexService;
 	
-	public List<TectonicPlate> generateTectonicPlates(int[] mapSize) {
+	public List<TectonicPlate> generateTectonicPlates(Pair mapSize) {
 
 		PlateBucket bucket = new PlateBucket();
 
@@ -31,13 +30,13 @@ public class TectonicPlateService {
 
 			generateStartPoint(bucket);
 			bucket = drawEdge(bucket);
-		}while(bucket.getAllEdges().size() < mapSize[0] * mapSize[1] / Environment.PLATE_EDGE_FREQUENCY
+		}while(bucket.getAllEdges().size() < mapSize.getX() * mapSize.getY() / Environment.PLATE_EDGE_FREQUENCY
 				&& bucket.getAllElbows().size() > 0);
 
-		return drawPlates(bucket, mapSize);
+		return drawPlates(bucket);
 	}
 	
-	private List<TectonicPlate> drawPlates(PlateBucket bucket, int[] mapSize) {
+	private List<TectonicPlate> drawPlates(PlateBucket bucket) {
 		
 		List<TectonicPlate> plates = new ArrayList<TectonicPlate>();
 		Set<Pair> claimedEdgeSides = new HashSet<Pair>();
@@ -150,7 +149,8 @@ public class TectonicPlateService {
 		
 		if (headToFinish == null){
 		
-			int randInt = new Random().nextInt(100);
+		   
+			int randInt = TheRandom.getInstance().get().nextInt(100);
 	
 			if (randInt >= Environment.PERCENT_STRAIGHT_PLATE_EDGE){
 				
@@ -222,7 +222,7 @@ public class TectonicPlateService {
 
 		if (bucket.getTectonicPlates().size() != 1){
 			if (bucket.getAllElbows() != null && bucket.getAllElbows().size() > 0){
-				bucket.setStartPoint(bucket.getAllElbows().get(new Random().nextInt(bucket.getAllElbows().size())));
+				bucket.setStartPoint(bucket.getAllElbows().get(TheRandom.getInstance().get().nextInt(bucket.getAllElbows().size())));
 				bucket.setDirection(getElbowStartDirection(bucket, bucket.getStartPoint()));
 			} else{
 				bucket.setStartPoint(hexService.getRandomPair());

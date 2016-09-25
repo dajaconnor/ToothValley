@@ -6,6 +6,8 @@ import java.util.List;
 import javax.swing.JPanel;
 
 import graphics.OpenGLWindow;
+import models.Pair;
+import models.TheRandom;
 
 @SuppressWarnings("serial")
 public class PerlinNoise extends JPanel {
@@ -107,12 +109,12 @@ public class PerlinNoise extends JPanel {
 	 * @param amp
 	 * @return int[][]
 	 */
-	public int[][] twoDNoise(float frequency, int amp, int[] size){
+	public int[][] twoDNoise(float frequency, int amp, Pair size){
 		
 		int numWaves = (int) (1.0 / frequency);
-		int waveLength = size[0] / numWaves;
-		int[][] ZArray = new int[size[0]][size[1]];
-		int[][] wavePoints = new int[numWaves][size[1]/waveLength];
+		int waveLength = size.getX() / numWaves;
+		int[][] ZArray = new int[size.getX()][size.getY()];
+		int[][] wavePoints = new int[numWaves][size.getY()/waveLength];
 		
 		//Make the grid wavePoints
 		for (int i = 0; i < wavePoints.length; i++){
@@ -120,14 +122,14 @@ public class PerlinNoise extends JPanel {
 		}
 		
 		//splines are the vertical ridges from which to interpolate all 2D space
-		int[][] splines = new int[wavePoints.length][size[1]];
+		int[][] splines = new int[wavePoints.length][size.getY()];
 		
 		//Window window = Window.getInstance();
 		
 		//Create vertical splines
 		for (int i = 0; i < wavePoints.length; i++){
 			
-			splines[i] = makeSpline(wavePoints[i], waveLength, amp, size[1]);
+			splines[i] = makeSpline(wavePoints[i], waveLength, amp, size.getY());
 			
 			for (int n = 0; n < splines[i].length; n++){
 				
@@ -144,10 +146,10 @@ public class PerlinNoise extends JPanel {
 		
 		//Create full landscape / Horizontal splines
 		//For every value of y
-		for (int yIndex = 0; yIndex < size[1]; yIndex++){
+		for (int yIndex = 0; yIndex < size.getY(); yIndex++){
 			
 			//For every value of x
-			for (int xIndex = 0; xIndex < size[0]; xIndex++){
+			for (int xIndex = 0; xIndex < size.getX(); xIndex++){
 				
 				int wave = xIndex/waveLength;
 				
@@ -157,7 +159,7 @@ public class PerlinNoise extends JPanel {
 				if (wave >= numWaves - 1){
 					
 					
-					xVar = (double) (xIndex - wave * waveLength) / (double) ((size[0] % waveLength) + waveLength);
+					xVar = (double) (xIndex - wave * waveLength) / (double) ((size.getX() % waveLength) + waveLength);
 					
 					
 					if (wave > numWaves - 1){
@@ -295,7 +297,7 @@ public class PerlinNoise extends JPanel {
 		int[] noise = new int[numWaves];
 		
 		for (int i = 0; i < numWaves; i++){
-			noise[i] = (amp - (int) (amp * OpenGLWindow.rand.nextFloat()));
+			noise[i] = (amp - (int) (amp * TheRandom.getInstance().get().nextFloat()));
 			
 		}
 		
@@ -313,7 +315,7 @@ public class PerlinNoise extends JPanel {
 		List<Integer> wavePoints = new ArrayList<Integer>();
 		
 		for (int i = 0; i < numWaves; i++){
-			wavePoints.add(amp - (int) (amp * OpenGLWindow.rand.nextFloat()));
+			wavePoints.add(amp - (int) (amp * TheRandom.getInstance().get().nextFloat()));
 			
 		}
 		

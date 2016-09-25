@@ -1,16 +1,14 @@
 package models;
 
-import impl.HexService;
-
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import enums.Direction;
 import graphics.OpenGLWindow;
+import impl.HexService;
 
 public class Hex {
 
@@ -45,7 +43,7 @@ public class Hex {
 	}
 	
 	public Plant getRandomPlant(){
-	   return vegetation[new Random().nextInt(3)];
+	   return vegetation[TheRandom.getInstance().get().nextInt(3)];
 	}
 
 	public void setVegetation(Plant[] vegetation) {
@@ -60,27 +58,21 @@ public class Hex {
 		return 64 - density;
 	}
 
-	public boolean setDensity(int density) {
+	public int setDensity(int density) {
 
-		boolean success = true;
+		int leftover = 0;
 
 		if (density < 0) {
 			this.density = 0;
 
-			success = false;
-		}
-
-		if (density > 62) {
-			this.density = 62;
-
-			success = false;
+			return density;
 		}
 
 		else {
 			this.density = density;
 		}
 
-		return success;
+		return leftover;
 	}
 
 	public int getMoistureInAir() {
@@ -285,7 +277,7 @@ public class Hex {
 	public boolean addPlant(Plant plant) {
 
 		boolean success = false;
-		Random rand = new Random();
+		TheRandom rand = TheRandom.getInstance();
 		
 		// If the new plant can tolerate the saturation range
 		if (plant != null && getSoil() >= plant.getRootstrength() - 1 && plant.getMoistureRequired() - 1 <= this.moisture){
@@ -321,7 +313,7 @@ public class Hex {
 				}
 				
 				// Evolve for better strength
-				else if(getSoil() >= plant.getRootstrength() + Environment.EVOLUTION_DESIRE && rand.nextFloat() < Environment.EVOLUTION_RATE){
+				else if(getSoil() >= plant.getRootstrength() + Environment.EVOLUTION_DESIRE && rand.get().nextFloat() < Environment.EVOLUTION_RATE){
 					
 					newPlant.setRootstrength(plant.getRootstrength() + 1);
 				}
@@ -333,7 +325,7 @@ public class Hex {
 				}
 				
 				// Evolve for better hierarchy
-				else if(plant.getMoistureRequired() + Environment.EVOLUTION_DESIRE <= this.moisture && rand.nextFloat() < Environment.EVOLUTION_RATE){
+				else if(plant.getMoistureRequired() + Environment.EVOLUTION_DESIRE <= this.moisture && rand.get().nextFloat() < Environment.EVOLUTION_RATE){
 					
 					newPlant.setMoistureRequired(plant.getMoistureRequired() + 1);
 				}

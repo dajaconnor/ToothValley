@@ -3,7 +3,6 @@ package models;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 
 public class SetList<K> {
 	
@@ -63,8 +62,8 @@ public class SetList<K> {
 		
 		if (list.size() > 0){
 			
-			Random rand = new Random();
-			return list.get(rand.nextInt(list.size()));
+		   TheRandom rand = TheRandom.getInstance();
+			return list.get(rand.get().nextInt(list.size()));
 		}
 		
 		else{

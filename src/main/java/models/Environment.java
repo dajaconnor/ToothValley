@@ -38,7 +38,9 @@ public class Environment {
 	public static final int WATER_BUFFER = 0;
 	
 	//Defines the average amount of water for each hex
-	public static final int AVE_WATER = 700;
+	public static final int AVE_WATER = 1000;
+	
+	public static final int AVE_DENSITY = 40;
 	
 	//Defines the speed at which wind changes (lower is faster), must be at least 3
 	public static final int WIND_CHANGE = 250;
@@ -47,16 +49,13 @@ public class Environment {
 	public static final int WIND_POWER = 50;
 	
 	//Defines the humidity at which rain starts by itself
-	public static final int RAIN_INDEX = 64;
+	public static final int RAIN_INDEX = 32;
 	
 	//Defines the point of condensation (when moistureInAir + elevation/4 == AIR_DENSITY, it rains
-	public static final double AIR_DENSITY = 30;
+	public static final double AIR_DENSITY = 20;
 	
 	// Determines the amount of moistureInAir required to constitute a 'cloud'
 	public static final int CLOUD = 48;
-
-	// Defines the number of times a hex can topple in a single run
-	public static final int TOPPLE_DEPTH = 100;
 	
 	//Defines the rate at which unneeded evolution occurs
 	public static final float EVOLUTION_RATE = 1F;//0.9F;
@@ -68,7 +67,11 @@ public class Environment {
 	public static final int PLATE_EDGE_FREQUENCY = 800;
 	
 	// Number of tectonic movements per tick
-	public static final int TECTONIC_ACTIVITY = 100;
+	public static final int TECTONIC_ACTIVITY = 1;
+	public static final int TECTONIC_AMPLITUDE = 5;
+	
+	// Defines the number of times a hex can topple in a single run
+   public static final int TOPPLE_DEPTH = 1;
 	
 	// Defines the likelihood of a straight edge on a tectonic plate
 	public static final int PERCENT_STRAIGHT_PLATE_EDGE = 95;
@@ -94,8 +97,9 @@ public class Environment {
 	public static final int WATER_PER_ELEVATION = 4;
 	public static final int MAP_HEIGHT = 1100; // should correlate with screen size in pixels
 	public static final int MAP_WIDTH = 1900;
-	public static final double ZOOM = 6;
+	public static final double ZOOM = 8;
 
 	public static final int FAST_PAN = 6;
 	public static final int SLOW_PAN = 1;
+   
 }

@@ -1,11 +1,12 @@
 package impl;
 
-import graphics.OpenGLWindow;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import graphics.OpenGLWindow;
 import models.Environment;
 import models.Forest;
 import models.Grass;
@@ -15,10 +16,8 @@ import models.Jungle;
 import models.Pair;
 import models.Plant;
 import models.TectonicPlate;
+import models.TheRandom;
 import models.Thicket;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 
 @Component
@@ -34,7 +33,7 @@ public class HexMapService {
 		OpenGLWindow openGL = OpenGLWindow.getInstance();
 		
 
-		int height = OpenGLWindow.Y / (int) openGL.height;
+		int height = (OpenGLWindow.Y * 3/2) / (int) openGL.height;
 		int width = OpenGLWindow.X / (int) (openGL.sideWidth + openGL.bodyWidth);
 		
 		if (width % 2 == 1){
@@ -61,9 +60,8 @@ public class HexMapService {
 		PerlinNoise perlin = new PerlinNoise();
 		
 		//Set the size of the perlin pixel grid
-		int[] noiseSize = new int[2];
-		noiseSize[0] = OpenGLWindow.X;
-		noiseSize[1] = OpenGLWindow.Y;
+		Pair noiseSize = OpenGLWindow.getInstance().getBasePrintCoords(width, height * 2 - 1).toPair();
+		noiseSize.setX(noiseSize.getX() - (int)OpenGLWindow.height / 2);
 		
 		//Get perlin pixel grids for all hex attributes
 		int[][] elevations = getPerlinPixels(perlin, noiseSize);
@@ -82,25 +80,26 @@ public class HexMapService {
 
 				int Y = y + x / 2;
 				
-				Random rand = new Random();
-				int plant = rand.nextInt(7) - 2;
+				TheRandom rand = TheRandom.getInstance();
+				int plant = rand.get().nextInt(7) - 2;
 				
 				Pair pair = OpenGLWindow.getInstance().getBasePrintCoords(x, Y).toPair();
 				
-				if (pair.getX() >= elevations.length){
-					 pair.setX(pair.getX() - elevations.length);
-				}
-				if (pair.getY() >= elevations[pair.getX()].length){
-					pair.setY(pair.getY() - elevations[pair.getX()].length);
-				}
-				if (pair.getY() < 0){
-					pair.setY(pair.getY() + elevations[pair.getX()].length);
-				}
-				if (pair.getX() < 0){
-					pair.setX(pair.getX() + elevations.length);
-				}
+//				if (pair.getX() >= elevations.length){
+//					 pair.setX(pair.getX() - elevations.length);
+//				}
+//				if (pair.getY() >= elevations[pair.getX()].length){
+//					pair.setY(pair.getY() - elevations[pair.getX()].length);
+//				}
+//				if (pair.getY() < 0){
+//					pair.setY(pair.getY() + elevations[pair.getX()].length);
+//				}
+//				if (pair.getX() < 0){
+//					pair.setX(pair.getX() + elevations.length);
+//				}
 				
-				Hex hex = makeHex(x, Y, elevations[pair.getX()][pair.getY()], densityMap[pair.getX()][pair.getY()]/4, Environment.AVE_WATER / 2, Environment.AVE_WATER / 2, plant);
+				Hex hex = makeHex(x, Y, elevations[pair.getX()][pair.getY()], (densityMap[pair.getX()][pair.getY()]) / 4, 
+				      Environment.AVE_WATER / 2, Environment.AVE_WATER / 2, plant);
 				map.addHex(hex);
 				map.updateHexDisplay(hex);
 			}
@@ -176,7 +175,7 @@ public class HexMapService {
 	 * @param noiseSize
 	 * @return int[][]
 	 */
-	public int[][] getPerlinPixels(PerlinNoise perlin, int[] noiseSize) {
+	public int[][] getPerlinPixels(PerlinNoise perlin, Pair noiseSize) {
 
 		int[][] slopeNoise = perlin.twoDNoise(0.07F, 160, noiseSize);
 		int[][] noise = perlin.twoDNoise(0.12F, 200, noiseSize);
@@ -192,7 +191,7 @@ public class HexMapService {
 	 * @param noiseSize
 	 * @return int[][]
 	 */
-	public int[][] getPerlinPlants(PerlinNoise perlin, int[] noiseSize) {
+	public int[][] getPerlinPlants(PerlinNoise perlin, Pair noiseSize) {
 
 		int[][] slopeNoise = perlin.twoDNoise(0.003F, 3, noiseSize);
 		int[][] noise = perlin.twoDNoise(0.002F, 2, noiseSize);
@@ -208,10 +207,10 @@ public class HexMapService {
 	public Hex pickRandomHex(){
 		
 		HexMap map = HexMap.getInstance();
-		Random rand = new Random();
+		TheRandom rand = TheRandom.getInstance();
 		
 		List<Pair> keys = new ArrayList<Pair>(map.getHexes().keySet());
-		Pair randomPair = keys.get(rand.nextInt(keys.size()));
+		Pair randomPair = keys.get(rand.get().nextInt(keys.size()));
 		
 		return map.getHex(randomPair);
 		
@@ -220,17 +219,17 @@ public class HexMapService {
 	public TectonicPlate pickRandomPlate(){
 		
 		HexMap map = HexMap.getInstance();
-		Random rand = new Random();
+		TheRandom rand = TheRandom.getInstance();
 		
-		return map.getPlates().get(rand.nextInt(map.getPlates().size()));
+		return map.getPlates().get(rand.get().nextInt(map.getPlates().size()));
 	}
 
 	public Hex pickRandomWhiteHex() {
 		
 		HexMap map = HexMap.getInstance();
-		Random rand = new Random();
+		TheRandom rand = TheRandom.getInstance();
 		List<Pair> keys  = new ArrayList<Pair>(map.getHexes().keySet());
-		Pair randomKey = keys.get(rand.nextInt(keys.size()) );
+		Pair randomKey = keys.get(rand.get().nextInt(keys.size()) );
 		
 		
 		return map.getHex(randomKey);
