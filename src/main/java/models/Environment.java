@@ -7,6 +7,11 @@ public class Environment {
 	public static final int MAX_DENSITY = 127;
 	public static final int MAX_SLOPE = 30;
 	
+	//Defines the average amount of water for each hex
+   public static final int AVE_WATER = 1400;
+   
+   public static final int AVE_DENSITY = 40;
+	
 	// The smaller this is, the steeper stuff gets
 	public static final int SLOPE_CONSTANT = 1;
 	
@@ -45,11 +50,6 @@ public class Environment {
 	
 	//Defines the water level required to be body of water candidate
    public static final int WATER_BODY_MIN = 10;
-	
-	//Defines the average amount of water for each hex
-	public static final int AVE_WATER = 1600;
-	
-	public static final int AVE_DENSITY = 40;
 	
 	//Defines the speed at which wind changes (lower is faster), must be at least 3
 	public static final int WIND_CHANGE = 250;
