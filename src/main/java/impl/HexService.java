@@ -319,61 +319,6 @@ public class HexService {
       return direction;
    }
 
-   public Pair getHexIdFromDirection(Pair origin, Direction direction){
-
-      Pair returnPair = origin;
-
-      if (direction != null){
-
-         switch (direction){
-
-         case north: 
-
-            returnPair = origin.N();
-
-            break;
-
-         case northeast: 
-
-            returnPair = origin.NE();
-
-            break;
-
-         case southeast: 
-
-            returnPair = origin.SE();
-
-            break;
-
-         case south: 
-
-            returnPair = origin.S();
-
-            break;
-
-         case southwest: 
-
-            returnPair = origin.SW();
-
-            break;
-
-         case northwest: 
-
-            returnPair = origin.NW();
-
-            break;
-
-         default:
-
-            break;
-         }
-      }
-
-      return returnPair;
-   }
-
-
-
    // for leak test
    /*HexMapImpl hexMapImpl = new HexMapImpl();
 		int totalWater = hexMapImpl.allWater()[0];

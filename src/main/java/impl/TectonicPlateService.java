@@ -107,7 +107,7 @@ public class TectonicPlateService {
 		edge.add(bucket.getStartPoint());
 		HexMap.getInstance().getHex(bucket.getStartPoint()).setTectonicState(0);
 
-		Pair nextPair = hexService.getHexIdFromDirection(bucket.getStartPoint(), bucket.getDirection());
+		Pair nextPair = bucket.getStartPoint().getHexIdFromDirection(bucket.getDirection());
 		Direction nextDirection = bucket.getDirection();
 		
 		int firstStretch = 0;
@@ -129,7 +129,7 @@ public class TectonicPlateService {
 				afterTurn = 0;
 			}
 
-			nextPair = hexService.getHexIdFromDirection(nextPair, nextDirection);
+			nextPair = nextPair.getHexIdFromDirection(nextDirection);
 			bucket.setDirection(nextDirection);
 		}
 
@@ -183,7 +183,7 @@ public class TectonicPlateService {
 				
 				if (n == 0){
 					
-					Pair pair = hexService.getHexIdFromDirection(layer.get(n), bucket.getDirection().turnLeft());
+					Pair pair = layer.get(n).getHexIdFromDirection(bucket.getDirection().turnLeft());
 
 					if (bucket.getAllEdges().contains(pair)){
 						return bucket.getDirection().turnLeft();
@@ -192,7 +192,7 @@ public class TectonicPlateService {
 					nextLayer.add(pair);
 				}
 				
-				Pair pair = hexService.getHexIdFromDirection(layer.get(n), bucket.getDirection());
+				Pair pair = layer.get(n).getHexIdFromDirection(bucket.getDirection());
 
 				if (bucket.getAllEdges().contains(pair)){
 					return bucket.getDirection();
@@ -202,7 +202,7 @@ public class TectonicPlateService {
 				
 				if (n + 1 == layer.size()){
 					
-					pair = hexService.getHexIdFromDirection(layer.get(n), bucket.getDirection().turnRight());
+					pair = layer.get(n).getHexIdFromDirection(bucket.getDirection().turnRight());
 
 					if (bucket.getAllEdges().contains(pair)){
 						return bucket.getDirection().turnRight();

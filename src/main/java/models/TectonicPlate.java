@@ -67,7 +67,7 @@ public class TectonicPlate {
 	private TectonicEdgeDirection getEdgeDirection(Pair edge, Direction plateDirection){
 		
 		TectonicEdgeDirection returnDirection = TectonicEdgeDirection.STABLE;
-		Pair targetPair = new HexService().getHexIdFromDirection(edge, plateDirection);
+		Pair targetPair = edge.getHexIdFromDirection(plateDirection);
 
 		if (innerRing.contains(targetPair)){
 			returnDirection = TectonicEdgeDirection.DOWN;

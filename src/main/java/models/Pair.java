@@ -1,5 +1,7 @@
 package models;
 
+import enums.Direction;
+
 public class Pair {
 	
     private int x;
@@ -142,5 +144,58 @@ public class Pair {
     public Pair wrap(){
 
        return wrap(x, y);
+    }
+    
+    public Pair getHexIdFromDirection(Direction direction){
+
+       Pair returnPair = this;
+
+       if (direction != null){
+
+          switch (direction){
+
+          case north: 
+
+             returnPair = N();
+
+             break;
+
+          case northeast: 
+
+             returnPair = NE();
+
+             break;
+
+          case southeast: 
+
+             returnPair = SE();
+
+             break;
+
+          case south: 
+
+             returnPair = S();
+
+             break;
+
+          case southwest: 
+
+             returnPair = SW();
+
+             break;
+
+          case northwest: 
+
+             returnPair = NW();
+
+             break;
+
+          default:
+
+             break;
+          }
+       }
+
+       return returnPair;
     }
 }

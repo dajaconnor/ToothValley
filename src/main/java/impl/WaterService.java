@@ -269,7 +269,7 @@ public class WaterService {
 
             for (Direction direction : Direction.VALUES) {
 
-               Pair pair = hexService.getHexIdFromDirection(cloud, direction);
+               Pair pair = cloud.getHexIdFromDirection(direction);
                map.removeCloud(pair);
                int cloudElevation = map.getHex(cloud).getElevation();
 
@@ -298,7 +298,7 @@ public class WaterService {
 
             if (n == 0) {
 
-               Pair pair = hexService.getHexIdFromDirection(layer.get(n), direction);
+               Pair pair = layer.get(n).getHexIdFromDirection(direction);
                map.removeCloud(pair);
 
                if (blowSingleHex(pair, layer.get(n), cloudElevation, findLeak)) {
@@ -307,7 +307,7 @@ public class WaterService {
                }
             }
 
-            Pair pair = hexService.getHexIdFromDirection(layer.get(n), direction.turnRight());
+            Pair pair = layer.get(n).getHexIdFromDirection(direction.turnRight());
             map.removeCloud(pair);
 
             if (blowSingleHex(pair, layer.get(n), cloudElevation, findLeak)) {
