@@ -33,30 +33,18 @@ public class HexMapService {
 
 		HexMap map = HexMap.getInstance();
 		OpenGLWindow openGL = OpenGLWindow.getInstance();
-		
-
-		int height = (Environment.MAP_HEIGHT * 3/2) / (int) Environment.HEX_HEIGHT;
-		int width = Environment.MAP_WIDTH / (int) (Environment.HEX_SIDE_WIDTH + Environment.HEX_BODY_WIDTH);
-		
-		if (width % 2 == 1){
-			
-			width ++;
-		}
-		
-		int[] hexSize = new int[2];
-		hexSize[0] = width;
-		hexSize[1] = height;
-
-		map.setSize(hexSize);
 
 		//Creates all the hexes on the map
-		generateAllHexes(width, height);
+		generateAllHexes();
 
 		//Prints all the hexes on the map
 		openGL.printMap();
 	}
 
-	public void generateAllHexes(int width, int height){
+	public void generateAllHexes(){
+	   
+	   int width = Environment.MAP_GRID[0];
+	   int height = Environment.MAP_GRID[1];
 		
 		//Get perlin object
 		PerlinNoise perlin = new PerlinNoise();

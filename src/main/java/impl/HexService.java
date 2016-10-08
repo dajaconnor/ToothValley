@@ -88,8 +88,8 @@ public class HexService {
       int newX = x;
       int newY = y;
 
-      int mapX = map.getSize()[0];
-      int mapY = map.getSize()[1];
+      int mapX = Environment.MAP_GRID[0];
+      int mapY = Environment.MAP_GRID[1];
 
       if (x >= mapX){
 
@@ -120,9 +120,9 @@ public class HexService {
 
       TheRandom rand = TheRandom.getInstance();
 
-      int seedInt = rand.get().nextInt(map.getSize()[0] * map.getSize()[1]);
+      int seedInt = rand.get().nextInt(Environment.MAP_GRID[0] * Environment.MAP_GRID[1]);
 
-      return wrap(seedInt % map.getSize()[0],seedInt / map.getSize()[0]);
+      return wrap(seedInt % Environment.MAP_GRID[0],seedInt / Environment.MAP_GRID[0]);
    }
 
    public Direction getRandomDirection() {

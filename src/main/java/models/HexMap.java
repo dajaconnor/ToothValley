@@ -15,7 +15,6 @@ import graphics.OpenGLWindow;
 public class HexMap {
 
 	private int mapID;
-	private int[] size;
 
 	private Hashtable<Pair,Hex> hexes = new Hashtable<Pair,Hex>();
 	
@@ -62,12 +61,6 @@ public class HexMap {
 	}
 	public void setMapID(int mapID) {
 		this.mapID = mapID;
-	}
-	public int[] getSize() {
-		return size;
-	}
-	public void setSize(int[] size) {
-		this.size = size;
 	}
 	public Hashtable<Pair, Hex> getHexes() {
 		return hexes;
@@ -154,7 +147,7 @@ public class HexMap {
 	
 	public void addGreenHex(Pair hex){
 		
-		if (greenHexes.size() > size[0] * size[1]){
+		if (greenHexes.size() > Environment.MAP_GRID[0] * Environment.MAP_GRID[1]){
 			
 			System.out.println();
 		}
