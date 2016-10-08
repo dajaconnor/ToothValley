@@ -26,36 +26,6 @@ public class HexService {
    
    HexMap map = HexMap.getInstance();
 
-   public Pair N(Pair ID) {
-
-      return wrap(ID.getX(), ID.getY() -1);
-   }
-
-   public Pair NE(Pair ID) {
-
-      return wrap(ID.getX() + 1, ID.getY());
-   }
-
-   public Pair SE(Pair ID) {
-
-      return wrap(ID.getX() + 1, ID.getY() + 1);
-   }
-
-   public Pair S(Pair ID) {
-
-      return wrap(ID.getX(), ID.getY() + 1);
-   }
-
-   public Pair SW(Pair ID) {
-
-      return wrap(ID.getX() - 1, ID.getY());
-   }
-
-   public Pair NW(Pair ID) {
-
-      return wrap(ID.getX() - 1, ID.getY() - 1);
-   }
-
    public List<Pair> getSharedNeighbors(Pair pair1, Pair pair2){
 
       List<Pair> neighborList = getNeighbors(pair1);
@@ -73,56 +43,13 @@ public class HexService {
       return returnList;
    }
 
-   public Pair mergePairs(Pair pair1, Pair pair2){
-
-      return wrap(new Pair(pair1.getX() + pair2.getX(), pair1.getY() + pair2.getY()));
-   }
-
-   public Pair wrap(Pair pair) {
-
-      return wrap(pair.getX(), pair.getY());
-   }
-
-   public Pair wrap(int x, int y){
-
-      int newX = x;
-      int newY = y;
-
-      int mapX = Environment.MAP_GRID[0];
-      int mapY = Environment.MAP_GRID[1];
-
-      if (x >= mapX){
-
-         newX %= mapX;
-      }
-
-      if (x < 0){
-
-         newX += (mapX * (Math.abs(newX / mapX) + 1));
-      }
-
-      if (newY >= mapY + newX/2){
-
-         newY %= mapY;
-      }
-
-      if (newY < newX/2){
-
-         newY = (newY - newX/2 + mapY*mapY) % mapY + newX/2;
-      }
-
-      Pair pair = new Pair(newX, newY);
-
-      return pair;
-   }
-
    public Pair getRandomPair(){
 
       TheRandom rand = TheRandom.getInstance();
 
       int seedInt = rand.get().nextInt(Environment.MAP_GRID[0] * Environment.MAP_GRID[1]);
 
-      return wrap(seedInt % Environment.MAP_GRID[0],seedInt / Environment.MAP_GRID[0]);
+      return Pair.wrap(seedInt % Environment.MAP_GRID[0],seedInt / Environment.MAP_GRID[0]);
    }
 
    public Direction getRandomDirection() {
@@ -151,27 +78,27 @@ public class HexService {
 
       List<Pair> neighbors = new ArrayList<Pair>();
 
-      Pair newID = N(pair);
+      Pair newID = pair.N();
       if (inBounds(newID)) {
          neighbors.add(newID);
       }
-      newID = NW(pair);
+      newID = pair.NW();
       if (inBounds(newID)) {
          neighbors.add(newID);
       }
-      newID = SW(pair);
+      newID = pair.SW();
       if (inBounds(newID)) {
          neighbors.add(newID);
       }
-      newID = S(pair);
+      newID = pair.S();
       if (inBounds(newID)) {
          neighbors.add(newID);
       }
-      newID = SE(pair);
+      newID = pair.SE();
       if (inBounds(newID)) {
          neighbors.add(newID);
       }
-      newID = NE(pair);
+      newID = pair.NE();
       if (inBounds(newID)) {
          neighbors.add(newID);
       }
@@ -181,31 +108,29 @@ public class HexService {
    public Set<Pair> getNeighborsSet(Pair hex) {
 
       Pair pair = new Pair(hex.getX(), hex.getY());
-
-      HexMap map = HexMap.getInstance();
       Set<Pair> neighbors = new HashSet<Pair>();
 
-      Pair newID = N(pair);
+      Pair newID = pair.N();
       if (inBounds(newID)) {
          neighbors.add(newID);
       }
-      newID = NW(pair);
+      newID = pair.NW();
       if (inBounds(newID)) {
          neighbors.add(newID);
       }
-      newID = SW(pair);
+      newID = pair.SW();
       if (inBounds(newID)) {
          neighbors.add(newID);
       }
-      newID = S(pair);
+      newID = pair.S();
       if (inBounds(newID)) {
          neighbors.add(newID);
       }
-      newID = SE(pair);
+      newID = pair.SE();
       if (inBounds(newID)) {
          neighbors.add(newID);
       }
-      newID = NE(pair);
+      newID = pair.NE();
       if (inBounds(newID)) {
          neighbors.add(newID);
       }
@@ -360,32 +285,32 @@ public class HexService {
 
       if (destination != null && origin != null){
 
-         if (destination.equals(N(origin))){
+         if (destination.equals(origin.N())){
 
             direction = Direction.north;
          }
 
-         else if (destination.equals(NE(origin))){
+         else if (destination.equals(origin.NE())){
 
             direction = Direction.northeast;
          }
 
-         else if (destination.equals(SE(origin))){
+         else if (destination.equals(origin.SE())){
 
             direction = Direction.southeast;
          }
 
-         else if (destination.equals(S(origin))){
+         else if (destination.equals(origin.S())){
 
             direction = Direction.south;
          }
 
-         else if (destination.equals(SW(origin))){
+         else if (destination.equals(origin.SW())){
 
             direction = Direction.southwest;
          }
 
-         else if (destination.equals(NW(origin))){
+         else if (destination.equals(origin.NW())){
 
             direction = Direction.northwest;
          }
@@ -404,37 +329,37 @@ public class HexService {
 
          case north: 
 
-            returnPair = N(origin);
+            returnPair = origin.N();
 
             break;
 
          case northeast: 
 
-            returnPair = NE(origin);
+            returnPair = origin.NE();
 
             break;
 
          case southeast: 
 
-            returnPair = SE(origin);
+            returnPair = origin.SE();
 
             break;
 
          case south: 
 
-            returnPair = S(origin);
+            returnPair = origin.S();
 
             break;
 
          case southwest: 
 
-            returnPair = SW(origin);
+            returnPair = origin.SW();
 
             break;
 
          case northwest: 
 
-            returnPair = NW(origin);
+            returnPair = origin.NW();
 
             break;
 
@@ -963,32 +888,32 @@ public class HexService {
 
       case 0:
 
-         returnPair = N(pair);
+         returnPair = pair.N();
          break;
 
       case 1:
 
-         returnPair = NE(pair);
+         returnPair = pair.NE();
          break;
 
       case 2:
 
-         returnPair = SE(pair);
+         returnPair = pair.SE();
          break;
 
       case 3:
 
-         returnPair = S(pair);
+         returnPair = pair.S();
          break;
 
       case 4:
 
-         returnPair = SW(pair);
+         returnPair = pair.SW();
          break;
 
       case 5:
 
-         returnPair = NW(pair);
+         returnPair = pair.NW();
          break;
       }	
 

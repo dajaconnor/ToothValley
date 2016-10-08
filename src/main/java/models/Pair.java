@@ -8,7 +8,7 @@ public class Pair {
     public Pair(int x, int y) {
     	super();
     	this.x = x;
-    	this.y = y;
+      this.y = y;
     }
 
     /* (non-Javadoc)
@@ -55,10 +55,6 @@ public class Pair {
     public int getYbyXdifferential(){
     	
     	return getY() + getX() / 2;
-    	
-    	/*if (offset.getX() % 2 == 0){
-            offset.setY(offset.getY() - 1);
-         }*/
     }
 
     public int getY() {
@@ -75,5 +71,76 @@ public class Pair {
     
     public void sumY(int addY){
     	this.y += addY;
+    }
+    
+    public Pair N() {
+
+       return wrap(x, y - 1);
+    }
+
+    public Pair NE() {
+
+       return wrap(x + 1, y);
+    }
+
+    public Pair SE() {
+
+       return wrap(x + 1, y + 1);
+    }
+
+    public Pair S() {
+
+       return wrap(x, y + 1);
+    }
+
+    public Pair SW() {
+
+       return wrap(x - 1, y);
+    }
+
+    public Pair NW() {
+
+       return wrap(x - 1, y - 1);
+    }
+    
+    public Pair merge(Pair otherPair) {
+
+       return wrap(x + otherPair.getX(), y + otherPair.getY());
+    }
+    
+    public static Pair wrap(int argX, int argY){
+       
+       int newX = argX;
+       int newY = argY;
+
+       int mapX = Environment.MAP_GRID[0];
+       int mapY = Environment.MAP_GRID[1];
+
+       if (argX >= mapX) {
+
+          newX %= mapX;
+       }
+
+       if (argX < 0) {
+
+          newX += (mapX * (Math.abs(newX / mapX) + 1));
+       }
+
+       if (newY >= mapY + newX / 2) {
+
+          newY %= mapY;
+       }
+
+       if (newY < newX / 2) {
+
+          newY = (newY - newX / 2 + mapY * mapY) % mapY + newX / 2;
+       }
+
+       return new Pair(newX, newY);
+    }
+    
+    public Pair wrap(){
+
+       return wrap(x, y);
     }
 }

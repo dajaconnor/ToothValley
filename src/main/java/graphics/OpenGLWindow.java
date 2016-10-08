@@ -453,16 +453,16 @@ public class OpenGLWindow {
 
 		Pair northColorElev = map.get(northId);
 
-		Pair southId = hexService.S(northId);
+		Pair southId = northId.S();
 		Pair southColorElev = map.get(southId);
 
-		Pair eastId = hexService.SE(northId);
+		Pair eastId = northId.SE();
 		Pair eastColorElev = map.get(eastId);
 
 		// Outer elevation guides
-		int NE_Elev = map.get(hexService.N(eastId)).getY();
-		int SE_Elev = map.get(hexService.S(eastId)).getY();
-		int W_Elev = map.get(hexService.NW(southId)).getY();
+		int NE_Elev = map.get(eastId.N()).getY();
+		int SE_Elev = map.get(eastId.S()).getY();
+		int W_Elev = map.get(southId.NW()).getY();
 
 		DPair north = getBasePrintCoords(northId, localOffset);
 		DPair south = getBasePrintCoords(southId, localOffset);
@@ -543,7 +543,7 @@ public class OpenGLWindow {
 		
 		Pair yOffsetDifferential = new Pair(localOffset.getX(), localOffset.getYbyXdifferential());
 
-		Pair printPair = hexService.mergePairs(pair,  yOffsetDifferential);
+		Pair printPair = pair.merge(yOffsetDifferential);
 
 		return getBasePrintCoords(printPair.getX(), printPair.getY());
 	}

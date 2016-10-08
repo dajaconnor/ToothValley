@@ -31,7 +31,6 @@ public class HexMapService {
 	
 	public void createMap() {
 
-		HexMap map = HexMap.getInstance();
 		OpenGLWindow openGL = OpenGLWindow.getInstance();
 
 		//Creates all the hexes on the map
@@ -73,7 +72,7 @@ public class HexMapService {
 				TheRandom rand = TheRandom.getInstance();
 				int plant = rand.get().nextInt(7) - 2;
 				
-				Pair pairCoordinates = hexService.wrap(x, y + x/5);// new Pair(x, Y).getYbyXdifferential());
+				Pair pairCoordinates = Pair.wrap(x, y + x/5);// new Pair(x, Y).getYbyXdifferential());
 				Pair pair = OpenGLWindow.getInstance().getBasePrintCoords(pairCoordinates.getX(), pairCoordinates.getY()).toPair();
 				
 //				if (pair.getX() >= elevations.length){

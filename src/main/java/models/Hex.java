@@ -4,17 +4,11 @@ import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import enums.Direction;
 import graphics.OpenGLWindow;
-import impl.HexService;
 
 public class Hex {
 
-	@Autowired
-	private HexService hexService;
-	
 	private Pair hexID;
 	private int density;
 	private int moisture;
@@ -902,12 +896,12 @@ public class Hex {
 
 		Pair[] pairs = new Pair[6];
 		
-		pairs[0] = hexService.N(hexID);
-		pairs[1] = hexService.NE(hexID);
-		pairs[2] = hexService.SE(hexID);
-		pairs[3] = hexService.S(hexID);
-		pairs[4] = hexService.SW(hexID);
-		pairs[5] = hexService.NW(hexID);
+		pairs[0] = hexID.N();
+		pairs[1] = hexID.NE();
+		pairs[2] = hexID.SE();
+		pairs[3] = hexID.S();
+		pairs[4] = hexID.SW();
+		pairs[5] = hexID.NW();
 		
 		return pairs;
 	}
