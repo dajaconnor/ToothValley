@@ -14,8 +14,8 @@ import models.Hex;
 import models.HexMap;
 import models.Pair;
 import models.TheRandom;
-import plants.Jungle;
-import plants.Plant;
+import models.plants.Jungle;
+import models.plants.Plant;
 
 @Component
 public class HexService {

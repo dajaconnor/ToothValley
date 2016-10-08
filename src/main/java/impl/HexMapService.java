@@ -13,11 +13,11 @@ import models.HexMap;
 import models.Pair;
 import models.TectonicPlate;
 import models.TheRandom;
-import plants.Forest;
-import plants.Grass;
-import plants.Jungle;
-import plants.Plant;
-import plants.Thicket;
+import models.plants.Forest;
+import models.plants.Grass;
+import models.plants.Jungle;
+import models.plants.Plant;
+import models.plants.Thicket;
 
 
 @Component

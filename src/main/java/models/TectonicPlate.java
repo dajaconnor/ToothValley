@@ -1,13 +1,13 @@
 package models;
 
-import impl.HexService;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import enums.Direction;
 import enums.TectonicEdgeDirection;
+import impl.HexService;
 
 public class TectonicPlate {
 	

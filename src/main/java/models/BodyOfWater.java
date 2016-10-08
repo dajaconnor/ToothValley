@@ -1,11 +1,5 @@
 package models;
 
-import impl.HexService;
-import impl.WaterService;
-import propogation.DirectionalEvaluator;
-import propogation.Evaluator;
-import propogation.Propogator;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,6 +10,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
+import impl.HexService;
+import impl.WaterService;
+import propogation.DirectionalEvaluator;
+import propogation.Evaluator;
+import propogation.Propogator;
 
 public class BodyOfWater {
 
