@@ -120,4 +120,10 @@ public class Environment {
    public final static boolean HIGHEST = true;
    public static final float BODY_EVAPORATION = 0.1F;
    
+   // These are set when the map is generated, and never altered.
+   public static int[] MAP_GRID;
+   public static double HEX_HEIGHT = ((double) ZOOM * Math.pow(3D, 0.5D));
+   public static double HEX_SIDE_WIDTH = ZOOM / 2;
+   public static double HEX_BODY_WIDTH = ZOOM;
+   public static double HEX_RADIUS = ZOOM;
 }

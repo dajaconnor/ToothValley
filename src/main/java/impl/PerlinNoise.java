@@ -6,6 +6,7 @@ import java.util.List;
 import javax.swing.JPanel;
 
 import graphics.OpenGLWindow;
+import models.Environment;
 import models.Pair;
 import models.TheRandom;
 
@@ -19,14 +20,14 @@ public class PerlinNoise extends JPanel {
 	 */
 	public List<Integer> oneDNoise(){
 		
-		int amp = (OpenGLWindow.Y * 3/4);
+		int amp = (Environment.MAP_HEIGHT * 3/4);
 		List<Integer> noise = perlin(0.1F, amp, new ArrayList<Integer>());
 		
 		
-		amp = (OpenGLWindow.Y * 1/4);
+		amp = (Environment.MAP_HEIGHT * 1/4);
 		noise = perlin(0.05F, amp, noise);
 		
-		amp = (OpenGLWindow.Y * 1/8);
+		amp = (Environment.MAP_HEIGHT * 1/8);
 		noise = perlin(0.01F, amp, noise);
 		
 		
@@ -258,7 +259,7 @@ public class PerlinNoise extends JPanel {
 	public List<Integer> perlin(float frequency, int amp, List<Integer> Ylist){
 		
 		int numWaves = (int) (1.0 / frequency);
-		int waveLength = (int) (frequency * OpenGLWindow.X);
+		int waveLength = (int) (frequency * Environment.MAP_WIDTH);
 		List<Integer> wavePoints = getWavePoints(numWaves+4, amp);
 		
 		for (int wave = 0; wave < numWaves; wave++){

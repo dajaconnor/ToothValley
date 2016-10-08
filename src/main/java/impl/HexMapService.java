@@ -35,8 +35,8 @@ public class HexMapService {
 		OpenGLWindow openGL = OpenGLWindow.getInstance();
 		
 
-		int height = (OpenGLWindow.Y * 3/2) / (int) OpenGLWindow.height;
-		int width = OpenGLWindow.X / (int) (OpenGLWindow.sideWidth + OpenGLWindow.bodyWidth);
+		int height = (Environment.MAP_HEIGHT * 3/2) / (int) Environment.HEX_HEIGHT;
+		int width = Environment.MAP_WIDTH / (int) (Environment.HEX_SIDE_WIDTH + Environment.HEX_BODY_WIDTH);
 		
 		if (width % 2 == 1){
 			
@@ -63,7 +63,7 @@ public class HexMapService {
 		
 		//Set the size of the perlin pixel grid
 		Pair noiseSize = OpenGLWindow.getInstance().getBasePrintCoords(width, height * 2 - 1).toPair();
-		noiseSize.setX(noiseSize.getX() - (int)OpenGLWindow.height / 2);
+		noiseSize.setX(noiseSize.getX() - (int)Environment.HEX_HEIGHT / 2);
 		
 		//Get perlin pixel grids for all hex attributes
 		int[][] elevations = getPerlinPixels(perlin, noiseSize);

@@ -2,9 +2,11 @@ package controllers;
 
 
 import graphics.DisplayThread;
+import graphics.OpenGLWindow;
 import impl.EnvironmentService;
 import impl.HexMapService;
 import impl.WaterService;
+import models.Environment;
 
 import java.util.Date;
 
@@ -38,6 +40,7 @@ public class Main {
 	 */
 	public void run() {
 	   
+	   initializeBasicVars();
 	   DisplayThread display = new DisplayThread("displayThread", hexMapService);
 	   display.start();
 
@@ -134,4 +137,21 @@ public class Main {
          e.printStackTrace();
       }
 	}
+	
+	private void initializeBasicVars(){
+      
+      int height = (Environment.MAP_HEIGHT * 3/2) / (int) Environment.HEX_HEIGHT;
+      int width = Environment.MAP_WIDTH / (int) (Environment.HEX_SIDE_WIDTH + Environment.HEX_BODY_WIDTH);
+      
+      if (width % 2 == 1){
+         
+         width ++;
+      }
+      
+      int[] hexSize = new int[2];
+      hexSize[0] = width;
+      hexSize[1] = height;
+
+      Environment.MAP_GRID = hexSize;
+   }
 }

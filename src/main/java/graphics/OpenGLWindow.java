@@ -46,9 +46,6 @@ public class OpenGLWindow {
 
 	HexService hexService = new HexService();
 
-	public static int Y = Environment.MAP_HEIGHT;
-	public static int X = Environment.MAP_WIDTH;
-
 	public static int xBuffer = 5;
 	public static int yBuffer = 5;
 
@@ -59,12 +56,6 @@ public class OpenGLWindow {
 	public static Color marsh = new Color(77, 193, 129);
 	public static Color forest = new Color(21, 181, 51);
 	public static Color jungle = new Color(6, 102, 23);
-
-	public static double zoom = Environment.ZOOM;
-	public static double height = ((double) zoom * Math.pow(3D, 0.5D));
-	public static double sideWidth = zoom / 2;
-	public static double bodyWidth = zoom;
-	public static double radius = zoom;
 
 	public double panx = 0;
 	public double pany = 0;
@@ -79,7 +70,7 @@ public class OpenGLWindow {
 	
 
 	// To make singleton
-	private static final OpenGLWindow INSTANCE = new OpenGLWindow(X, Y, false);
+	private static final OpenGLWindow INSTANCE = new OpenGLWindow(false);
 
 	public static OpenGLWindow getInstance() {
 		return INSTANCE;
@@ -87,7 +78,7 @@ public class OpenGLWindow {
 
 	// ****
 
-	private OpenGLWindow(int width, int height, boolean fullscreen) {
+	private OpenGLWindow(boolean fullscreen) {
 
 		if (INSTANCE != null) {
 			throw new IllegalStateException("Already instantiated");
@@ -126,7 +117,7 @@ public class OpenGLWindow {
 		Display.setVSyncEnabled(true);
 
 		// Create default display of 640x480
-		Display.setDisplayMode(new DisplayMode(X, Y));
+		Display.setDisplayMode(new DisplayMode(Environment.MAP_WIDTH, Environment.MAP_HEIGHT));
 		Display.create();
 
 		// Init openGL stuff?
@@ -134,11 +125,11 @@ public class OpenGLWindow {
 		glLoadIdentity();
 
 		// povy in radians, aspect ratio X/Y, zNear, zFar
-		gluPerspective(45f, (float) (X / Y), 1000f , 5000f);
+		gluPerspective(45f, (float) (Environment.MAP_WIDTH / Environment.MAP_HEIGHT), 1000f , 5000f);
 		
 		//I don't know why, but this puts the map on the screen...
 		//glTranslatef(-500, -500, -2000);
-		glTranslatef(-X/2, -300, -2000);
+		glTranslatef(-Environment.MAP_WIDTH/2, -300, -2000);
 		
 		//glTranslatef(X/2, Y/2, 100);
 		
@@ -541,9 +532,9 @@ public class OpenGLWindow {
 	 * @return
 	 */
 	public DPair getBasePrintCoords(double x, double y) {
-
-		double xCoord = x * (bodyWidth + sideWidth);
-		double yCoord = y * height + height / 2 - x * height / 2;
+	   
+		double xCoord = x * (Environment.HEX_BODY_WIDTH + Environment.HEX_SIDE_WIDTH);
+		double yCoord = y * Environment.HEX_HEIGHT + Environment.HEX_HEIGHT / 2 - x * Environment.HEX_HEIGHT / 2;
 
 		return new DPair(xCoord, yCoord);
 	}
@@ -559,34 +550,34 @@ public class OpenGLWindow {
 
 	private DPair realNW(DPair middle) {
 
-		return new DPair(middle.getX() - bodyWidth / 2, middle.getY() - height / 2);
+		return new DPair(middle.getX() - Environment.HEX_BODY_WIDTH / 2, middle.getY() - Environment.HEX_HEIGHT / 2);
 	}
 
 	private DPair realNE(DPair middle) {
 
-		return new DPair(middle.getX() + bodyWidth / 2, middle.getY() - height / 2);
+		return new DPair(middle.getX() + Environment.HEX_BODY_WIDTH / 2, middle.getY() - Environment.HEX_HEIGHT / 2);
 	}
 
 	private DPair realE(DPair middle) {
 
-		return new DPair(middle.getX() + radius, middle.getY());
+		return new DPair(middle.getX() + Environment.HEX_RADIUS, middle.getY());
 	}
 
 	private DPair realSE(DPair middle) {
 
-		return new DPair(middle.getX() + bodyWidth / 2, middle.getY() + height
+		return new DPair(middle.getX() + Environment.HEX_BODY_WIDTH / 2, middle.getY() + Environment.HEX_HEIGHT
 				/ 2);
 	}
 
 	private DPair realSW(DPair middle) {
 
-		return new DPair(middle.getX() - bodyWidth / 2, middle.getY() + height
+		return new DPair(middle.getX() - Environment.HEX_BODY_WIDTH / 2, middle.getY() + Environment.HEX_HEIGHT
 				/ 2);
 	}
 
 	private DPair realW(DPair middle) {
 
-		return new DPair(middle.getX() - radius, middle.getY());
+		return new DPair(middle.getX() - Environment.HEX_RADIUS, middle.getY());
 	}
 
 	public boolean isRunning() {
