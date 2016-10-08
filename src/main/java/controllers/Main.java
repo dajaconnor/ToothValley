@@ -1,19 +1,18 @@
 package controllers;
 
 
-import graphics.DisplayThread;
-import graphics.OpenGLWindow;
-import impl.EnvironmentService;
-import impl.HexMapService;
-import impl.WaterService;
-import models.Environment;
-
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
+
+import graphics.DisplayThread;
+import impl.EnvironmentService;
+import impl.HexMapService;
+import impl.WaterService;
+import models.Environment;
 
 @Component
 public class Main {
