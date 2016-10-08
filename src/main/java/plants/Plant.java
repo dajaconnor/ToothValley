@@ -1,4 +1,4 @@
-package models;
+package plants;
 
 public abstract class Plant {
 	//put functions of plants

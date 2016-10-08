@@ -8,16 +8,16 @@ import org.springframework.stereotype.Component;
 
 import graphics.OpenGLWindow;
 import models.Environment;
-import models.Forest;
-import models.Grass;
 import models.Hex;
 import models.HexMap;
-import models.Jungle;
 import models.Pair;
-import models.Plant;
 import models.TectonicPlate;
 import models.TheRandom;
-import models.Thicket;
+import plants.Forest;
+import plants.Grass;
+import plants.Jungle;
+import plants.Plant;
+import plants.Thicket;
 
 
 @Component

@@ -1,4 +1,6 @@
-package models;
+package plants;
+
+import models.Environment;
 
 public class Thicket extends Plant {
 	

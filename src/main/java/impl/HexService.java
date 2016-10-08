@@ -12,10 +12,10 @@ import models.BodyOfWater;
 import models.Environment;
 import models.Hex;
 import models.HexMap;
-import models.Jungle;
 import models.Pair;
-import models.Plant;
 import models.TheRandom;
+import plants.Jungle;
+import plants.Plant;
 
 @Component
 public class HexService {

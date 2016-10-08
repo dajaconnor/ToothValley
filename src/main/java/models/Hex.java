@@ -6,6 +6,11 @@ import java.util.Map;
 
 import enums.Direction;
 import graphics.OpenGLWindow;
+import plants.Forest;
+import plants.Grass;
+import plants.Jungle;
+import plants.Plant;
+import plants.Thicket;
 
 public class Hex {
 
