@@ -234,7 +234,7 @@ public class TectonicPlateService {
 		}
 		
 		// If it didn't work... try again?  Hope this doesn't blow up...
-		if (!hexService.inBounds(bucket.getStartPoint(), HexMap.getInstance())){
+		if (!hexService.inBounds(bucket.getStartPoint())){
 			
 			generateStartPoint(bucket);
 		}

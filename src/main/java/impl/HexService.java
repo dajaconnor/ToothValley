@@ -23,6 +23,8 @@ public class HexService {
    public HexService() {
 
    }
+   
+   HexMap map = HexMap.getInstance();
 
    public Pair N(Pair ID) {
 
@@ -86,8 +88,6 @@ public class HexService {
       int newX = x;
       int newY = y;
 
-      HexMap map = HexMap.getInstance();
-
       int mapX = map.getSize()[0];
       int mapY = map.getSize()[1];
 
@@ -118,7 +118,6 @@ public class HexService {
 
    public Pair getRandomPair(){
 
-      HexMap map = HexMap.getInstance();
       TheRandom rand = TheRandom.getInstance();
 
       int seedInt = rand.get().nextInt(map.getSize()[0] * map.getSize()[1]);
@@ -133,7 +132,7 @@ public class HexService {
       return Direction.values()[rand.get().nextInt(6)];
    }
 
-   public boolean inBounds(Pair ID, HexMap map) {
+   public boolean inBounds(Pair ID) {
 
       return map.getHexes().containsKey(ID);
    }
@@ -150,31 +149,30 @@ public class HexService {
 
       Pair pair = new Pair(hex.getX(), hex.getY());
 
-      HexMap map = HexMap.getInstance();
       List<Pair> neighbors = new ArrayList<Pair>();
 
       Pair newID = N(pair);
-      if (inBounds(newID, map)) {
+      if (inBounds(newID)) {
          neighbors.add(newID);
       }
       newID = NW(pair);
-      if (inBounds(newID, map)) {
+      if (inBounds(newID)) {
          neighbors.add(newID);
       }
       newID = SW(pair);
-      if (inBounds(newID, map)) {
+      if (inBounds(newID)) {
          neighbors.add(newID);
       }
       newID = S(pair);
-      if (inBounds(newID, map)) {
+      if (inBounds(newID)) {
          neighbors.add(newID);
       }
       newID = SE(pair);
-      if (inBounds(newID, map)) {
+      if (inBounds(newID)) {
          neighbors.add(newID);
       }
       newID = NE(pair);
-      if (inBounds(newID, map)) {
+      if (inBounds(newID)) {
          neighbors.add(newID);
       }
       return neighbors;
@@ -188,27 +186,27 @@ public class HexService {
       Set<Pair> neighbors = new HashSet<Pair>();
 
       Pair newID = N(pair);
-      if (inBounds(newID, map)) {
+      if (inBounds(newID)) {
          neighbors.add(newID);
       }
       newID = NW(pair);
-      if (inBounds(newID, map)) {
+      if (inBounds(newID)) {
          neighbors.add(newID);
       }
       newID = SW(pair);
-      if (inBounds(newID, map)) {
+      if (inBounds(newID)) {
          neighbors.add(newID);
       }
       newID = S(pair);
-      if (inBounds(newID, map)) {
+      if (inBounds(newID)) {
          neighbors.add(newID);
       }
       newID = SE(pair);
-      if (inBounds(newID, map)) {
+      if (inBounds(newID)) {
          neighbors.add(newID);
       }
       newID = NE(pair);
-      if (inBounds(newID, map)) {
+      if (inBounds(newID)) {
          neighbors.add(newID);
       }
       return neighbors;
@@ -225,7 +223,6 @@ public class HexService {
 
       boolean returnBool = false;
       int total = 0;
-      HexMap map = HexMap.getInstance();
 
       if (findLeak && !foundLeak){
          total = hex.getTotalWater(map.getStaleHexBodyStandingWater(hex));
@@ -265,7 +262,7 @@ public class HexService {
 
       if (hex.getMoistureInAir() >= Environment.CLOUD){
 
-         HexMap.getInstance().addCloud(hex.getHexID());
+         map.addCloud(hex.getHexID());
       }
 
       if (findLeak && !foundLeak && total != hex.getTotalWater(map.getStaleHexBodyStandingWater(hex))){
@@ -325,7 +322,6 @@ public class HexService {
       int[] resistance = new int[2];
       resistance[0] = 1000;
       resistance[1] = 1000;
-      HexMap map = HexMap.getInstance();
 
       List<Pair> neighbors = getNeighbors(hex.getHexID());
 
@@ -593,7 +589,7 @@ public class HexService {
       
       from.setElevation(from.getElevation() - slope/4, false);
       
-      BodyOfWater body = HexMap.getInstance().getPairToWaterBodies().get(to.getHexID());
+      BodyOfWater body = map.getPairToWaterBodies().get(to.getHexID());
       
       if (to.setElevation(to.getElevation() + slope/4, body != null)){
          body.addToHexesToCheckForElevation(to.getHexID());
@@ -621,7 +617,6 @@ public class HexService {
 
       boolean returnBool = false;
       int total = 0;
-      HexMap map = HexMap.getInstance();
       int bodyStandingWater = map.getStaleHexBodyStandingWater(hex);
 
       if (findLeak){
@@ -647,7 +642,7 @@ public class HexService {
          //Find a hex for it to flow to
          for (Pair neighbor : neighbors) {
 
-            Hex adjHex = HexMap.getInstance().getHex(neighbor);
+            Hex adjHex = map.getHex(neighbor);
             int adjElev = adjHex.getCombinedElevation(standingBodyWater);
 
             if (adjElev < elev && adjElev < lowest) {
@@ -713,7 +708,6 @@ public class HexService {
    private Hex getLowestNeighber(Pair id){
 
       List<Pair> neighbors = getNeighbors(id);
-      HexMap map = HexMap.getInstance();
 
       int elevation = 1000;
       Hex lowest = map.getHex(neighbors.get(0));
@@ -783,8 +777,6 @@ public class HexService {
             int erosionStrength = rand.get().nextInt(strength);
 
             if (fromHex.getSoilStability() < erosionStrength){
-
-               HexMap map = HexMap.getInstance();
                
                fromHex.setElevation(fromHex.getElevation() - 1, false);
                
@@ -865,7 +857,6 @@ public class HexService {
    public boolean grow(Pair id) {
 
       boolean grew = false;
-      HexMap map = HexMap.getInstance();
       Hex hex = map.getHex(id);
 
       //Shouldn't grow out when on fire
@@ -897,7 +888,6 @@ public class HexService {
 
    public boolean ignite(Pair id, int flame){
 
-      HexMap map = HexMap.getInstance();
       Hex newHex = map.getHex(id);
       int standingBodyWater = map.getStaleHexBodyStandingWater(newHex);
 
@@ -905,7 +895,7 @@ public class HexService {
 
          newHex.setFire(newHex.getFireStrength(map.getStaleHexBodyStandingWater(newHex)));
 
-         HexMap.getInstance().addBurningHex(id);
+         map.addBurningHex(id);
          return true;
 
       }
@@ -934,8 +924,6 @@ public class HexService {
    public void burnDown(Hex hex) {
 
       if (hex != null){
-         
-         HexMap map = HexMap.getInstance();
 
          if (hex.getSaturation(0) > 1 || map.getPairToWaterBodies().get(hex.getHexID()) != null){
 
@@ -950,7 +938,7 @@ public class HexService {
 
                hex.setFire(0);
 
-               HexMap.getInstance().removeBurningHex(hex.getHexID());
+               map.removeBurningHex(hex.getHexID());
 
                for (int i = 0; i < hex.getVegetation().length; i++){
 
@@ -971,7 +959,7 @@ public class HexService {
 
       Pair returnPair = new Pair(pair.getX(), pair.getY());
 
-      switch(HexMap.getInstance().getWindDirection()){
+      switch(map.getWindDirection()){
 
       case 0:
 
@@ -1009,7 +997,7 @@ public class HexService {
 
    public void forceGrow(Hex hex) {
 
-      hex.addPlant(new Jungle(), HexMap.getInstance().getStaleHexBodyStandingWater(hex));
+      hex.addPlant(new Jungle(), map.getStaleHexBodyStandingWater(hex));
    }
 
    /**
@@ -1019,7 +1007,6 @@ public class HexService {
    public int topple(Pair id, int toppleCount) {
 
       List<Pair> neighbors = getNeighbors(id);
-      HexMap map = HexMap.getInstance();
       Hex hexToTopple = map.getHex(id);
       TheRandom rand = TheRandom.getInstance();
       toppleCount ++;

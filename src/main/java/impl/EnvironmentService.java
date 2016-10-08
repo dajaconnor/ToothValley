@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import enums.Direction;
 import enums.TectonicEdgeDirection;
 import models.BodyOfWater;
 import models.Environment;
