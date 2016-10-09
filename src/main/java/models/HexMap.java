@@ -8,6 +8,8 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import enums.DisplayType;
 import graphics.OpenGLWindow;
@@ -34,8 +36,6 @@ public class HexMap {
 	
 	private int blowing = 5;
 	
-	private boolean updatingMap = false;
-	
 	private Map<Pair,BodyOfWater> pairToWaterBodies = new HashMap<Pair,BodyOfWater>();
 	
 	private Set<BodyOfWater> allWaterBodies = new HashSet<BodyOfWater>();
@@ -43,6 +43,8 @@ public class HexMap {
 	private List<List<BodyOfWater>> bodiesThatNeedToBeJoined = new ArrayList<List<BodyOfWater>>();
 
 	private Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>();
+	private Map<Pair,Pair> readMap = new HashMap<Pair,Pair>();
+	private static ReadWriteLock displayMapLock = new ReentrantReadWriteLock();
 	
 	//For singletonhood
 	private static HexMap instance = new HexMap();
@@ -217,14 +219,19 @@ public class HexMap {
 	}
 
 	public Map<Pair,Pair> getDisplayMap() {
-		return displayMap;
-	}
+	   
+	   displayMapLock.readLock().lock();
 
-	public void setDisplayMap(HashMap<Pair,Pair> displayMap) {
-		this.displayMap = displayMap;
+      try{
+         readMap = displayMap;
+      } finally{
+         displayMapLock.readLock().unlock();
+      }
+	   
+		return readMap;
 	}
 	
-	public void updateHexDisplay(Hex hex){
+	public Pair updateHexDisplay(Hex hex){
 		
 		int elevation = hex.getElevation();
 		int standingBodyWater = getStaleHexBodyStandingWater(hex);
@@ -237,8 +244,8 @@ public class HexMap {
 		Color color = hex.getColor(standingBodyWater);
 		
 		Pair displayPair = new Pair(colorToInt(color), elevation);
-		
-		displayMap.put(hex.getHexID(), displayPair);
+
+		return displayPair;
 	}
 	
 	public int getStaleHexBodyStandingWater(Pair id){
@@ -302,14 +309,6 @@ public class HexMap {
 		this.plates = plates;
 	}
 
-   public boolean isUpdatingMap() {
-      return updatingMap;
-   }
-
-   public void setUpdatingMap(boolean updatingMap) {
-      this.updatingMap = updatingMap;
-   }
-
    public Map<Pair,BodyOfWater> getPairToWaterBodies() {
       return pairToWaterBodies;
    }
@@ -336,5 +335,15 @@ public class HexMap {
 
    public Set<BodyOfWater> getAllWaterBodies() {
       return allWaterBodies;
+   }
+   
+   public void setDisplayMap(Map<Pair, Pair> newDisplayMap){
+      displayMapLock.writeLock().lock();
+
+      try{ 
+         displayMap = newDisplayMap;
+      } finally{
+         displayMapLock.writeLock().unlock();
+      }
    }
 }

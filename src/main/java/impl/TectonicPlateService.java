@@ -62,7 +62,7 @@ public class TectonicPlateService {
 		
 		if (!bucket.getAllEdges().contains(pair) && !claimedEdgeSides.contains(pair)){
 			
-			List<Pair> neighbors = hexService.getNeighbors(pair);
+			List<Pair> neighbors = pair.getNeighbors();
 			
 			for (Pair neighbor : neighbors){
 				
@@ -82,7 +82,7 @@ public class TectonicPlateService {
 		plate.getInnerRing().add(pair);
 		HexMap.getInstance().getHex(pair).setTectonicState(1);
 		claimedEdgeSides.add(pair);
-		List<Pair> neighbors = hexService.getNeighbors(pair);
+		List<Pair> neighbors = pair.getNeighbors();
 		
 		for (Pair neighbor : neighbors){
 			
@@ -234,7 +234,7 @@ public class TectonicPlateService {
 		}
 		
 		// If it didn't work... try again?  Hope this doesn't blow up...
-		if (!hexService.inBounds(bucket.getStartPoint())){
+		if (!bucket.getStartPoint().inBounds()){
 			
 			generateStartPoint(bucket);
 		}
@@ -242,7 +242,7 @@ public class TectonicPlateService {
 
 	private Direction getElbowStartDirection(PlateBucket bucket, Pair elbowPair) {
 
-		List<Pair> neighbors = hexService.getNeighbors(elbowPair);
+		List<Pair> neighbors = elbowPair.getNeighbors();
 		Pair nextPair = null;
 		Direction returnDirection = null;
 

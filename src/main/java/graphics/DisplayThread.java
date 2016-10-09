@@ -8,17 +8,17 @@ public class DisplayThread implements Runnable {
    
 	private Thread t;
 	private String threadName;
-	private boolean creatingMap;
+	private volatile boolean creatingMap;
 
 	public DisplayThread( String name, HexMapService hexMapService){
-       threadName = name;
-       this.hexMapService = hexMapService;
-       System.out.println("Creating " +  threadName );
+	   setCreatingMap(true);
+	   threadName = name;
+	   this.hexMapService = hexMapService;
+	   System.out.println("Creating " +  threadName );
    }
 
    public void run() {
 
-      setCreatingMap(true);
       OpenGLWindow window = OpenGLWindow.getInstance();
       hexMapService.createMap();
       int ticks = 0;

@@ -11,16 +11,12 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import impl.HexService;
 import impl.WaterService;
 import propogation.DirectionalEvaluator;
 import propogation.Evaluator;
 import propogation.Propogator;
 
 public class BodyOfWater {
-
-	@Autowired
-	private HexService hexService;
 
 	@Autowired
 	private WaterService waterService;
@@ -182,7 +178,7 @@ public class BodyOfWater {
 	
 	private boolean tryConnectOrphan(Pair orphan){
 	   
-	   List<Pair> neighbors = hexService.getNeighbors(orphan);
+	   List<Pair> neighbors = orphan.getNeighbors();
 	   
 	   for (Pair neighbor : neighbors){
 	      
@@ -428,7 +424,7 @@ public class BodyOfWater {
 	private void removeMember(Pair member) {
 
 	   HexMap map = HexMap.getInstance();	   
-	   List<Pair> neighbors = hexService.getNeighbors(member);
+	   List<Pair> neighbors = member.getNeighbors();
 	   
 	   for (Pair neighbor : neighbors){
 	      

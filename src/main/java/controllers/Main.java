@@ -13,6 +13,7 @@ import impl.EnvironmentService;
 import impl.HexMapService;
 import impl.WaterService;
 import models.Environment;
+import models.HexMap;
 
 @Component
 public class Main {
@@ -47,7 +48,7 @@ public class Main {
 		int ticks = 0;
 		boolean foundLeak = false;
 		
-		while (display.isCreatingMap()){
+		while (display.isCreatingMap() && HexMap.getInstance().getHexes().size() != Environment.MAP_GRID[0] * Environment.MAP_GRID[1]){
 		   sleep();
 		}
 		

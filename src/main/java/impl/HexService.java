@@ -28,8 +28,8 @@ public class HexService {
 
    public List<Pair> getSharedNeighbors(Pair pair1, Pair pair2){
 
-      List<Pair> neighborList = getNeighbors(pair1);
-      Set<Pair> neighborSet = getNeighborsSet(pair2);
+      List<Pair> neighborList = pair1.getNeighbors();
+      Set<Pair> neighborSet = pair1.getNeighborsSet();
       List<Pair> returnList = new ArrayList<Pair>();
 
       for (Pair pair : neighborList){
@@ -59,82 +59,12 @@ public class HexService {
       return Direction.values()[rand.get().nextInt(6)];
    }
 
-   public boolean inBounds(Pair ID) {
-
-      return map.getHexes().containsKey(ID);
-   }
-
    public Pair getAreaPair(Pair ID){
 
-      List<Pair> neighborhood = getNeighbors(ID);
+      List<Pair> neighborhood = ID.getNeighbors();
       neighborhood.add(ID);
       TheRandom rand = TheRandom.getInstance();
       return neighborhood.get(rand.get().nextInt(neighborhood.size()));
-   }
-
-   public List<Pair> getNeighbors(Pair hex) {
-
-      Pair pair = new Pair(hex.getX(), hex.getY());
-
-      List<Pair> neighbors = new ArrayList<Pair>();
-
-      Pair newID = pair.N();
-      if (inBounds(newID)) {
-         neighbors.add(newID);
-      }
-      newID = pair.NW();
-      if (inBounds(newID)) {
-         neighbors.add(newID);
-      }
-      newID = pair.SW();
-      if (inBounds(newID)) {
-         neighbors.add(newID);
-      }
-      newID = pair.S();
-      if (inBounds(newID)) {
-         neighbors.add(newID);
-      }
-      newID = pair.SE();
-      if (inBounds(newID)) {
-         neighbors.add(newID);
-      }
-      newID = pair.NE();
-      if (inBounds(newID)) {
-         neighbors.add(newID);
-      }
-      return neighbors;
-   }
-
-   public Set<Pair> getNeighborsSet(Pair hex) {
-
-      Pair pair = new Pair(hex.getX(), hex.getY());
-      Set<Pair> neighbors = new HashSet<Pair>();
-
-      Pair newID = pair.N();
-      if (inBounds(newID)) {
-         neighbors.add(newID);
-      }
-      newID = pair.NW();
-      if (inBounds(newID)) {
-         neighbors.add(newID);
-      }
-      newID = pair.SW();
-      if (inBounds(newID)) {
-         neighbors.add(newID);
-      }
-      newID = pair.S();
-      if (inBounds(newID)) {
-         neighbors.add(newID);
-      }
-      newID = pair.SE();
-      if (inBounds(newID)) {
-         neighbors.add(newID);
-      }
-      newID = pair.NE();
-      if (inBounds(newID)) {
-         neighbors.add(newID);
-      }
-      return neighbors;
    }
 
    /**
@@ -248,7 +178,7 @@ public class HexService {
       resistance[0] = 1000;
       resistance[1] = 1000;
 
-      List<Pair> neighbors = getNeighbors(hex.getHexID());
+      List<Pair> neighbors = hex.getHexID().getNeighbors();
 
       for (Pair hexId : neighbors) {
 
@@ -496,7 +426,7 @@ public class HexService {
       //If there is standing water, shove it around
       if (hex.getSaturation(standingBodyWater) > 1) {
          int elev = hex.getCombinedElevation(standingBodyWater);
-         List<Pair> neighbors = getNeighbors(hex.getHexID());
+         List<Pair> neighbors = hex.getHexID().getNeighbors();
 
          //Kill plants that aren't strong enough
          drownPlant(hex, bodyStandingWater);
@@ -577,7 +507,7 @@ public class HexService {
 
    private Hex getLowestNeighber(Pair id){
 
-      List<Pair> neighbors = getNeighbors(id);
+      List<Pair> neighbors = id.getNeighbors();
 
       int elevation = 1000;
       Hex lowest = map.getHex(neighbors.get(0));
@@ -736,7 +666,7 @@ public class HexService {
 
          if(plant != null){
 
-            List<Pair> neighbors = getNeighbors(id);
+            List<Pair> neighbors = id.getNeighbors();
 
             for (Pair neighbor : neighbors){
 
@@ -876,7 +806,7 @@ public class HexService {
     */
    public int topple(Pair id, int toppleCount) {
 
-      List<Pair> neighbors = getNeighbors(id);
+      List<Pair> neighbors = id.getNeighbors();
       Hex hexToTopple = map.getHex(id);
       TheRandom rand = TheRandom.getInstance();
       toppleCount ++;

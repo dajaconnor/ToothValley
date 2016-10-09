@@ -1,5 +1,10 @@
 package models;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import enums.Direction;
 
 public class Pair {
@@ -116,7 +121,7 @@ public class Pair {
        int newY = argY;
 
        int mapX = Environment.MAP_GRID[0];
-       int mapY = Environment.MAP_GRID[1];
+       int mapY = Environment.MAP_GRID[1] ;
 
        if (argX >= mapX) {
 
@@ -197,5 +202,38 @@ public class Pair {
        }
 
        return returnPair;
+    }
+    
+    public List<Pair> getNeighbors() {
+
+       List<Pair> neighbors = new ArrayList<Pair>();
+
+       neighbors.add(N());
+       neighbors.add(NW());
+       neighbors.add(SW());
+       neighbors.add(S());
+       neighbors.add(SE());
+       neighbors.add(NE());
+       
+       return neighbors;
+    }
+
+    public Set<Pair> getNeighborsSet() {
+
+       Set<Pair> neighbors = new HashSet<Pair>();
+
+       neighbors.add(N());
+       neighbors.add(NW());
+       neighbors.add(SW());
+       neighbors.add(S());
+       neighbors.add(SE());
+       neighbors.add(NE());
+
+       return neighbors;
+    }
+    
+    public boolean inBounds() {
+
+       return this.equals(wrap());
     }
 }

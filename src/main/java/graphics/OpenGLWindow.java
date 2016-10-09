@@ -195,16 +195,8 @@ public class OpenGLWindow {
 
 	   HexMap map = HexMap.getInstance();
 	   
-	   while(map.isUpdatingMap()){
-	      try {
-            Thread.sleep(1);
-         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-         }
-	   }
-	   
-		Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>(map.getDisplayMap());
+
+		Map<Pair,Pair> displayMap = map.getDisplayMap();
 		
 		if(isAutoSpin()){
 		

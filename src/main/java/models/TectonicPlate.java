@@ -7,7 +7,6 @@ import java.util.Set;
 
 import enums.Direction;
 import enums.TectonicEdgeDirection;
-import impl.HexService;
 
 public class TectonicPlate {
 	

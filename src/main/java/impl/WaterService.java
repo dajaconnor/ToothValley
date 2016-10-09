@@ -1,8 +1,10 @@
 package impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +27,10 @@ public class WaterService {
    @Autowired
    private HexMapService hexMapService;
    
+   HexMap map = HexMap.getInstance();
+   
    public void bodyOfWaterCycle(){
-      
-      HexMap map = HexMap.getInstance();
-      
+
       Set<BodyOfWater> bodies = map.getAllWaterBodies();
       List<BodyOfWater> removeTheseBodies = new ArrayList<BodyOfWater>();
       List<Pair> orphans = new ArrayList<Pair>();
@@ -50,7 +52,6 @@ public class WaterService {
    private void evaporateBody(BodyOfWater body) {
       
       Integer point = body.getExtremePoint(Environment.LOWEST);
-      HexMap map = HexMap.getInstance();
       
       int size = body.getElevationMap().get(point).size();
       int bodySize = body.getAllMembers().size();
@@ -76,13 +77,11 @@ public class WaterService {
    // returns the body its in, or null if not in a body
    public BodyOfWater inBody(Pair node){
 
-      return HexMap.getInstance().getPairToWaterBodies().get(node);
+      return map.getPairToWaterBodies().get(node);
    }
 
    public void addToMapWaterBodies(Pair node, BodyOfWater body){
 
-      HexMap map = HexMap.getInstance();
-      
       BodyOfWater conflictingBody = inBody(node);
       
       if (conflictingBody != null){
@@ -99,7 +98,6 @@ public class WaterService {
 
    public void removeNode(Pair node){
 
-      HexMap map = HexMap.getInstance();
       BodyOfWater body = map.getPairToWaterBodies().get(node);
 
       map.getPairToWaterBodies().remove(node);
@@ -110,8 +108,7 @@ public class WaterService {
    }
    
    public BodyOfWater createBodyFromHex(Pair pair){
-      
-      HexMap map = HexMap.getInstance();
+
       BodyOfWater body = null;
       
       if (inBody(pair) == null && map.getHex(pair).getStandingWater(0) > Environment.WATER_BODY_MIN){
@@ -128,8 +125,7 @@ public class WaterService {
    }
    
    public Set<BodyOfWater> handleMergingBodies(){
-      
-      HexMap map = HexMap.getInstance();
+
       Set<BodyOfWater> destroyThese = new HashSet<BodyOfWater>();
       
       for (List<BodyOfWater> toBeJoined : map.getBodiesThatNeedToBeJoined()){
@@ -169,7 +165,6 @@ public class WaterService {
    
    public void waterCycle(boolean findLeak, boolean leakFound) {
 
-      HexMap map = HexMap.getInstance();
       int totalWater = 0;
 
       List<Pair> allHexes = new ArrayList<Pair>(map.getHexes().keySet());
@@ -214,8 +209,7 @@ public class WaterService {
        * 
        * System.out.println("rain leak"); leak = true; }
        */
-
-      map.setUpdatingMap(true);
+      Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>();
 
       for (Pair hexID : allHexes) {
 
@@ -227,12 +221,11 @@ public class WaterService {
             hexService.flood(hex, findLeak, map.getStaleHexBodyStandingWater(hex));
             hexService.topple(hexID, 0);
 
-            map.updateHexDisplay(hex);
-
+            displayMap.put(hexID, map.updateHexDisplay(hex));
          }
       }
-
-      map.setUpdatingMap(false);
+      
+      map.setDisplayMap(displayMap);
 
       if (findLeak && totalWater != hexMapService.allWater()[0] && !leakFound) {
 
@@ -249,8 +242,6 @@ public class WaterService {
     * @return the hex blown to, or null if it failed to blow
     */
    public void blow(boolean findLeak) {
-
-      HexMap map = HexMap.getInstance();
 
       for (Pair cloud : map.getCloudOrder()) {
 
@@ -287,7 +278,6 @@ public class WaterService {
    private void blowCorner(Direction direction, Pair currentPair, int cloudElevation, boolean findLeak) {
 
       List<Pair> layer = new ArrayList<Pair>();
-      HexMap map = HexMap.getInstance();
       layer.add(currentPair);
 
       while (layer.size() > 0) {
@@ -321,8 +311,6 @@ public class WaterService {
    }
 
    private boolean blowSingleHex(Pair from, Pair to, int cloudElevation, boolean findLeak) {
-
-      HexMap map = HexMap.getInstance();
 
       int total = 0;
       Hex fromHex = map.getHex(from);
@@ -374,7 +362,7 @@ public class WaterService {
 
       int changed = hex.alterMoistureInAir(-Math.abs(amount));
       
-      HexMap.getInstance().alterMoisture(hex, changed);
+      map.alterMoisture(hex, changed);
 
       return changed == amount;
    }

@@ -5,18 +5,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import impl.HexService;
 import models.Pair;
 
 //http://stackoverflow.com/questions/2186931/java-pass-method-as-parameter
 @Component
 public class Propogator {
-
-   @Autowired
-   private HexService hexService;
 
    public void propogate(Evaluator evaluator, Pair startingPair) 
    {
@@ -35,7 +30,7 @@ public class Propogator {
 
          for (Pair pair : nextList){
 
-            neighbors.addAll(hexService.getNeighborsSet(pair));
+            neighbors.addAll(pair.getNeighborsSet());
          }
 
          nextList = new ArrayList<Pair>();
@@ -76,7 +71,7 @@ public class Propogator {
 
          for (Pair thisPair : thisList){
 
-            List<Pair> neighbors = hexService.getNeighbors(thisPair);
+            List<Pair> neighbors = thisPair.getNeighbors();
             
             for (Pair neighbor : neighbors){
                
