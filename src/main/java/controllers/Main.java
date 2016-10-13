@@ -44,7 +44,7 @@ public class Main {
 	   DisplayThread display = new DisplayThread("displayThread", hexMapService);
 	   display.start();
 
-		boolean findLeak = true;
+		boolean findLeak = false;
 		int ticks = 0;
 		boolean foundLeak = false;
 		
@@ -80,6 +80,8 @@ public class Main {
 				foundLeak = true;
 			}
 
+			waterService.bodyOfWaterCycle();
+			
 			lastMark = new Date().getTime();
 			waterService.waterCycle(findLeak, foundLeak);
 			waterCycleTime += new Date().getTime() - lastMark;

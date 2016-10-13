@@ -183,6 +183,8 @@ public class EnvironmentService {
                   boolean needsChecking = map.getHex(hexService.getAreaPair(keyPair))
                   .setElevation(map.getHex(keyPair).getElevation() + Environment.TECTONIC_AMPLITUDE, body != null);
                   
+                  hexService.topple(keyPair, 0);
+                  
                   if (needsChecking) body.addToHexesToCheckForElevation(keyPair);
                }
 

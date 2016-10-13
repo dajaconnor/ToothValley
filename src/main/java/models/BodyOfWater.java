@@ -3,44 +3,31 @@ package models;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
-import impl.WaterService;
 import propogation.DirectionalEvaluator;
-import propogation.Evaluator;
 import propogation.Propogator;
 
 public class BodyOfWater {
 
-	@Autowired
-	private WaterService waterService;
-
-	@Autowired
-	private Propogator propogator;
-
-	private Set<Pair> allMembers;
+	private Set<Pair> allMembers = new HashSet<Pair>();
 	private int floorElevation; // sum of elevation of all members
 	private int water; // sum of standing water of all members
-	private Map<Integer, Set<Pair>> elevationMap;
-	private Set<Pair> shore;
-	private Map<Pair, Pair> connectivityMap;
-	private Map<Pair, Set<Pair>> connectivityChildMap;
+	private Map<Integer, Set<Pair>> elevationMap = new HashMap<Integer, Set<Pair>>();
+	//private Set<Pair> shore = new HashSet<Pair>();
+	private Map<Pair, Pair> connectivityMap = new HashMap<Pair, Pair>();
+	private Map<Pair, Set<Pair>> connectivityChildMap = new HashMap<Pair, Set<Pair>>();
 	private int waterLineLastChecked;
-	private Pair originalMember;
+
+   private Pair originalMember;
 	private List<Pair> hexesToCheckForElevation = new ArrayList<Pair>();
 
 	public BodyOfWater(Pair startingMember) {
 
 	   originalMember = startingMember;
-		computeAndSetMembers(startingMember);
-		buildConnectivityMap();
-		waterLineLastChecked = getWaterLine();
 	}
 	
 	@Override
@@ -49,16 +36,30 @@ public class BodyOfWater {
       return originalMember.hashCode();
    }
 	
-	public void mergeInOtherBody(BodyOfWater otherBody){
+	@Override
+   public boolean equals(Object obj) {
+      
+      if (obj instanceof BodyOfWater){
+         
+         return originalMember.equals(((BodyOfWater) obj).getOriginalMember());
+      }
+      
+      return false;
+   }
+	
+	private Object getOriginalMember() {
 
-	   otherBody.recomputeWaterline();
-	   
+      return originalMember;
+   }
+
+   public void mergeInOtherBody(BodyOfWater otherBody){
+
 	   // find all shared pairs
       Set<Pair> intersection = new HashSet<Pair>(otherBody.getAllMembers()); // use the copy constructor
       intersection.retainAll(getAllMembers());
       
       adjustFloorElevation(otherBody.getFloorElevation());
-      adjustWater(otherBody.getWater());
+      adjustTotalWater(otherBody.getTotalWater());
       
       subtractDoubleCountedPairs(intersection, otherBody);
       
@@ -66,7 +67,7 @@ public class BodyOfWater {
       
       getAllMembers().addAll(otherBody.getAllMembers());
       
-      mergeShore(otherBody.getShore()); // must happen after all member merge
+      //mergeShore(otherBody.getShore()); // must happen after all member merge
       buildConnectivityMap();
 	}
 	
@@ -77,7 +78,7 @@ public class BodyOfWater {
 	   for (Pair pair : doubleCounted){
          
          adjustFloorElevation(-map.getHex(pair).getElevation());
-         adjustWater(-map.getStaleHexBodyStandingWater(pair));
+         adjustTotalWater(-map.getHexBodyStandingWater(pair));
       }
 	}
 	
@@ -103,7 +104,7 @@ public class BodyOfWater {
 	}
 	
 	// must happen after all members are merged
-	private void mergeShore(Set<Pair> otherShore){
+/*	private void mergeShore(Set<Pair> otherShore){
 	   
 	   Set<Pair> otherIntersection = new HashSet<Pair>(otherShore); // use the copy constructor
 	   otherIntersection.retainAll(getAllMembers());
@@ -114,69 +115,11 @@ public class BodyOfWater {
 	   shore.addAll(otherShore);
 	   shore.removeAll(otherIntersection);
 	   shore.removeAll(intersection);
-	}
+	}*/
 	
-	// Returns all disconnected pairs
-	public List<Pair> handleWaterLineChanges(){
-	   
-	   // make sure to handle connectivity in here
-	   
-	   List<Pair> returnedOrphans = new ArrayList<Pair>();
-	   int currentWaterLine = getWaterLine();
-	   
-	   if (currentWaterLine == waterLineLastChecked) return new ArrayList<Pair>();
-	   
-	   // Add members
-      // Consume any other bodies encountered, removing them from map
-	   if (currentWaterLine > waterLineLastChecked){
-	      
-	      List<Pair> shoreList = new ArrayList<Pair>(shore);
-	      
-	      for(Pair beach : shoreList){
-	         
-	         propogator.propogate(new FloodCommand(), beach);
-	      }
-	   }
-	   
-	   // remove members
-      // add all detached members to return list and remove them
-	   if (currentWaterLine < waterLineLastChecked){
 
-	      Set<Entry<Integer, Set<Pair>>> entrySet = getElevationMap().entrySet();
-	      Set<Pair> orphanedMembers = new HashSet<Pair>();
-	      
-	      for (Entry<Integer, Set<Pair>> entry : entrySet){
-	         
-	         if (entry.getKey() >= currentWaterLine){
-	            
-	            for (Pair pair : entry.getValue()){
-	               
-	               removeMember(pair);
-	               Set<Pair> orphans = removeFromConnectivityMap(pair);
-	               
-	               if (orphans != null){
-	                  orphanedMembers.addAll(orphans);
-	               }
-	            }
-	         }
-	      }
-
-	      for (Pair orphan : orphanedMembers){
-	         
-	         if (getAllMembers().contains(orphan)){
-	            
-	            if (!tryConnectOrphan(orphan)){
-	               
-	               returnedOrphans.add(orphan);
-	            }
-	         }
-	      }
-	   }
-	   
-	   return returnedOrphans;
-	}
 	
-	private boolean tryConnectOrphan(Pair orphan){
+	public boolean tryConnectOrphan(Pair orphan){
 	   
 	   List<Pair> neighbors = orphan.getNeighbors();
 	   
@@ -197,21 +140,9 @@ public class BodyOfWater {
 	   return false;
 	}
 
-	private void computeAndSetMembers(Pair startingMember) {
-
-		HexMap map = HexMap.getInstance();
-
-		if (map.getHexes().get(startingMember).getStandingWater(0) < Environment.WATER_BODY_MIN) {
-
-			return;
-		}
-
-		waterService.addToMapWaterBodies(startingMember, this);
-
-		propogator.propogate(new FloodCommand(), startingMember);
-	}
 	
-	private class RetreatCommand implements Evaluator{
+	
+/*	private class RetreatCommand implements Evaluator{
 	   
 	   HexMap map = HexMap.getInstance();
       
@@ -229,43 +160,9 @@ public class BodyOfWater {
 
          // Do nothing
       }
-	}
+	}*/
 	
-	private BodyOfWater getThisBody(){
-	   return this;
-	}
-	
-	private class FloodCommand implements Evaluator{
 
-	   HexMap map = HexMap.getInstance();
-
-      public boolean evaluate(Pair pairToEvaluate) {
-         
-         BodyOfWater anotherBody = waterService.inBody(pairToEvaluate);
-         boolean ranIntoAnotherBody = anotherBody != null;
-         
-         if (ranIntoAnotherBody){
-
-            List<BodyOfWater> joinList = new ArrayList<BodyOfWater>();
-            joinList.add(getThisBody());
-            joinList.add(anotherBody);
-            
-            map.getBodiesThatNeedToBeJoined().add(joinList);
-         }
-
-         return !ranIntoAnotherBody && !getAllMembers().contains(pairToEvaluate) && map.getHexes().get(pairToEvaluate).getStandingWater(0) > Environment.WATER_BODY_MIN;
-      }
-
-      public void onSuccess(Pair pairToEvaluate) {
-
-         addMember(pairToEvaluate);         
-      }
-
-      public void onFail(Pair pairToEvaluate) {
-         
-         addToShore(pairToEvaluate);
-      }
-   }
 
 	/*
 	 * Must have an updated elevation map to function right
@@ -284,7 +181,7 @@ public class BodyOfWater {
 		
 		Pair startingPoint = getElevationMap().get(lowestPoint).iterator().next();
 		
-		propogator.propogateFromOrigin(new ConnectivityMapCommandBuilder(), startingPoint);
+		new Propogator().propogateFromOrigin(new ConnectivityMapCommandBuilder(), startingPoint);
 	}
 
 	private class ConnectivityMapCommandBuilder implements DirectionalEvaluator{
@@ -325,8 +222,8 @@ public class BodyOfWater {
 
 		for (Integer key : keySet) {
 
-			if (extremestPoint == null || (!getElevationMap().get(key).isEmpty())
-			      && ((!highest && key < extremestPoint) || (highest && key > extremestPoint))) {
+			if (!getElevationMap().get(key).isEmpty()
+			   && (extremestPoint == null || ((!highest && key < extremestPoint) || (highest && key > extremestPoint)))) {
 
 			   extremestPoint = key;
 			}
@@ -349,25 +246,13 @@ public class BodyOfWater {
 	      if (getConnectivityMap().get(pair).equals(pair)) return true;
 
 	      pair = getConnectivityMap().get(pair);
+	      traversedPairs.add(pair);
 	   }
 
 	   return false;
 	}
 
-	public void updateHexElevation(Hex hex, int newElevation) {
-
-		if (getAllMembers().contains(hex.getHexID())) {
-
-			if (hex.getElevation() != newElevation) {
-
-				setFloorElevation(getFloorElevation() + newElevation - hex.getElevation());
-				removeFromElevationMap(hex.getHexID(), hex.getElevation());
-				addToElevationMap(hex.getHexID(), newElevation);
-			}
-		}
-	}
-
-	private void computeElevationMap() {
+/*	private void computeElevationMap() {
 
 		Iterator<Pair> iterator = getAllMembers().iterator();
 		HexMap map = HexMap.getInstance();
@@ -403,51 +288,7 @@ public class BodyOfWater {
 
 			setWater(getWater() + map.getHex(iterator.next()).getStandingWater(0));
 		}
-	}
-
-	private void addMember(Pair member) {
-
-	   removeFromShore(member);
-		getAllMembers().add(member);
-		waterService.addToMapWaterBodies(member, this);
-
-		HexMap map = HexMap.getInstance();
-		Hex hex = map.getHex(member);
-
-		adjustWater(map.alterMoisture(hex, -hex.getStandingWater(0)));
-
-		int elevation = map.getHex(member).getElevation();
-		adjustFloorElevation(elevation);
-		addToElevationMap(member, elevation);
-	}
-
-	private void removeMember(Pair member) {
-
-	   HexMap map = HexMap.getInstance();	   
-	   List<Pair> neighbors = member.getNeighbors();
-	   
-	   for (Pair neighbor : neighbors){
-	      
-	      if (getAllMembers().contains(neighbor)){
-	         
-	         addToShore(neighbor);
-	         break;
-	      }
-	   }
-	   
-		getAllMembers().remove(member);
-		waterService.removeNode(member);
-		Hex hex = map.getHex(member);
-
-		int leftover = adjustWater(-map.alterMoisture(hex, hex.getStandingWater(0)));
-		
-		// Just in case... but this should never happen
-		if (leftover > 0) hex.alterMoistureInAir(leftover);
-
-		int elevation = map.getHex(member).getElevation();
-		adjustFloorElevation(-elevation);
-		removeFromElevationMap(member, elevation);
-	}
+	}*/
 
 	public Set<Pair> getAllMembers() {
 		return allMembers;
@@ -461,23 +302,19 @@ public class BodyOfWater {
 		return floorElevation;
 	}
 
-	public void setFloorElevation(int floorElevation) {
-		this.floorElevation = floorElevation;
-	}
-
 	public void adjustFloorElevation(int change) {
 		this.floorElevation += change;
 	}
 
-	public int getWater() {
+	public int getTotalWater() {
 		return water;
 	}
 
-	public void setWater(int water) {
+	public void setTotalWater(int water) {
 		this.water = water;
 	}
 
-	public int adjustWater(int change) {
+	public int adjustTotalWater(int change) {
 	   
 	   if (change + water < 0){
 	      
@@ -490,26 +327,20 @@ public class BodyOfWater {
 		return Math.abs(change);
 	}
 
-	private int getWaterLine() {
-		return (getWater() / Environment.WATER_PER_ELEVATION + getFloorElevation()) / getAllMembers().size();
+	public int getWaterLine() {
+	   
+	   if (getAllMembers() == null || getAllMembers().isEmpty()) return 0;
+		return (getTotalWater() / Environment.WATER_PER_ELEVATION + getFloorElevation()) / getAllMembers().size();
 	}
 	
-	public void recomputeWaterline(){
-	   waterLineLastChecked = getWater();
-	}
-	
-	public int getSlightlyStaleWaterLine(){
-	   return waterLineLastChecked;
-	}
-
-	private void addToElevationMap(Pair member, int elevation) {
+	public void addToElevationMap(Pair member, int elevation) {
 		if (!getElevationMap().containsKey(elevation)) {
 			getElevationMap().put(elevation, new HashSet<Pair>());
 		}
 		getElevationMap().get(elevation).add(member);
 	}
 
-	private void removeFromElevationMap(Pair member, int elevation) {
+	public void removeFromElevationMap(Pair member, int elevation) {
 		if (getElevationMap().containsKey(elevation)) {
 		   getElevationMap().get(elevation).remove(member);
 			
@@ -543,7 +374,7 @@ public class BodyOfWater {
    }
    
    // returns orphaned children
-   private Set<Pair> removeFromConnectivityMap(Pair pair) {
+   public Set<Pair> removeFromConnectivityMap(Pair pair) {
       connectivityMap.remove(pair);
       return connectivityChildMap.get(pair);
    }
@@ -560,7 +391,7 @@ public class BodyOfWater {
       connectivityChildMap.get(parent).add(child);
    }
    
-   private void addToShore(Pair pair){
+/*   public void addToShore(Pair pair){
       
       if (shore == null){
          shore = new HashSet<Pair>();
@@ -569,7 +400,7 @@ public class BodyOfWater {
       shore.add(pair);
    }
    
-   private void removeFromShore(Pair pair){
+   public void removeFromShore(Pair pair){
       
       if (shore == null){
          shore = new HashSet<Pair>();
@@ -581,7 +412,7 @@ public class BodyOfWater {
    public Set<Pair> getShore(){
       
       return shore;
-   }
+   }*/
 
    public List<Pair> getHexesToCheckForElevation() {
       return hexesToCheckForElevation;
@@ -594,4 +425,34 @@ public class BodyOfWater {
    public void addToHexesToCheckForElevation(Pair pair) {
       hexesToCheckForElevation.add(pair);
    }
+   
+   public void setWaterLineLastChecked(){
+      waterLineLastChecked = getWaterLine();
+   }
+   
+   public int getWaterLineLastChecked() {
+      return waterLineLastChecked;
+   }
+
+   public void setWaterLineLastChecked(int waterLineLastChecked) {
+      this.waterLineLastChecked = waterLineLastChecked;
+   }
+
+   public Set<Pair> getShallowHexes(int iterations) {
+
+      int lowPoint = getExtremePoint(false);
+      Set<Pair> returnSet = getElevationMap().get(lowPoint);
+      
+      while(--iterations > 0){
+         
+         Set<Pair> hexes = getElevationMap().get(--lowPoint);
+         
+         if (hexes != null) returnSet.addAll(hexes);
+         
+         
+      }
+
+      return returnSet;
+   }
+
 }

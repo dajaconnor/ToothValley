@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import enums.DisplayType;
 import graphics.OpenGLWindow;
 import models.Environment;
 import models.Hex;
@@ -91,7 +92,7 @@ public class HexMapService {
 				Hex hex = makeHex(x, Y, elevations[pair.getX()][pair.getY()] * 2 - Environment.MAX_ELEVATION / 2, (densityMap[pair.getX()][pair.getY()]) / 4, 
 				      Environment.AVE_WATER / 2, Environment.AVE_WATER / 2, plant);
 				map.addHex(hex);
-				map.updateHexDisplay(hex);
+				map.updateHexDisplay(hex, DisplayType.NORMAL, null);
 			}
 		}
 		map.setPlates(plateService.generateTectonicPlates(noiseSize));
@@ -239,8 +240,8 @@ public class HexMapService {
 			
 			if (hexID != null){
 				
-				water[0] += map.getHex(hexID).getTotalWater(map.getStaleHexBodyStandingWater(hexID));
-				water[1] += map.getHex(hexID).getMoisture(map.getStaleHexBodyStandingWater(hexID));
+				water[0] += map.getHex(hexID).getTotalWater(map.getHexBodyStandingWater(hexID));
+				water[1] += map.getHex(hexID).getMoisture(map.getHexBodyStandingWater(hexID));
 				water[2] += map.getHex(hexID).getPlantMoisture();
 				water[3] += map.getHex(hexID).getMoistureInAir();
 				

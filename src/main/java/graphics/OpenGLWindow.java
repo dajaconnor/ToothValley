@@ -19,7 +19,6 @@ import static org.lwjgl.opengl.GL11.glVertex3d;
 import static org.lwjgl.util.glu.GLU.gluPerspective;
 
 import java.awt.Color;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.lwjgl.Sys;
@@ -36,12 +35,6 @@ import models.Hex;
 import models.HexMap;
 import models.Pair;
 
-/**
- * Basic game
- * 
- * @author Name <email>
- * @version 1.0
- */
 public class OpenGLWindow {
 
 	HexService hexService = new HexService();
@@ -84,18 +77,13 @@ public class OpenGLWindow {
 			throw new IllegalStateException("Already instantiated");
 		}
 
-		// boolean fullscreen = (args.length == 1 &&
-		// args[0].equals("-fullscreen"));
-
 		try {
 			init(fullscreen);
-			// run();
+
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
 			Sys.alert(GAME_TITLE, "An error occured and the game will exit.");
-		} /*
-		 * finally { cleanup(); } System.exit(0);
-		 */
+		}
 	}
 
 	/** Game title */
@@ -130,14 +118,9 @@ public class OpenGLWindow {
 		//I don't know why, but this puts the map on the screen...
 		//glTranslatef(-500, -500, -2000);
 		glTranslatef(-Environment.MAP_WIDTH/2, -300, -2000);
-		
-		//glTranslatef(X/2, Y/2, 100);
-		
-		glRotatef(-50f,1f,0f,0f); //glRotatef(1f,0f,0f,1f); 
-		
-		//glTranslatef(-X/2, -Y/2 - 300, -100);
 
-		//glOrtho(0, X, Y, 0, -Environment.MAX_ELEVATION,Environment.MAX_ELEVATION);
+		glRotatef(-50f,1f,0f,0f);
+
 		glMatrixMode(GL_MODELVIEW);
 		
 		glEnable(GL_DEPTH_TEST);
@@ -163,7 +146,6 @@ public class OpenGLWindow {
 
 		// Elevations should be: colorElev.getY(), elev2, elev3
 		// Middle
-
 		glVertex3d(vertice1.getX(), vertice1.getY(),
 				colorElev.getY());
 
@@ -172,8 +154,6 @@ public class OpenGLWindow {
 		glVertex3d(vertice3.getX(), vertice3.getY(), elev3);
 
 		glEnd();
-
-		// Display.update();
 	}
 	
 	public void drawLine(DPair vertice1, DPair vertice2, int elev1, int elev2) {
@@ -199,22 +179,13 @@ public class OpenGLWindow {
 		Map<Pair,Pair> displayMap = map.getDisplayMap();
 		
 		if(isAutoSpin()){
-		
-			//glTranslatef(X/2, Y/2, 100);
-			
-			//glTranslatef(0f, 0f, 0f);
-			glRotatef(1f,0f,0f,1f); //glRotatef(1f,0f,0f,1f); 
-			
-			//glTranslatef(-X/2, -Y/2, -100);
+
+			glRotatef(1f,0f,0f,1f);
 		}
 		
 		// Clear the screen.
 		GL11.glDepthMask(true);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-		// Start drawing triangles
-		//glBegin(GL_TRIANGLES);
-		
 
 		printAllPairs(displayMap, offset);
 

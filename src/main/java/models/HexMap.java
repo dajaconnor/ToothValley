@@ -40,7 +40,9 @@ public class HexMap {
 	
 	private Set<BodyOfWater> allWaterBodies = new HashSet<BodyOfWater>();
 	
-	private List<List<BodyOfWater>> bodiesThatNeedToBeJoined = new ArrayList<List<BodyOfWater>>();
+	private Set<BodyOfWater> waterBodiesToBeRemoved = new HashSet<BodyOfWater>();
+	
+	private Set<PairOfBodies> bodiesThatNeedToBeJoined = new HashSet<PairOfBodies>();
 
 	private Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>();
 	private Map<Pair,Pair> readMap = new HashMap<Pair,Pair>();
@@ -231,33 +233,63 @@ public class HexMap {
 		return readMap;
 	}
 	
-	public Pair updateHexDisplay(Hex hex){
-		
-		int elevation = hex.getElevation();
-		int standingBodyWater = getStaleHexBodyStandingWater(hex);
-		
-		// Not until we can avoid those stupid water pyramids
-		if (OpenGLWindow.getInstance().getDisplayType() == DisplayType.NORMAL && standingBodyWater != 0){
-		   elevation = hex.getCombinedElevation(standingBodyWater);
-		}
-		
-		Color color = hex.getColor(standingBodyWater);
-		
-		Pair displayPair = new Pair(colorToInt(color), elevation);
+	public Pair updateHexDisplay(Hex hex, DisplayType displayType, BodyOfWater inBody){
+	   
+	   Pair displayPair = null;
+	   
+	   if (inBody == null || displayType != DisplayType.NORMAL){
+	      
+	      int elevation = hex.getElevation();
+	      int standingBodyWater = hex.getStandingWater(0);
+	      
+	      // Not until we can avoid those stupid water pyramids
+/*	      if (OpenGLWindow.getInstance().getDisplayType() == DisplayType.NORMAL && standingBodyWater != 0){
+	         elevation = hex.getCombinedElevation(standingBodyWater);
+	      }*/
+	      
+	      Color color = hex.getColor(standingBodyWater, displayType);
+	      
+	      displayPair = new Pair(colorToInt(color), elevation);
+	   }
+	   
+	   else{
+	      
+	      int waterLine = inBody.getWaterLine();
+	      displayPair = new Pair(HexMap.colorToInt(Hex.WATER), waterLine);
+	   }		
 
 		return displayPair;
 	}
 	
-	public int getStaleHexBodyStandingWater(Pair id){
+/*	public Pair updateBodyOfWater(BodyOfWater body){
+      
+      int elevation = hex.getElevation();
+      int standingBodyWater = getStaleHexBodyStandingWater(hex);
+      
+      // Not until we can avoid those stupid water pyramids
+      if (OpenGLWindow.getInstance().getDisplayType() == DisplayType.NORMAL && standingBodyWater != 0){
+         elevation = hex.getCombinedElevation(standingBodyWater);
+      }
+      
+      Color color = hex.getColor(standingBodyWater);
+      
+      Pair displayPair = new Pair(colorToInt(color), elevation);
+
+      return displayPair;
+   }*/
+	
+	public int getHexBodyStandingWater(Pair id){
 	   Hex hex = getHexes().get(id);
-	   return getStaleHexBodyStandingWater(hex);
+	   return getHexBodyStandingWater(hex);
 	}
 	
-	public int getStaleHexBodyStandingWater(Hex hex){
+	public int getHexBodyStandingWater(Hex hex){
+
 	   BodyOfWater body = getPairToWaterBodies().get(hex.getHexID());
 	   
-	   if (body == null) return 0;
-	   int bodyWaterline = body.getSlightlyStaleWaterLine();
+	   if (body == null) return hex.getStandingWater(0);
+
+	   int bodyWaterline = body.getWaterLine();
 	   
 	   int standingWaterElevation = bodyWaterline - hex.getElevation();
 	   
@@ -317,7 +349,7 @@ public class HexMap {
 
       BodyOfWater body = getPairToWaterBodies().get(hex.getHexID());
       if (body == null) return hex.alterMoisture(change, false);
-      return body.adjustWater(change);
+      return body.adjustTotalWater(change);
    }
    
    public int alterMoisture(Pair hexId, int change) {
@@ -325,12 +357,12 @@ public class HexMap {
       return alterMoisture(getHex(hexId), change);
    }
 
-   public List<List<BodyOfWater>> getBodiesThatNeedToBeJoined() {
+   public Set<PairOfBodies> getBodiesThatNeedToBeJoined() {
       return bodiesThatNeedToBeJoined;
    }
 
    public void resetBodiesThatNeedToBeJoined() {
-      this.bodiesThatNeedToBeJoined = new ArrayList<List<BodyOfWater>>();
+      this.bodiesThatNeedToBeJoined = new HashSet<PairOfBodies>();
    }
 
    public Set<BodyOfWater> getAllWaterBodies() {
@@ -341,9 +373,22 @@ public class HexMap {
       displayMapLock.writeLock().lock();
 
       try{ 
-         displayMap = newDisplayMap;
+         displayMap = newDisplayMap; // map3.putAll(map1);
       } finally{
          displayMapLock.writeLock().unlock();
       }
+   }
+   
+   public DisplayType getDisplayType(){
+      
+      return OpenGLWindow.getInstance().getDisplayType();
+   }
+
+   public Set<BodyOfWater> getWaterBodiesToBeRemoved() {
+      return waterBodiesToBeRemoved;
+   }
+   
+   public void resetWaterBodiesToBeRemoved() {
+      waterBodiesToBeRemoved = new HashSet<BodyOfWater>();
    }
 }

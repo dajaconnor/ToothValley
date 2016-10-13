@@ -77,11 +77,6 @@ public class HexService {
    public boolean evaporate(Hex hex, boolean findLeak, boolean foundLeak) {
 
       boolean returnBool = false;
-      int total = 0;
-
-      if (findLeak && !foundLeak){
-         total = hex.getTotalWater(map.getStaleHexBodyStandingWater(hex));
-      }
 
       if (hex.getStandingWater(0) > 1 && map.alterMoisture(hex, -1) > 0){// 
 
@@ -118,10 +113,6 @@ public class HexService {
       if (hex.getMoistureInAir() >= Environment.CLOUD){
 
          map.addCloud(hex.getHexID());
-      }
-
-      if (findLeak && !foundLeak && total != hex.getTotalWater(map.getStaleHexBodyStandingWater(hex))){
-         System.out.println("evaporate leak!");
       }
 
       return returnBool;
@@ -186,7 +177,7 @@ public class HexService {
 
          if (adjHex.getFire() <= 0){
 
-            int resist = adjHex.hexFireResistence(map.getStaleHexBodyStandingWater(hex)) + adjHex.getMoistureInAir() - adjHex.getElevation();
+            int resist = adjHex.hexFireResistence(map.getHexBodyStandingWater(hex)) + adjHex.getMoistureInAir() - adjHex.getElevation();
 
             for (int i = 0; i < resistance.length; i++){
 
@@ -417,7 +408,7 @@ public class HexService {
 
       boolean returnBool = false;
       int total = 0;
-      int bodyStandingWater = map.getStaleHexBodyStandingWater(hex);
+      int bodyStandingWater = map.getHexBodyStandingWater(hex);
 
       if (findLeak){
          total = hex.getTotalWater(bodyStandingWater);
@@ -455,7 +446,7 @@ public class HexService {
          if (returnBool && flowTo != null){
 
             int hexAdjElev = hex.getElevation() * 4 + hex.getStandingWater(standingBodyWater);
-            int flowToAdjElev = flowTo.getElevation() * 4 + flowTo.getStandingWater(map.getStaleHexBodyStandingWater(flowTo));
+            int flowToAdjElev = flowTo.getElevation() * 4 + flowTo.getStandingWater(map.getHexBodyStandingWater(flowTo));
 
             int difference = hexAdjElev - flowToAdjElev;
 
@@ -674,7 +665,7 @@ public class HexService {
 
                if (adjHex.getFire() <= 0){
 
-                  if (adjHex.addPlant(plant, map.getStaleHexBodyStandingWater(adjHex))){
+                  if (adjHex.addPlant(plant, map.getHexBodyStandingWater(adjHex))){
 
                      break;
                   }
@@ -689,11 +680,11 @@ public class HexService {
    public boolean ignite(Pair id, int flame){
 
       Hex newHex = map.getHex(id);
-      int standingBodyWater = map.getStaleHexBodyStandingWater(newHex);
+      int standingBodyWater = map.getHexBodyStandingWater(newHex);
 
-      if (newHex != null && flame > newHex.hexFireResistence(map.getStaleHexBodyStandingWater(newHex)) && newHex.getSaturation(standingBodyWater) < 1 && newHex.getHighestVegetation() != null){
+      if (newHex != null && flame > newHex.hexFireResistence(map.getHexBodyStandingWater(newHex)) && newHex.getSaturation(standingBodyWater) < 1 && newHex.getHighestVegetation() != null){
 
-         newHex.setFire(newHex.getFireStrength(map.getStaleHexBodyStandingWater(newHex)));
+         newHex.setFire(newHex.getFireStrength(map.getHexBodyStandingWater(newHex)));
 
          map.addBurningHex(id);
          return true;
@@ -797,7 +788,7 @@ public class HexService {
 
    public void forceGrow(Hex hex) {
 
-      hex.addPlant(new Jungle(), map.getStaleHexBodyStandingWater(hex));
+      hex.addPlant(new Jungle(), map.getHexBodyStandingWater(hex));
    }
 
    /**

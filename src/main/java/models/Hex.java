@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import enums.Direction;
-import graphics.OpenGLWindow;
+import enums.DisplayType;
 import models.plants.Forest;
 import models.plants.Grass;
 import models.plants.Jungle;
@@ -626,9 +626,9 @@ public class Hex {
 	/**
 	 * Returns the color this hex should be
 	 */
-	public Color getColor(int standingBodyWater) {
+	public Color getColor(int standingBodyWater, DisplayType displayType) {
 
-		switch (OpenGLWindow.getInstance().getDisplayType()) {
+		switch (displayType) {
 
 		case ELEVATION:
 
@@ -644,8 +644,10 @@ public class Hex {
 			return new Color(elevation, elevation, elevation);
 
 		case MOISTURE:
+		   
+		   int moisture = getMoisture(standingBodyWater);
 			
-			if (getMoisture(standingBodyWater) * 4 > 255) {
+			if (moisture * 4 > 255 || moisture > 255) {
 
 				return new Color(0, 0, 255);
 			}
@@ -653,7 +655,7 @@ public class Hex {
 
 				return new Color(0, 0, 0);
 			} else {
-				return new Color(0, 0, getMoisture(standingBodyWater) * 4);
+				return new Color(0, 0, moisture * 4);
 			}
 
 		case HUMIDITY:

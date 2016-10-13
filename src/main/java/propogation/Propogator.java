@@ -39,6 +39,8 @@ public class Propogator {
 
             if (!traversedPairs.contains(pair)){
                
+               traversedPairs.add(pair);
+               
                if (evaluator.evaluate(pair)){
                   
                   evaluator.onSuccess(pair);
@@ -61,6 +63,7 @@ public class Propogator {
          
          evaluator.onInitialSuccess(startingPair);
          thisList.add(startingPair);
+         traversedPairs.add(startingPair);
       }else{
          evaluator.onInitialFail(startingPair);
       }
@@ -83,9 +86,12 @@ public class Propogator {
                   }else{
                      evaluator.onFail(neighbor, thisPair);
                   }
+                  traversedPairs.add(neighbor);
                }
             }
          }
+         
+         thisList = nextList;
       }
    }
 }
