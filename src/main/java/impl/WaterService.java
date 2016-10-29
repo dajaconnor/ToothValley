@@ -212,6 +212,7 @@ public class WaterService {
        * System.out.println("rain leak"); leak = true; }
        */
       Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>();
+      Map<Pair, Integer> bodyDisplayMap = new HashMap<Pair, Integer>();
       DisplayType displayType = map.getDisplayType();
       Set<Pair> candidates = new HashSet<Pair>();
 
@@ -235,39 +236,25 @@ public class WaterService {
             }
          }
          
-         Pair displayPair = map.updateHexDisplay(hex, displayType, inBody);
-         
-         if (inBody != null && displayPair.getY() < -100){
-            System.out.println("wtf?");
-         }
-         
-         displayMap.put(hexID, displayPair);
-         
-/*         else {
-            if (displayType != DisplayType.NORMAL){
+         Pair displayPair = map.updateHexDisplay(hex, displayType);
 
-               displayMap.put(hexID, map.updateHexDisplay(map.getHex(hexID), displayType));
-            }
-            
-            else
-         }
-            
-            
-         }*/
+         displayMap.put(hexID, displayPair);
       }
       
-/*      if (displayType == DisplayType.NORMAL){
+      map.setDisplayMap(displayMap);
       
-         for (BodyOfWater body : map.getAllWaterBodies()){
+      for (BodyOfWater body : map.getAllWaterBodies()){
+         
+         int waterLine = body.getWaterLine();
+         
+         for (Pair pair : body.getAllMembers()){
             
-            int waterLine = body.getSlightlyStaleWaterLine();
-            
-            for (Pair pair : body.getAllMembers()){
-               
-               displayMap.put(pair, new Pair(HexMap.colorToInt(Hex.WATER), waterLine));
-            }
+            bodyDisplayMap.put(pair, waterLine);
          }
-      }*/
+      }
+      
+      map.setBodyDisplayMap(bodyDisplayMap);
+         
       for (Pair pair : candidates){
          
          if (inBody(pair) == null){
@@ -289,8 +276,6 @@ public class WaterService {
             }
          }
       }
-      
-      map.setDisplayMap(displayMap);
 
       if (findLeak && totalWater != hexMapService.allWater()[0] && !leakFound) {
 
@@ -450,7 +435,6 @@ public class WaterService {
    
    private void addMember(BodyOfWater body, Pair member) {
 
-      //body.removeFromShore(member);
       body.getAllMembers().add(member);
       addToMapWaterBodies(member, body);
 
@@ -466,16 +450,6 @@ public class WaterService {
 
    private void removeMember(BodyOfWater body, Pair member) {
     
-/*      List<Pair> neighbors = member.getNeighbors();
-      
-      for (Pair neighbor : neighbors){
-         
-         if (body.getAllMembers().contains(neighbor)){
-            
-            body.addToShore(neighbor);
-            break;
-         }
-      }*/
       if (body.getAllMembers().contains(member)){
       
          body.getAllMembers().remove(member); // allMembers
@@ -517,61 +491,40 @@ public class WaterService {
             new Propogator().propogate(new FloodCommand(body), beach);
          }
       }
+
+      Set<Pair> orphanedMembers = new HashSet<Pair>();
       
-      // remove members
-      // add all detached members to return list and remove them
-      //if (currentWaterLine < body.getWaterLineLastChecked()){
+      int point = body.getExtremePoint(true);
+      List<Pair> markedForRemoval = new ArrayList<Pair>();
+      
+      while(point > body.getWaterLineLastChecked()){
+         
+         if (body.getElevationMap().get(point) != null) markedForRemoval.addAll(body.getElevationMap().get(point));
 
-         //Set<Entry<Integer, Set<Pair>>> entrySet = body.getElevationMap().entrySet();
-         Set<Pair> orphanedMembers = new HashSet<Pair>();
+         point--;
+      }
+      
+      for (Pair pair : markedForRemoval){
          
-         int point = body.getExtremePoint(true);
-         List<Pair> markedForRemoval = new ArrayList<Pair>();
+         removeMember(body, pair);
+         Set<Pair> orphans = body.removeFromConnectivityMap(pair);
          
-         while(point > body.getWaterLineLastChecked()){
-            
-            if (body.getElevationMap().get(point) != null) markedForRemoval.addAll(body.getElevationMap().get(point));
+         if (orphans != null){
+            orphanedMembers.addAll(orphans);
+         }
+      }
 
-            point--;
-         }
+      for (Pair orphan : orphanedMembers){
          
-         for (Pair pair : markedForRemoval){
+         if (body.getAllMembers().contains(orphan)){
             
-            removeMember(body, pair);
-            Set<Pair> orphans = body.removeFromConnectivityMap(pair);
-            
-            if (orphans != null){
-               orphanedMembers.addAll(orphans);
-            }
-         }
-         
-/*         for (Entry<Integer, Set<Pair>> entry : entrySet){
-            
-            if (entry.getKey() >= currentWaterLine){
+            if (!body.tryConnectOrphan(orphan)){
                
-               for (Pair pair : entry.getValue()){
-                  
-                  removeMember(body, pair);
-                  Set<Pair> orphans = body.removeFromConnectivityMap(pair);
-                  
-                  if (orphans != null){
-                     orphanedMembers.addAll(orphans);
-                  }
-               }
-            }
-         }*/
-
-         for (Pair orphan : orphanedMembers){
-            
-            if (body.getAllMembers().contains(orphan)){
-               
-               if (!body.tryConnectOrphan(orphan)){
-                  
-                  returnedOrphans.add(orphan);
-               }
+               returnedOrphans.add(orphan);
             }
          }
-      //}
+      }
+
       
       return returnedOrphans;
    }
