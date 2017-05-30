@@ -83,7 +83,7 @@ public class Main {
 			waterService.bodyOfWaterCycle();
 			
 			lastMark = new Date().getTime();
-			waterService.waterCycle(findLeak, foundLeak);
+			waterService.waterCycle(findLeak, foundLeak, ticks);
 			waterCycleTime += new Date().getTime() - lastMark;
 
 			if (findLeak && cycleTotal != hexMapService.allWater()[0] && !foundLeak){

@@ -357,8 +357,7 @@ public class HexService {
       int stability = from.getSoilStability();
       boolean returnValue = false;
 
-      if (Math.abs(slope) > stability
-            && Math.abs(slope) > Environment.MAX_SLOPE){
+      if (shouldTopple(Math.abs(slope), stability, from)){
 
          if (slope > 0){
 
@@ -374,6 +373,16 @@ public class HexService {
       }
 
       return returnValue;
+   }
+   
+   private boolean shouldTopple(int slope, int stability, Hex from){
+      // Slope is naturally unstable
+      return (slope > stability
+            // slope is steeper than should be possible above ground
+            || (slope > Environment.MAX_SLOPE 
+                  && HexMap.getInstance().getPairToWaterBodies().get(from) == null)
+            // slope is steeper than it should be anywhere
+            || (slope > Environment.MAX_UNDERWATER_SLOPE));
    }
    
    private void handleAvalanche(Hex from, Hex to, int slope){
@@ -663,7 +672,7 @@ public class HexService {
 
                Hex adjHex = map.getHex(neighbor);
 
-               if (adjHex.getFire() <= 0){
+               if (adjHex.getFire() <= 0 && !map.getPairToWaterBodies().containsKey(neighbor)){
 
                   if (adjHex.addPlant(plant, map.getHexBodyStandingWater(adjHex))){
 

@@ -494,7 +494,14 @@ public class Hex {
 				HexMap.getInstance().removeGreenHex(hexID);
 			}
 		}
-
+	}
+	
+	public void killAllPlants(){
+	   
+	   for (int i = 0; i < vegetation.length; i++){
+	      
+	      deletePlant(i);
+	   }
 	}
 
 	/**

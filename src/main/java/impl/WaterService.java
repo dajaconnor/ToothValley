@@ -165,7 +165,7 @@ public class WaterService {
     * Old water system
     */
    
-   public void waterCycle(boolean findLeak, boolean leakFound) {
+   public void waterCycle(boolean findLeak, boolean leakFound, int ticks) {
 
       int totalWater = 0;
 
@@ -234,6 +234,8 @@ public class WaterService {
                hexService.flood(hex, findLeak, map.getHexBodyStandingWater(hex));
                hexService.topple(hexID, 0);
             }
+         } else if(ticks % Environment.UNDERWATER_TOPPLE_FREQUENCY == 0){
+            hexService.topple(hexID, 0);
          }
          
          Pair displayPair = map.updateHexDisplay(hex, displayType);
@@ -440,6 +442,9 @@ public class WaterService {
 
       HexMap map = HexMap.getInstance();
       Hex hex = map.getHex(member);
+      
+      // Once it's in a body, all the plants should die
+      hex.killAllPlants();
 
       body.adjustTotalWater(hex.alterMoisture(-hex.getStandingWater(0), false));
 
@@ -486,9 +491,14 @@ public class WaterService {
       // Consume any other bodies encountered, removing them from map
       if (currentWaterLine > body.getWaterLineLastChecked()){
 
-         for(Pair beach : body.getShallowHexes(2)){
+         Set<Pair> shallowHexes = new HashSet(body.getShallowHexes(Environment.ELEVS_TO_FLOOD));
+         
+         for(Pair shallow : shallowHexes){
             
-            new Propogator().propogate(new FloodCommand(body), beach);
+            for (Pair beach : shallow.getNeighbors()){
+            
+               new Propogator().propogate(new FloodCommand(body), beach);
+            }
          }
       }
 

@@ -237,7 +237,7 @@ public class HexMap {
 	      }*/
       
       Color color = hex.getColor(standingBodyWater, displayType);
-      
+
       displayPair = new Pair(colorToInt(color), elevation);
 	   
 
@@ -358,11 +358,11 @@ public class HexMap {
       return readMap;
    }
    
-   public void setBodyDisplayMap(Map<Pair, Integer> bodyDisplayMap){
+   public void setBodyDisplayMap(Map<Pair, Integer> updatedBodyDisplayMap){
       bodyDisplayMapLock.writeLock().lock();
 
       try{ 
-         bodyDisplayMap = bodyDisplayMap;
+         bodyDisplayMap = updatedBodyDisplayMap;
       } finally{
          bodyDisplayMapLock.writeLock().unlock();
       }
