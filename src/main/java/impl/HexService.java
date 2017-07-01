@@ -378,11 +378,11 @@ public class HexService {
    private boolean shouldTopple(int slope, int stability, Hex from){
       // Slope is naturally unstable
       return (slope > stability
-            // slope is steeper than should be possible above ground
+ /*           // slope is steeper than should be possible above ground
             || (slope > Environment.MAX_SLOPE 
                   && HexMap.getInstance().getPairToWaterBodies().get(from) == null)
             // slope is steeper than it should be anywhere
-            || (slope > Environment.MAX_UNDERWATER_SLOPE));
+            || (slope > Environment.MAX_UNDERWATER_SLOPE)*/);
    }
    
    private void handleAvalanche(Hex from, Hex to, int slope){

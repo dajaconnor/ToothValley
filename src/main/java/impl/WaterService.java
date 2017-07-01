@@ -563,12 +563,16 @@ public class WaterService {
             map.getBodiesThatNeedToBeJoined().add(new PairOfBodies(body, anotherBody));
          }
 
-         return !ranIntoAnotherBody && isBodyOfWaterFloodCandidate(pairToEvaluate);
+         return !ranIntoAnotherBody && isBodyOfWaterFloodCandidate(pairToEvaluate, body.getWaterLine());
       }
       
-      private boolean isBodyOfWaterFloodCandidate(Pair pair){
+      private boolean isBodyOfWaterFloodCandidate(Pair pair, int adjacentWaterline){
          
-         return !body.getAllMembers().contains(pair) && map.getHex(pair).getStandingWater(0) > Environment.WATER_BODY_MIN;
+         Hex hex = map.getHex(pair);
+         
+         return !body.getAllMembers().contains(pair) 
+               && (hex.getStandingWater(0) > Environment.WATER_BODY_MIN
+                     || hex.getElevation() < adjacentWaterline);
       }
 
       public void onSuccess(Pair pairToEvaluate) {

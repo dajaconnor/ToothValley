@@ -5,7 +5,7 @@ public class Environment {
 	//Maximum values
 	public static final int MAX_ELEVATION = 512;
 	public static final int MAX_DENSITY = 127;
-	public static final int MAX_SLOPE = 20;
+	public static final int MAX_SLOPE = 30;
 	public static final int MAX_UNDERWATER_SLOPE = 30;
 	
 	// Number of ticks between underwater topples.
@@ -13,7 +13,7 @@ public class Environment {
 	
 	
 	//Defines the average amount of water for each hex
-   public static final int AVE_WATER = 500;
+   public static final int AVE_WATER = 400;
    
    public static final int AVE_DENSITY = 40;
 	
@@ -57,7 +57,7 @@ public class Environment {
    public static final int WATER_BODY_MIN = 10;
    
    // Defines number of elevations to check for flooding
-   public static final int ELEVS_TO_FLOOD = 3;
+   public static final int ELEVS_TO_FLOOD = 2;
 	
 	//Defines the speed at which wind changes (lower is faster), must be at least 3
 	public static final int WIND_CHANGE = 250;
