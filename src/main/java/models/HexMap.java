@@ -48,6 +48,14 @@ public class HexMap {
 	private Map<Pair,Pair> readMap = new HashMap<Pair,Pair>();
 	private static ReadWriteLock displayMapLock = new ReentrantReadWriteLock();
 	
+	private Map<Pair, Integer> bodyDisplayMap = new HashMap<Pair, Integer>();
+   private Map<Pair, Integer> bodyReadMap = new HashMap<Pair, Integer>();
+   private static ReadWriteLock bodyDisplayMapLock = new ReentrantReadWriteLock();
+   
+   private List<Map<Pair, Set<Pair>>> bodyConnectivityDisplayMap = new ArrayList<Map<Pair, Set<Pair>>>();
+   private List<Map<Pair, Set<Pair>>> bodyConnectivityReadMap = new ArrayList<Map<Pair, Set<Pair>>>();
+   private static ReadWriteLock bodyConnectivityDisplayMapLock = new ReentrantReadWriteLock();
+	
 	//For singletonhood
 	private static HexMap instance = new HexMap();
 	
@@ -220,63 +228,27 @@ public class HexMap {
 		return blowing;
 	}
 
-	public Map<Pair,Pair> getDisplayMap() {
-	   
-	   displayMapLock.readLock().lock();
-
-      try{
-         readMap = displayMap;
-      } finally{
-         displayMapLock.readLock().unlock();
-      }
-	   
-		return readMap;
-	}
-	
-	public Pair updateHexDisplay(Hex hex, DisplayType displayType, BodyOfWater inBody){
+	public Pair updateHexDisplay(Hex hex, DisplayType displayType){
 	   
 	   Pair displayPair = null;
-	   
-	   if (inBody == null || displayType != DisplayType.NORMAL){
-	      
-	      int elevation = hex.getElevation();
-	      int standingBodyWater = hex.getStandingWater(0);
-	      
-	      // Not until we can avoid those stupid water pyramids
-/*	      if (OpenGLWindow.getInstance().getDisplayType() == DisplayType.NORMAL && standingBodyWater != 0){
-	         elevation = hex.getCombinedElevation(standingBodyWater);
-	      }*/
-	      
-	      Color color = hex.getColor(standingBodyWater, displayType);
-	      
-	      displayPair = new Pair(colorToInt(color), elevation);
-	   }
-	   
-	   else{
-	      
-	      int waterLine = inBody.getWaterLine();
-	      displayPair = new Pair(HexMap.colorToInt(Hex.WATER), waterLine);
-	   }		
 
-		return displayPair;
-	}
-	
-/*	public Pair updateBodyOfWater(BodyOfWater body){
-      
       int elevation = hex.getElevation();
-      int standingBodyWater = getStaleHexBodyStandingWater(hex);
+      int standingBodyWater = hex.getStandingWater(0);
       
       // Not until we can avoid those stupid water pyramids
-      if (OpenGLWindow.getInstance().getDisplayType() == DisplayType.NORMAL && standingBodyWater != 0){
+      DisplayType display = OpenGLWindow.getInstance().getDisplayType();
+      
+      if ((display == DisplayType.NORMAL || display == DisplayType.WATER_BODIES) && standingBodyWater != 0){
          elevation = hex.getCombinedElevation(standingBodyWater);
       }
       
-      Color color = hex.getColor(standingBodyWater);
-      
-      Pair displayPair = new Pair(colorToInt(color), elevation);
+      Color color = hex.getColor(standingBodyWater, displayType);
 
-      return displayPair;
-   }*/
+      displayPair = new Pair(colorToInt(color), elevation);
+	   
+
+		return displayPair;
+	}
 	
 	public int getHexBodyStandingWater(Pair id){
 	   Hex hex = getHexes().get(id);
@@ -377,6 +349,65 @@ public class HexMap {
       } finally{
          displayMapLock.writeLock().unlock();
       }
+   }
+   
+   public Map<Pair,Pair> getDisplayMap() {
+      
+      displayMapLock.readLock().lock();
+
+      try{
+         readMap = displayMap;
+      } finally{
+         displayMapLock.readLock().unlock();
+      }
+      
+      return readMap;
+   }
+   
+   public void setBodyConnectivityDisplayMap(List<Map<Pair, Set<Pair>>> updatedBodyConnectivityDisplayMap){
+      bodyConnectivityDisplayMapLock.writeLock().lock();
+
+      try{ 
+         bodyConnectivityDisplayMap = updatedBodyConnectivityDisplayMap;
+      } finally{
+         bodyConnectivityDisplayMapLock.writeLock().unlock();
+      }
+   }
+   
+   public List<Map<Pair, Set<Pair>>> getBodyConnectivityDisplayMap() {
+      
+      bodyConnectivityDisplayMapLock.readLock().lock();
+
+      try{
+         bodyConnectivityReadMap = bodyConnectivityDisplayMap;
+      } finally{
+         bodyConnectivityDisplayMapLock.readLock().unlock();
+      }
+
+      return bodyConnectivityReadMap;
+   }
+   
+   public void setBodyDisplayMap(Map<Pair, Integer> updatedBodyDisplayMap){
+      bodyDisplayMapLock.writeLock().lock();
+
+      try{ 
+         bodyDisplayMap = updatedBodyDisplayMap;
+      } finally{
+         bodyDisplayMapLock.writeLock().unlock();
+      }
+   }
+   
+   public Map<Pair, Integer> getBodyDisplayMap() {
+      
+      bodyDisplayMapLock.readLock().lock();
+
+      try{
+         bodyReadMap = bodyDisplayMap;
+      } finally{
+         bodyDisplayMapLock.readLock().unlock();
+      }
+
+      return bodyReadMap;
    }
    
    public DisplayType getDisplayType(){

@@ -6,6 +6,11 @@ public class Environment {
 	public static final int MAX_ELEVATION = 512;
 	public static final int MAX_DENSITY = 127;
 	public static final int MAX_SLOPE = 30;
+	public static final int MAX_UNDERWATER_SLOPE = 30;
+	
+	// Number of ticks between underwater topples.
+	public static final int UNDERWATER_TOPPLE_FREQUENCY = 100;
+	
 	
 	//Defines the average amount of water for each hex
    public static final int AVE_WATER = 400;
@@ -49,7 +54,10 @@ public class Environment {
 	public static final int WATER_BUFFER = 0;
 	
 	//Defines the water level required to be body of water candidate
-   public static final int WATER_BODY_MIN = 30;
+   public static final int WATER_BODY_MIN = 10;
+   
+   // Defines number of elevations to check for flooding
+   public static final int ELEVS_TO_FLOOD = 2;
 	
 	//Defines the speed at which wind changes (lower is faster), must be at least 3
 	public static final int WIND_CHANGE = 250;
@@ -83,7 +91,7 @@ public class Environment {
 	public static final int TECTONIC_AMPLITUDE = 1;
 	
 	// Defines the number of times a hex can topple in a single run
-   public static final int TOPPLE_DEPTH = 2;
+   public static final int TOPPLE_DEPTH = 3;
 	
 	// Defines the likelihood of a straight edge on a tectonic plate
 	public static final int PERCENT_STRAIGHT_PLATE_EDGE = 95;

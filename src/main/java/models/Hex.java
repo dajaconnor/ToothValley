@@ -494,7 +494,14 @@ public class Hex {
 				HexMap.getInstance().removeGreenHex(hexID);
 			}
 		}
-
+	}
+	
+	public void killAllPlants(){
+	   
+	   for (int i = 0; i < vegetation.length; i++){
+	      
+	      deletePlant(i);
+	   }
 	}
 
 	/**
@@ -647,7 +654,7 @@ public class Hex {
 		   
 		   int moisture = getMoisture(standingBodyWater);
 			
-			if (moisture * 4 > 255 || moisture > 255) {
+			if (moisture > 255 || moisture > 255) {
 
 				return new Color(0, 0, 255);
 			}
@@ -655,7 +662,7 @@ public class Hex {
 
 				return new Color(0, 0, 0);
 			} else {
-				return new Color(0, 0, moisture * 4);
+				return new Color(0, 0, moisture);
 			}
 
 		case HUMIDITY:

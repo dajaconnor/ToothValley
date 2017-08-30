@@ -92,7 +92,7 @@ public class HexMapService {
 				Hex hex = makeHex(x, Y, elevations[pair.getX()][pair.getY()] * 2 - Environment.MAX_ELEVATION / 2, (densityMap[pair.getX()][pair.getY()]) / 4, 
 				      Environment.AVE_WATER / 2, Environment.AVE_WATER / 2, plant);
 				map.addHex(hex);
-				map.updateHexDisplay(hex, DisplayType.NORMAL, null);
+				//map.updateHexDisplay(hex, DisplayType.NORMAL, null);
 			}
 		}
 		map.setPlates(plateService.generateTectonicPlates(noiseSize));

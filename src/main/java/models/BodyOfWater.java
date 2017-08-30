@@ -368,6 +368,10 @@ public class BodyOfWater {
       return connectivityMap;
    }
    
+   public Map<Pair, Set<Pair>> getConnectivityChildMap(){
+      return connectivityChildMap;
+   }
+   
    private void addToConnectivityMap(Pair child, Pair parent) {
       connectivityMap.put(child, parent);
       addToConnectivityChildMap(child,parent);
@@ -426,16 +430,16 @@ public class BodyOfWater {
       hexesToCheckForElevation.add(pair);
    }
    
+   public void setWaterLineLastChecked(int waterLineLastChecked){
+      this.waterLineLastChecked = waterLineLastChecked;
+   }
+   
    public void setWaterLineLastChecked(){
-      waterLineLastChecked = getWaterLine();
+      this.waterLineLastChecked = getWaterLine();
    }
    
    public int getWaterLineLastChecked() {
       return waterLineLastChecked;
-   }
-
-   public void setWaterLineLastChecked(int waterLineLastChecked) {
-      this.waterLineLastChecked = waterLineLastChecked;
    }
 
    public Set<Pair> getShallowHexes(int iterations) {
