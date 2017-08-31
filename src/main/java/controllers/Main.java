@@ -108,7 +108,7 @@ public class Main {
 			
 			ticks ++;
 			
-			if (ticks % 10000 == 0){
+			if (ticks % 100 == 0){
 				
 				System.out.println("Run ticks: " + ticks);
 				System.out.println("Burn time: " + burnTime / 1000);
@@ -120,7 +120,7 @@ public class Main {
 				burnTime = 0;
 				waterCycleTime = 0;
 				
-				if (hexMapService.allWater()[0] < totalWater){
+				if (findLeak && hexMapService.allWater()[0] < totalWater){
 				
 					System.out.println("We have a leak... " + hexMapService.allWater()[0]);
 					

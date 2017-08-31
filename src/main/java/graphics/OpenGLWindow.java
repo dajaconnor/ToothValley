@@ -216,30 +216,54 @@ public class OpenGLWindow {
       
       if (displayType == DisplayType.WATER_BODIES){
          
-         printConnectivity(bodyDisplayMap);
+         printConnectivity(displayMap);
       }
    }
    
-   private void printConnectivity(Map<Pair, Integer> bodyDisplayMap) {
+   private void printConnectivity(Map<Pair, Pair> displayMap) {
       
       HexMap map = HexMap.getInstance();
-      List<Map<Pair,Set<Pair>>> connectivityMap = map.getBodyConnectivityDisplayMap();
+      List<List<Pair>> connectivityMap = map.getBodyConnectivityDisplayMap();
       
-      for (Map<Pair,Set<Pair>> body : connectivityMap){
+      for (List<Pair> nest : connectivityMap){
          
+         if (!nest.isEmpty()){
+            
+            Pair from = nest.get(0);
+            DPair fromBase = getBasePrintCoords(from, offset);
+            
+            int fromElev = getDrawPointForBodyConnectivity(from, displayMap);
+            
+            for (int i = 1; i < nest.size(); i++){
+               
+               Pair to = nest.get(i);
+               int toElev = getDrawPointForBodyConnectivity(to, displayMap);
+               DPair toBase = getBasePrintCoords(from, offset);
+               
+               drawLine(fromBase, toBase, fromElev, toElev, 1f, 0f, 0f);
+            }
+         }
+         /*
          for (Entry<Pair, Set<Pair>> setEntry : body.entrySet()){
             
             for (Pair neighbor : setEntry.getValue()){
                
-               int pairElev = bodyDisplayMap.get(setEntry.getKey());
-               int neighborElev = bodyDisplayMap.containsKey(neighbor) ? bodyDisplayMap.get(neighbor) : pairElev;
-               DPair pairBase = getBasePrintCoords(setEntry.getKey(), offset);
-               DPair neighborBase = getBasePrintCoords(neighbor, offset);
-               
-               drawLine(pairBase, neighborBase, pairElev, neighborElev, 1f, 0f, 0f);
+               if (bodyDisplayMap.containsKey(setEntry.getKey()) && bodyDisplayMap.containsKey(neighbor)){
+                  
+                  int pairElev = bodyDisplayMap.get(setEntry.getKey());
+                  int neighborElev = bodyDisplayMap.containsKey(neighbor) ? bodyDisplayMap.get(neighbor) : pairElev;
+                  DPair pairBase = getBasePrintCoords(setEntry.getKey(), offset);
+                  DPair neighborBase = getBasePrintCoords(neighbor, offset);
+                  
+                  drawLine(pairBase, neighborBase, pairElev, neighborElev, 1f, 0f, 0f);
+               }
             }
-         }
+         }*/
       }
+   }
+   
+   private int getDrawPointForBodyConnectivity(Pair point, Map<Pair, Pair> displayMap){
+      return displayMap.get(point).getY() + 1;
    }
 
    public void keyInput() {
@@ -534,14 +558,19 @@ public class OpenGLWindow {
 	
 	private void printDiamond(Pair top, DPair baseTop, Pair bottom, DPair baseBottom, Pair left, DPair baseLeft, Pair right, DPair baseRight, Map<Pair, Integer> bodyDisplayMap, Map<Pair, Pair> normalDisplayMap){
 	   
-	   // draw ground first
-	   int topColor = normalDisplayMap.get(top).getX();
-	   int bottomColor = normalDisplayMap.get(bottom).getX();
-	   int topGroundElev = normalDisplayMap.get(top).getY();
-	   int leftGroundElev = getGroundVerticeElevation(top, left, bottom, normalDisplayMap);
-	   int bottomGroundElev = normalDisplayMap.get(bottom).getY();
-	   int rightGroundElev = getGroundVerticeElevation(top, right, bottom, normalDisplayMap);
+	   boolean topInBody = bodyDisplayMap.containsKey(top) && displayType == DisplayType.NORMAL;
+	   boolean bottomInBody = bodyDisplayMap.containsKey(bottom) && displayType == DisplayType.NORMAL;
+	   boolean leftInBody = bodyDisplayMap.containsKey(left) && displayType == DisplayType.NORMAL;
+      boolean rightInBody = bodyDisplayMap.containsKey(right) && displayType == DisplayType.NORMAL;
 	   
+	   // draw ground first
+	   int topColor = topInBody ? waterInt : normalDisplayMap.get(top).getX();
+	   int bottomColor = bottomInBody ? waterInt : normalDisplayMap.get(bottom).getX();
+	   int topGroundElev = topInBody ? bodyDisplayMap.get(top) : normalDisplayMap.get(top).getY();
+	   int leftGroundElev = leftInBody ? bodyDisplayMap.get(left) : getGroundVerticeElevation(top, left, bottom, normalDisplayMap);
+	   int bottomGroundElev = bottomInBody ? bodyDisplayMap.get(bottom) : normalDisplayMap.get(bottom).getY();
+	   int rightGroundElev = rightInBody ? bodyDisplayMap.get(right) : getGroundVerticeElevation(top, right, bottom, normalDisplayMap);
+
 	   drawTriangle(baseTop, topGroundElev, baseLeft, leftGroundElev, baseRight, rightGroundElev, topColor);
 	   drawTriangle(baseBottom, bottomGroundElev, baseLeft, leftGroundElev, baseRight, rightGroundElev, bottomColor);
 	   
@@ -552,7 +581,7 @@ public class OpenGLWindow {
       }
 	   
 	   // prints bodies of water on top of the ground
-	   if (displayType == DisplayType.NORMAL || displayType == DisplayType.WATER_BODIES){
+/*	   if (displayType == DisplayType.NORMAL){
 	      
 	      Integer elevation = bodyDisplayMap.get(top);
 	      
@@ -570,7 +599,7 @@ public class OpenGLWindow {
 	         
 	         GL11.glDisable(GL11.GL_BLEND);
 	      }
-	   }
+	   }*/
 	}
 
 	//                                                                                   id,   elevation  only body hexes    id  color/elev all hexes

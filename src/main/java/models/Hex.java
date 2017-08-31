@@ -651,6 +651,7 @@ public class Hex {
 			return new Color(elevation, elevation, elevation);
 
 		case MOISTURE:
+		case WATER_BODIES:
 		   
 		   int moisture = getMoisture(standingBodyWater);
 			

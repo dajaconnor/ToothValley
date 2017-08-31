@@ -413,28 +413,19 @@ public class HexService {
    /**
     * Attempt to flood a single hex
     */
-   public boolean flood(Hex hex, boolean findLeak, int standingBodyWater) {
+   public boolean flood(Hex hex, boolean findLeak) {
 
-      boolean returnBool = false;
       int total = 0;
-      int bodyStandingWater = map.getHexBodyStandingWater(hex);
-
-      if (findLeak){
-         total = hex.getTotalWater(bodyStandingWater);
-      }
+      int standingWater = hex.getStandingWater(0);
+      boolean flooded = false;
 
       //If there is standing water, shove it around
-      if (hex.getSaturation(standingBodyWater) > 1) {
-         int elev = hex.getCombinedElevation(standingBodyWater);
+      if (hex.getSaturation(standingWater) > 1) {
+         int elev = hex.getCombinedElevation(standingWater);
          List<Pair> neighbors = hex.getHexID().getNeighbors();
 
          //Kill plants that aren't strong enough
-         drownPlant(hex, bodyStandingWater);
-
-         if (findLeak && total != hex.getTotalWater(bodyStandingWater)){
-            System.out.println("drown plant leak!");
-            total = hex.getTotalWater(bodyStandingWater);
-         }
+         drownPlant(hex, standingWater);
 
          int lowest = elev;
          Hex flowTo = null;
@@ -443,87 +434,32 @@ public class HexService {
          for (Pair neighbor : neighbors) {
 
             Hex adjHex = map.getHex(neighbor);
-            int adjElev = adjHex.getCombinedElevation(standingBodyWater);
+            int adjElev = adjHex.getCombinedElevation(adjHex.getStandingWater(0));
 
-            if (adjElev < elev && adjElev < lowest) {
-               returnBool = true;
+            if (adjElev < lowest) {
                lowest = adjElev;
                flowTo = adjHex;
             }
          }
+         
+         flooded = lowest < elev;
 
-         if (returnBool && flowTo != null){
+         if (lowest < elev && flowTo != null){
 
-            int hexAdjElev = hex.getElevation() * 4 + hex.getStandingWater(standingBodyWater);
-            int flowToAdjElev = flowTo.getElevation() * 4 + flowTo.getStandingWater(map.getHexBodyStandingWater(flowTo));
-
-            int difference = hexAdjElev - flowToAdjElev;
-
-            int toDistribute = difference / 2; //totalNeed * flooded.size() / (flooded.size() + 1);
-
-            if (toDistribute > hex.getStandingWater(standingBodyWater)){
-
-               toDistribute = hex.getStandingWater(standingBodyWater);
-            }
-
+            int toDistribute = (elev - lowest) * Environment.WATER_PER_ELEVATION / 2;
 
             if (toDistribute > 0){
+               
+               if (toDistribute > standingWater) toDistribute = standingWater;
 
-               int flowToTotal = flowTo.getTotalWater(bodyStandingWater);
                erode(hex, flowTo, toDistribute);
+               
                map.alterMoisture(flowTo, map.alterMoisture(hex, - toDistribute));
-
-               if (findLeak){
-                  if (total + flowToTotal != hex.getTotalWater(bodyStandingWater) + flowTo.getTotalWater(bodyStandingWater)){
-                     System.out.println("flow leak!");
-
-                  }
-                  total = hex.getTotalWater(bodyStandingWater);
-               }
             }
          }
       }
 
-      else{
-
-         Hex lowest = getLowestNeighber(hex.getHexID());
-
-         if (lowest.getElevation() < hex.getElevation() && map.alterMoisture(hex, - 1) > 0){
-
-            int lowestTotal = lowest.getTotalWater(bodyStandingWater);
-            map.alterMoisture(lowest, 1);
-
-            if (findLeak){
-               if (total + lowestTotal != hex.getTotalWater(bodyStandingWater) + lowest.getTotalWater(bodyStandingWater)){
-                  System.out.println("seep leak!");
-
-               }
-            }
-         }
-      }
-
-      return returnBool;
-   }
-
-   private Hex getLowestNeighber(Pair id){
-
-      List<Pair> neighbors = id.getNeighbors();
-
-      int elevation = 1000;
-      Hex lowest = map.getHex(neighbors.get(0));
-
-      for (Pair neighbor : neighbors){
-
-         Hex hex = map.getHex(neighbor);
-
-         if (hex.getElevation() < elevation){
-
-            elevation = hex.getElevation();
-            lowest = hex;
-         }
-      }
-
-      return lowest;
+      return flooded;
    }
 
    // Deletes plants if the standing water is greater than the rootstrength of the plant

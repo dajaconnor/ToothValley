@@ -1,6 +1,7 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +25,7 @@ public class BodyOfWater {
 
    private Pair originalMember;
 	private List<Pair> hexesToCheckForElevation = new ArrayList<Pair>();
+	private List<Pair> markedForRemoval = new ArrayList<Pair>();
 
 	public BodyOfWater(Pair startingMember) {
 
@@ -46,6 +48,24 @@ public class BodyOfWater {
       
       return false;
    }
+	
+	public void markForRemoval(Pair pair){
+	   markedForRemoval.add(pair);
+	}
+	
+	public void markForRemoval(Collection<Pair> pairs){
+      markedForRemoval.addAll(pairs);
+   }
+	
+	public List<Pair> getMarkedForRemoval(){
+	   
+	   return markedForRemoval;
+	}
+	
+	public void clearMarkedForRemoval(){
+	   
+	   markedForRemoval = new ArrayList<Pair>();
+	}
 	
 	private Object getOriginalMember() {
 
@@ -379,8 +399,12 @@ public class BodyOfWater {
    
    // returns orphaned children
    public Set<Pair> removeFromConnectivityMap(Pair pair) {
+      
       connectivityMap.remove(pair);
-      return connectivityChildMap.get(pair);
+      Set<Pair> orphans = connectivityChildMap.get(pair);
+      connectivityChildMap.remove(pair);
+      
+      return orphans;
    }
 
    private void addToConnectivityChildMap(Pair child, Pair parent){

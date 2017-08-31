@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -52,8 +53,8 @@ public class HexMap {
    private Map<Pair, Integer> bodyReadMap = new HashMap<Pair, Integer>();
    private static ReadWriteLock bodyDisplayMapLock = new ReentrantReadWriteLock();
    
-   private List<Map<Pair, Set<Pair>>> bodyConnectivityDisplayMap = new ArrayList<Map<Pair, Set<Pair>>>();
-   private List<Map<Pair, Set<Pair>>> bodyConnectivityReadMap = new ArrayList<Map<Pair, Set<Pair>>>();
+   private List<List<Pair>> bodyConnectivityDisplayMap = new ArrayList<List<Pair>>();
+   private List<List<Pair>> bodyConnectivityReadMap = new ArrayList<List<Pair>>();
    private static ReadWriteLock bodyConnectivityDisplayMapLock = new ReentrantReadWriteLock();
 	
 	//For singletonhood
@@ -238,7 +239,7 @@ public class HexMap {
       // Not until we can avoid those stupid water pyramids
       DisplayType display = OpenGLWindow.getInstance().getDisplayType();
       
-      if ((display == DisplayType.NORMAL || display == DisplayType.WATER_BODIES) && standingBodyWater != 0){
+      if ((display == DisplayType.NORMAL) && standingBodyWater != 0){
          elevation = hex.getCombinedElevation(standingBodyWater);
       }
       
@@ -368,18 +369,34 @@ public class HexMap {
       bodyConnectivityDisplayMapLock.writeLock().lock();
 
       try{ 
-         bodyConnectivityDisplayMap = updatedBodyConnectivityDisplayMap;
+         
+      // Build the map from the first hex (nest[0]) to all the others
+         bodyConnectivityDisplayMap = new ArrayList<List<Pair>> ();
+         
+         for (Map<Pair, Set<Pair>> map : updatedBodyConnectivityDisplayMap){
+            
+            for (Entry<Pair, Set<Pair>> entry : map.entrySet()){
+               
+               List<Pair> nest = new ArrayList<Pair>();
+               nest.add(entry.getKey());
+               nest.addAll(entry.getValue());
+
+               bodyConnectivityDisplayMap.add(nest);
+            }
+         }
       } finally{
          bodyConnectivityDisplayMapLock.writeLock().unlock();
       }
    }
    
-   public List<Map<Pair, Set<Pair>>> getBodyConnectivityDisplayMap() {
+   public List<List<Pair>> getBodyConnectivityDisplayMap() {
       
       bodyConnectivityDisplayMapLock.readLock().lock();
 
       try{
+         
          bodyConnectivityReadMap = bodyConnectivityDisplayMap;
+         
       } finally{
          bodyConnectivityDisplayMapLock.readLock().unlock();
       }
