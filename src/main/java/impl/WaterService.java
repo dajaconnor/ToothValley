@@ -74,6 +74,7 @@ public class WaterService {
        * System.out.println("rain leak"); leak = true; }
        */
       Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>();
+      Map<Pair, Integer> bodyDisplayMap = new HashMap<Pair, Integer>();
       DisplayType displayType = map.getDisplayType();
 
       for (Pair hexID : allHexes) {
@@ -255,4 +256,5 @@ public class WaterService {
 
       return changed == amount;
    }
+
 }

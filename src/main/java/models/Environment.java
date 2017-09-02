@@ -12,6 +12,7 @@ public class Environment {
    public static final int UNDERWATER_TOPPLE_FREQUENCY = 100;
 
    // Defines the average amount of water for each hex
+
    public static final int AVE_WATER = 400;
 
    public static final int AVE_DENSITY = 40;
@@ -132,6 +133,7 @@ public class Environment {
    public static final int SLOW_PAN = 1;
 
    // defines the number of ticks between force grows
+
    public static final int FORCE_GROW_INTERVAL = 100;
    public final static boolean LOWEST = false;
    public final static boolean HIGHEST = true;

@@ -41,6 +41,10 @@ public class HexMap {
 	private Map<Pair,Pair> readMap = new HashMap<Pair,Pair>();
 	private static ReadWriteLock displayMapLock = new ReentrantReadWriteLock();
 	
+	private Map<Pair, Integer> bodyDisplayMap = new HashMap<Pair, Integer>();
+   private Map<Pair, Integer> bodyReadMap = new HashMap<Pair, Integer>();
+   private static ReadWriteLock bodyDisplayMapLock = new ReentrantReadWriteLock();
+	
 	//For singletonhood
 	private static HexMap instance = new HexMap();
 	
@@ -269,7 +273,6 @@ public class HexMap {
       Color color = hex.getColor(displayType);
 
       displayPair = new Pair(colorToInt(color), elevation);
-	   
 
 		return displayPair;
 	}

@@ -46,7 +46,7 @@ public class EnvironmentService {
 
             Pair hexId = map.getGreenHexes().getRandom();
 
-            if (hexId != null) {
+            if (hexId != null && waterService.inBody(hexId) == null) {
 
                hexService.grow(hexId);
             }

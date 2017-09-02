@@ -20,6 +20,8 @@ import static org.lwjgl.util.glu.GLU.gluPerspective;
 
 import java.awt.Color;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
@@ -50,6 +52,7 @@ public class OpenGLWindow {
 	public static Color marsh = new Color(77, 193, 129);
 	public static Color forest = new Color(21, 181, 51);
 	public static Color jungle = new Color(6, 102, 23);
+	private int waterInt = HexMap.colorToInt(Hex.WATER);
 
 	public double panx = 0;
 	public double pany = 0;
@@ -198,7 +201,6 @@ public class OpenGLWindow {
 		Map<Pair,Pair> displayMap = map.getDisplayMap();
 
 		printAllPairs(displayMap, offset);
-		//printBodiesOfWater(map.getBodyDisplayMap(), displayMap, offset);
 
 		// Check inputs
 		keyInput();
@@ -208,14 +210,13 @@ public class OpenGLWindow {
 
 	}
 
-   private void printAllPairs(Map<Pair, Pair> displayMap, Pair localOffset) {
+   private void printAllPairs(Map<Pair, Pair> displayMap, Map<Pair, Integer> bodyDisplayMap, Pair localOffset) {
       for (Pair hexId : displayMap.keySet()) {
 
 			printHex(hexId, localOffset, displayMap);
 		}
    }
-   
-   
+
    public void keyInput() {
 		
 		while (Keyboard.next()) {
@@ -457,11 +458,13 @@ public class OpenGLWindow {
       }
 	}
 
+
    private boolean dontDraw(int topColor, int bottomColor, int leftGroundElev, int rightGroundElev) {
       return displayType == DisplayType.NORMAL && 
          (Math.abs(leftGroundElev - rightGroundElev) <= Environment.DRAW_LINE_TOLERANCE 
                || topColor != bottomColor);
    }
+
 
 	private void printHex(Pair hexId, Pair localOffset, Map<Pair, Pair> normalDisplayMap) {
 

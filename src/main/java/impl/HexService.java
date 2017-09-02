@@ -597,7 +597,7 @@ public class HexService {
 
                Hex adjHex = map.getHex(neighbor);
 
-               if (adjHex.getFire() <= 0){
+               if (adjHex.getFire() <= 0 && !map.getPairToWaterBodies().containsKey(neighbor)){
 
                   if (adjHex.addPlant(plant)){
 
