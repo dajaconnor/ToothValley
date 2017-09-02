@@ -12,8 +12,11 @@ import models.Hex;
 import models.HexMap;
 import models.Pair;
 import models.TheRandom;
+import models.plants.Forest;
+import models.plants.Grass;
 import models.plants.Jungle;
 import models.plants.Plant;
+import models.plants.Thicket;
 
 @Component
 public class HexService {
@@ -115,47 +118,6 @@ public class HexService {
 
       return returnBool;
    }
-
-   /**
-    * Handles rain for the whole map
-    */
-   /*	public void rainAll() {
-
-		//HexMapImpl hexMapImpl = new HexMapImpl();
-		HexMap map = HexMap.getInstance();
-		Map<Pair, Integer> raining = map.getRaining();
-		Object[] rainingArray = raining.keySet().toArray();
-
-		for (Object objectRaining : rainingArray){
-
-			Pair pair = (Pair) objectRaining;
-
-			if(rainSingle(map.getHex(pair), raining.get(pair))){
-
-				if (raining.get(pair) > 1){
-					int woo = 0;
-				}
-
-				raining.put(pair, raining.get(pair) + 1);
-				List<Pair> neighbors = getNeighbors(pair);
-
-				for (Pair neighbor : neighbors){
-
-					if (!raining.containsKey(neighbor)){
-
-						raining.put(neighbor, 1);
-					}
-				}
-
-			} else {
-
-				raining.remove(pair);
-				map.removeCloud(pair);
-			}
-		}
-	}*/
-
-
 
    /**
     * Returns hex with lowest pressure
@@ -439,7 +401,7 @@ public class HexService {
 
          if (lowest < elev && flowTo != null){
 
-            int toDistribute = (elev - lowest) * Environment.WATER_PER_ELEVATION / 2;
+            int toDistribute = (elev - lowest) * Environment.WATER_PER_ELEVATION / 4;
 
             if (toDistribute > 0){
                
@@ -721,7 +683,27 @@ public class HexService {
 
    public void forceGrow(Hex hex) {
 
-      hex.addPlant(new Jungle());
+	   int plant = TheRandom.getInstance().get().nextInt(4);
+	   
+	   switch(plant){
+	   
+	   case 0:
+		   hex.addPlant(new Grass());
+		   break;
+		   
+	   case 1:
+		   hex.addPlant(new Thicket());
+		   break;
+		   
+	   case 2:
+		   hex.addPlant(new Forest());
+		   break;
+		   
+	   case 3:
+		   hex.addPlant(new Jungle());
+		   break;
+	   }
+      
    }
 
    /**

@@ -9,13 +9,6 @@ public abstract class Plant {
 	private int index;
 	private int moisture;
 	private int rot;
-	/*
-	public static Grass GRASS = new Grass();
-	public static Thicket THICKET = new Thicket();
-	public static Forest FOREST = new Forest();
-	public static Jungle JUNGLE = new Jungle();
-	
-	public static Plant TYPES[]={JUNGLE,FOREST,THICKET,GRASS};*/
 	
 	public Plant(int rootstrength, double maxSaturation, int moistureRequired, int index){
 		this.rootstrength = rootstrength;

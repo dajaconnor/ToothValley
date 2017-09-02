@@ -20,7 +20,7 @@ public class Environment {
    public static final int SLOPE_CONSTANT = 1;
 
    // Defines the percent of the plants that attempt to grow
-   public static final double GROW_RATE = 0.9;
+   public static final double GROW_RATE = 0.3;
 
    // The percent of the map that quick grow will fill
    public static final double QUICK_GROW_LIMIT = 0.03;

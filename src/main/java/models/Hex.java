@@ -294,7 +294,7 @@ public class Hex {
 		TheRandom rand = TheRandom.getInstance();
 		
 		// If the new plant can tolerate the saturation range
-		if (plant != null && getSoil() >= plant.getRootstrength() - 1 && plant.getMoistureRequired() - 1 <= getMoisture()){
+		if (plant != null && getSoil() > plant.getRootstrength() && plant.getMoistureRequired() < getMoisture()){
 			
 			Plant newPlant = null;
 			
@@ -354,81 +354,6 @@ public class Hex {
 					}
 				}
 			}
-		}
-		
-		if (!success){
-			
-			if (plant instanceof Jungle){
-				
-				addPlant(new Forest());
-			}
-		
-			else if (plant instanceof Forest){
-				
-				addPlant(new Thicket());
-			}
-			
-			else if (plant instanceof Thicket){
-				
-				addPlant(new Grass());
-			}
-		}
-
-		return success;
-	}
-
-	/**
-	 * Grows the strongest plant possible given the 'maxPlantStrength'
-	 * @param maxPlantStrength
-	 * @return boolean (success)
-	 */
-	public boolean addPlant(int maxPlantStrength, int standingBodyWater) {
-
-		boolean success = false;
-		Plant lowestPlant = getLowestVegetation();
-		int lowStrength = 10000;
-		
-		if (lowestPlant == null){
-			
-			lowStrength = 0;
-		}
-		else{
-			
-			lowStrength = lowestPlant.getMoistureRequired();
-		}
-
-		// It's conceivable for something to grow
-		if (lowStrength < getMoisture() || maxPlantStrength > lowStrength){
-			
-			Plant plant = new Jungle();
-			
-			do{
-				
-				if (success){
-					
-					break;
-				}
-				
-				if (maxPlantStrength >= plant.getMoistureRequired()
-						&& getMoisture() >= plant.getMoistureRequired()
-						&& getSaturation() <= plant.getMaxSaturation()) {
-					
-					// For all plant spots
-					for (int index = 0; index < 3; index++) {
-	
-						if (addPlantAtIndex(plant, index)) {
-	
-							success = true;
-							break;
-						}
-					}
-				}
-				
-				plant = getNextLowestPlant(plant);
-				
-			
-			}
-			while(plant != null);
 		}
 
 		return success;
