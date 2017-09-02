@@ -250,4 +250,15 @@ public class HexMapService {
 		
 		return set;
 	}
+
+	public void normalizeElevation(List<Pair> allHexes, int totalElevation) {
+		
+		int currentAverage = totalElevation / allHexes.size();
+		int changeRequired = Environment.AVE_ELEVATION - currentAverage;
+		
+		for (Pair pair : allHexes){
+			
+			HexMap.getInstance().getHex(pair).alterElevation(changeRequired);
+		}
+	}
 }

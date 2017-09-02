@@ -233,6 +233,11 @@ public class Hex {
 
 		return evaluateThis;
 	}
+	
+	public void alterElevation(int changeRequired) {
+		
+		this.elevation += changeRequired;
+	}
 
 	public double getHumidity() {
 		return ((double) this.moistureInAir * ((double) this.elevation / Environment.MAX_ELEVATION))

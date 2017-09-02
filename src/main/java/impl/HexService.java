@@ -397,35 +397,60 @@ public class HexService {
 				}
 			}
 
-			flooded = lowest < elev;
-
-			if (lowest < elev && flowTo != null){
-
-				int toDistribute = 0;
-
-				if (elev > Environment.SNOW_LEVEL){
-
-					toDistribute = 1 + (elev - lowest) * Environment.WATER_PER_ELEVATION / (Environment.SNOW_MELT * Environment.HOW_SLOW_WATER_MOVES);
-				}else{
-					toDistribute = (elev - lowest) * Environment.WATER_PER_ELEVATION / Environment.HOW_SLOW_WATER_MOVES;
-				}
-
-
-				if (toDistribute == 0) toDistribute = (elev - lowest)/2 + 1;
-
-				if (toDistribute > 0){
-
-					if (toDistribute > standingWater) toDistribute = standingWater;
-
-					erode(hex, flowTo, toDistribute);
-
-					map.alterMoisture(flowTo, map.alterMoisture(hex, - toDistribute));
-				}
-			}
+			flooded = flowHexToHex(hex, standingWater, elev, lowest, flowTo);
 		}
 
 		return flooded;
 	}
+
+	private boolean flowHexToHex(Hex hex, int standingWater, int elev, int lowest, Hex flowTo) {
+		boolean flooded;
+		flooded = lowest < elev;
+
+		if (lowest < elev && flowTo != null){
+
+			int toDistribute = 0;
+
+			if (elev > Environment.SNOW_LEVEL){
+
+				toDistribute = getSnowMelt(elev, lowest);
+			}else{
+				toDistribute = getWaterDistribution(elev, lowest, flowTo);
+			}
+
+			toDistribute = normalizeForLowFlowAreas(elev, lowest, toDistribute);
+
+			if (toDistribute > 0){
+
+				if (toDistribute > standingWater) toDistribute = standingWater;
+
+				erode(hex, flowTo, toDistribute);
+
+				map.alterMoisture(flowTo, map.alterMoisture(hex, - toDistribute));
+			}
+		}
+		return flooded;
+	}
+
+	private int normalizeForLowFlowAreas(int elev, int lowest, int toDistribute) {
+		if (toDistribute == 0) toDistribute = (elev - lowest)/2 + 1;
+		return toDistribute;
+	}
+
+	private int getWaterDistribution(int elev, int lowest, Hex flowTo) {
+		
+		int waterDiff = (elev - lowest) * Environment.WATER_PER_ELEVATION;
+		
+		if (flowTo.getStandingWater() == 0) return waterDiff / 2;
+		
+		return waterDiff / Environment.HOW_SLOW_WATER_MOVES;
+	}
+
+	private int getSnowMelt(int elev, int lowest) {
+		return 1 + (elev - lowest) * Environment.WATER_PER_ELEVATION / (Environment.SNOW_MELT * Environment.HOW_SLOW_WATER_MOVES);
+	}
+	
+
 
 	// Deletes plants if the standing water is greater than the rootstrength of the plant
 	private void drownPlant(Hex hex, int standingBodyWater) {

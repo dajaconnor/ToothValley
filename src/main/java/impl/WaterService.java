@@ -30,6 +30,7 @@ public class WaterService {
    public void waterCycle(boolean findLeak, boolean leakFound, int ticks) {
 
       int totalWater = 0;
+      int totalElevation = 0;
 
       List<Pair> allHexes = new ArrayList<Pair>(map.getHexes().keySet());
 
@@ -66,13 +67,6 @@ public class WaterService {
          leakFound = true;
       }
 
-      /*
-       * hexService.rainAll();
-       * 
-       * if (findLeak && totalWater != hexMapService.allWater()[0] && !leak){
-       * 
-       * System.out.println("rain leak"); leak = true; }
-       */
       Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>();
       DisplayType displayType = map.getDisplayType();
 
@@ -87,8 +81,18 @@ public class WaterService {
          Pair displayPair = map.updateHexDisplay(hex, displayType);
 
          displayMap.put(hexID, displayPair);
+         
+         if (ticks % Environment.NORMALIZE_EVEL_FREQ == 0){
+        	 
+        	 totalElevation += hex.getElevation();
+         }
       }
 
+      if (ticks % Environment.NORMALIZE_EVEL_FREQ == 0){
+    	  
+    	  hexMapService.normalizeElevation(allHexes ,totalElevation);
+      }
+      
       map.setDisplayMap(displayMap);
 
       if (findLeak && totalWater != hexMapService.allWater()[0] && !leakFound) {

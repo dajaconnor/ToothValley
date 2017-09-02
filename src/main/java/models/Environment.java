@@ -13,8 +13,8 @@ public class Environment {
 
    // Defines the average amount of water for each hex
    public static final int AVE_WATER = 400;
-
    public static final int AVE_DENSITY = 40;
+   public static final int AVE_ELEVATION = 128; 
 
    // The smaller this is, the steeper stuff gets
    public static final int SLOPE_CONSTANT = 1;
@@ -143,9 +143,11 @@ public class Environment {
    public static final int CHANCE_OF_TECTONIC_PLATE_CHANGE = 10000;
    public static final int HOW_SLOW_WATER_MOVES = 6; // 2 is faster, slower as number goes up
    public static final int SNOW_MELT = 3; // multiplies HOW_SLOW_WATER_MOVES
-   public static final int SNOW_LEVEL = 420;
+   public static final int SNOW_LEVEL = AVE_ELEVATION * 2;
    public static final int MAX_FULL_DIRT = 32;
    public static final int MIN_FULL_STONE = 130;
+   public static final int NORMALIZE_EVEL_FREQ = 100;
+
 
    // These are set when the map is generated, and never altered.
    public static int[] MAP_GRID;
