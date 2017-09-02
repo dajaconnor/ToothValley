@@ -2,25 +2,19 @@ package impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import enums.Direction;
 import enums.DisplayType;
-import models.BodyOfWater;
 import models.Environment;
 import models.Hex;
 import models.HexMap;
 import models.Pair;
-import models.PairOfBodies;
 import models.TheRandom;
-import propogation.Evaluator;
-import propogation.Propogator;
 
 @Component
 public class WaterService {
@@ -32,140 +26,8 @@ public class WaterService {
    private HexMapService hexMapService;
    
    HexMap map = HexMap.getInstance();
-   
-   public void bodyOfWaterCycle(){
 
-      Set<BodyOfWater> bodies = map.getAllWaterBodies();
-      List<Pair> orphans = new ArrayList<Pair>();
-      
-      if (!bodies.isEmpty()){
-         for (BodyOfWater body : bodies){
-            
-            evaporateBody(body);
-            
-            orphans.addAll( handleWaterLineChanges(body) );
-            
-            if (body.getAllMembers().size() == 0) map.getWaterBodiesToBeRemoved().add(body);
-         }
-
-         handleMergingBodies();
-
-         // cleanup dead bodies
-         map.getAllWaterBodies().removeAll(map.getWaterBodiesToBeRemoved());
-         map.resetWaterBodiesToBeRemoved();
-         handleOrphans(orphans);
-      }
-   }
-   
-   private void evaporateBody(BodyOfWater body) {
-      
-      Integer point = body.getExtremePoint(Environment.LOWEST);
-      
-      int size = body.getElevationMap().get(point).size();
-      int bodySize = body.getAllMembers().size();
-      
-      for (Pair pair : body.getElevationMap().get(point)){
-         
-         int adjusted = body.adjustTotalWater((int)-((bodySize * Environment.BODY_EVAPORATION)/size));
-         map.getHex(pair).alterMoistureInAir(adjusted);
-      }
-   }
-
-   private void handleOrphans(List<Pair> orphans){
-      
-      for (Pair orphan : orphans){
-         
-         if (inBody(orphan) == null){
-            
-            createBodyFromHex(orphan);
-         }
-      }
-   }
-
-   // returns the body its in, or null if not in a body
-   public BodyOfWater inBody(Pair node){
-
-      return map.getPairToWaterBodies().get(node);
-   }
-
-   private void addToMapWaterBodies(Pair node, BodyOfWater body){
-
-      BodyOfWater conflictingBody = inBody(node);
-      
-      if (conflictingBody != null && !body.equals(conflictingBody)){
-         
-         map.getBodiesThatNeedToBeJoined().add(new PairOfBodies(body, conflictingBody));
-      }
-      
-      map.getPairToWaterBodies().put(node, body);
-   }
-
-   private BodyOfWater createBodyFromHex(Pair pair){
-
-      BodyOfWater body = null;
-      
-      if (inBody(pair) == null && map.getHex(pair).getStandingWater(0) > Environment.WATER_BODY_MIN){
-         
-         body = new BodyOfWater(pair);
-         computeAndSetMembers(body, pair);
-         body.buildConnectivityMap();
-      }
-      
-      if (body != null){
-         
-         map.getAllWaterBodies().add(body);
-      }
-      
-      return body;
-   }
-   
-   private void handleMergingBodies(){
-
-      for (PairOfBodies toBeJoined : map.getBodiesThatNeedToBeJoined()){
-
-         handleEmptyBodyCheck(toBeJoined.getBodyOne());
-         handleEmptyBodyCheck(toBeJoined.getBodyTwo());         
-
-         if (!map.getWaterBodiesToBeRemoved().contains(toBeJoined.getBodyOne()) 
-               && !map.getWaterBodiesToBeRemoved().contains(toBeJoined.getBodyTwo())){
-            
-            map.getWaterBodiesToBeRemoved().add(joinBodies(toBeJoined));
-         }
-         
-      }
-      
-      map.resetBodiesThatNeedToBeJoined();
-   }
-   
-   private void handleEmptyBodyCheck(BodyOfWater body){
-      
-      if (body.getAllMembers().size() == 0) {
-         map.getWaterBodiesToBeRemoved().add(body);
-      }
-   }
-   
-   // Returns the one that needs to be destroyed
-   private BodyOfWater joinBodies(PairOfBodies bodyPair){
-      
-      BodyOfWater biggerOne = bodyPair.getBodyOne();
-      BodyOfWater smaller = bodyPair.getBodyTwo();
-      
-      if (bodyPair.getBodyOne().getAllMembers().size() < bodyPair.getBodyTwo().getAllMembers().size()){
-         
-         biggerOne = bodyPair.getBodyTwo();
-         smaller = bodyPair.getBodyOne();
-      }
-      
-      biggerOne.mergeInOtherBody(smaller);
-      
-      return smaller;
-   }
-   
-   /*
-    * Old water system
-    */
-   
-   public void waterCycle(boolean findLeak, boolean leakFound) {
+   public void waterCycle(boolean findLeak, boolean leakFound, int ticks) {
 
       int totalWater = 0;
 
@@ -196,7 +58,7 @@ public class WaterService {
          totalWater = hexMapService.allWater()[0];
       }
 
-      blow(findLeak);
+      rain(findLeak);
 
       if (findLeak && totalWater != hexMapService.allWater()[0] && !leakFound) {
 
@@ -213,83 +75,20 @@ public class WaterService {
        */
       Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>();
       DisplayType displayType = map.getDisplayType();
-      Set<Pair> candidates = new HashSet<Pair>();
 
       for (Pair hexID : allHexes) {
-         
-         BodyOfWater inBody = inBody(hexID);
+
          Hex hex = map.getHex(hexID);
 
-         if (inBody == null) {
-            
-            if (isBodyOfWaterCandidate(hexID)){
-               
-               candidates.add(hexID);
-            }
+         hexService.evaporate(hex, findLeak, leakFound);
+         hexService.flood(hex, findLeak);
+         hexService.topple(hexID, 0);
 
-            else{
-            
-               hexService.evaporate(hex, findLeak, leakFound);
-               hexService.flood(hex, findLeak, map.getHexBodyStandingWater(hex));
-               hexService.topple(hexID, 0);
-            }
-         }
-         
-         Pair displayPair = map.updateHexDisplay(hex, displayType, inBody);
-         
-         if (inBody != null && displayPair.getY() < -100){
-            System.out.println("wtf?");
-         }
-         
+         Pair displayPair = map.updateHexDisplay(hex, displayType);
+
          displayMap.put(hexID, displayPair);
-         
-/*         else {
-            if (displayType != DisplayType.NORMAL){
+      }
 
-               displayMap.put(hexID, map.updateHexDisplay(map.getHex(hexID), displayType));
-            }
-            
-            else
-         }
-            
-            
-         }*/
-      }
-      
-/*      if (displayType == DisplayType.NORMAL){
-      
-         for (BodyOfWater body : map.getAllWaterBodies()){
-            
-            int waterLine = body.getSlightlyStaleWaterLine();
-            
-            for (Pair pair : body.getAllMembers()){
-               
-               displayMap.put(pair, new Pair(HexMap.colorToInt(Hex.WATER), waterLine));
-            }
-         }
-      }*/
-      for (Pair pair : candidates){
-         
-         if (inBody(pair) == null){
-         
-            boolean stillGood = true;
-            
-            for (Pair neighbor : pair.getNeighbors()){
-               
-               if (!candidates.contains(neighbor)){
-                  
-                  stillGood = false;
-                  break;
-               }
-            }
-            
-            if (stillGood){
-               
-               createBodyFromHex(pair);
-            }
-         }
-      }
-      
       map.setDisplayMap(displayMap);
 
       if (findLeak && totalWater != hexMapService.allWater()[0] && !leakFound) {
@@ -306,19 +105,29 @@ public class WaterService {
     * @param hex
     * @return the hex blown to, or null if it failed to blow
     */
-   private void blow(boolean findLeak) {
+   private void rain(boolean findLeak) {
 
+      List<Pair> cloudsMoving = new ArrayList<Pair>();
+      
       for (Pair cloud : map.getCloudOrder()) {
 
          if (map.getClouds().containsKey(cloud)) {
 
-            if (rainSingle(map.getHex(cloud), map.getClouds().get(cloud))) {
+            int amount = map.getCloudValue(cloud);
+            
+            if (map.getHex(cloud).getStandingWater() == 0){
+               
+               amount *= 200;
+            }
+            
+            if (rainSingle(map.getHex(cloud), amount)) {
 
-               map.getClouds().put(cloud, map.getClouds().get(cloud) + 1);
+               map.getClouds().put(cloud, map.getCloudValue(cloud) + 1);
             } else {
 
                map.getClouds().remove(cloud);
             }
+            
          }
 
          if (map.getClouds().containsKey(cloud)) {
@@ -331,16 +140,29 @@ public class WaterService {
 
                if (map.getClouds().containsKey(cloud) && blowSingleHex(pair, cloud, cloudElevation, findLeak)) {
 
-                  blowCorner(direction, pair, cloudElevation, findLeak);
+                  rainCorner(direction, pair, cloudElevation, findLeak);
                }
             }
+         }
+         
+         cloudsMoving.add(cloud);
+      }
+      
+      for (Pair cloud : cloudsMoving){
+         
+         Integer movement = map.getClouds().get(cloud);
+         
+         if (movement != null && TheRandom.getInstance().get().nextInt(movement) == 1){
+         
+            Pair moveTo = map.getHighestNeighbor(cloud);
+            map.moveCloud(cloud, moveTo);
          }
       }
 
       map.reorderClouds();
    }
 
-   private void blowCorner(Direction direction, Pair currentPair, int cloudElevation, boolean findLeak) {
+   private void rainCorner(Direction direction, Pair currentPair, int cloudElevation, boolean findLeak) {
 
       List<Pair> layer = new ArrayList<Pair>();
       layer.add(currentPair);
@@ -362,7 +184,7 @@ public class WaterService {
                }
             }
 
-            Pair pair = layer.get(n).getHexIdFromDirection(direction.turnRight());
+            Pair pair = layer.get(n).getHexIdFromDirection(direction.takeRandomTurn());
             map.removeCloud(pair);
 
             if (blowSingleHex(pair, layer.get(n), cloudElevation, findLeak)) {
@@ -425,197 +247,12 @@ public class WaterService {
 
    private boolean rainSingle(Hex hex, int amount) {
 
-      int changed = hex.alterMoistureInAir(-Math.abs(amount));
+      int changed = 0;
+
+      changed = hex.alterMoistureInAir(-Math.abs(amount));
       
       map.alterMoisture(hex, changed);
 
       return changed == amount;
-   }
-   
-   // BodyOfWater stuff
-   
-   private void computeAndSetMembers(BodyOfWater body, Pair startingMember) {
-
-      HexMap map = HexMap.getInstance();
-
-      if (map.getHexes().get(startingMember).getStandingWater(0) < Environment.WATER_BODY_MIN) {
-
-         return;
-      }
-
-      new Propogator().propogate(new FloodCommand(body), startingMember);
-      addToMapWaterBodies(startingMember, body);
-      body.setWaterLineLastChecked();
-   }
-   
-   private void addMember(BodyOfWater body, Pair member) {
-
-      //body.removeFromShore(member);
-      body.getAllMembers().add(member);
-      addToMapWaterBodies(member, body);
-
-      HexMap map = HexMap.getInstance();
-      Hex hex = map.getHex(member);
-
-      body.adjustTotalWater(hex.alterMoisture(-hex.getStandingWater(0), false));
-
-      int elevation = map.getHex(member).getElevation();
-      body.adjustFloorElevation(elevation);
-      body.addToElevationMap(member, elevation);
-   }
-
-   private void removeMember(BodyOfWater body, Pair member) {
-    
-/*      List<Pair> neighbors = member.getNeighbors();
-      
-      for (Pair neighbor : neighbors){
-         
-         if (body.getAllMembers().contains(neighbor)){
-            
-            body.addToShore(neighbor);
-            break;
-         }
-      }*/
-      if (body.getAllMembers().contains(member)){
-      
-         body.getAllMembers().remove(member); // allMembers
-         map.getPairToWaterBodies().remove(member);
-   
-         if (body.getAllMembers().size() == 0){
-            map.getWaterBodiesToBeRemoved().add(body);
-         }
-         
-         Hex hex = map.getHex(member);
-         
-         int leftover = body.adjustTotalWater(-hex.alterMoisture(hex.getStandingWater(0), false));
-   
-         // Just in case... but this should never happen
-         if (leftover > 0) hex.alterMoistureInAir(leftover);
-   
-         int elevation = map.getHex(member).getElevation();
-         body.adjustFloorElevation(-elevation);
-         body.removeFromElevationMap(member, elevation); // elevationMap
-      }
-   }
-   
-   // Returns all disconnected pairs
-   private List<Pair> handleWaterLineChanges(BodyOfWater body){
-      
-      // make sure to handle connectivity in here
-      
-      List<Pair> returnedOrphans = new ArrayList<Pair>();
-      int currentWaterLine = body.getWaterLine();
-      
-      //if (currentWaterLine == body.getWaterLineLastChecked()) return new ArrayList<Pair>();
-      
-      // Add members
-      // Consume any other bodies encountered, removing them from map
-      if (currentWaterLine > body.getWaterLineLastChecked()){
-
-         for(Pair beach : body.getShallowHexes(2)){
-            
-            new Propogator().propogate(new FloodCommand(body), beach);
-         }
-      }
-      
-      // remove members
-      // add all detached members to return list and remove them
-      //if (currentWaterLine < body.getWaterLineLastChecked()){
-
-         //Set<Entry<Integer, Set<Pair>>> entrySet = body.getElevationMap().entrySet();
-         Set<Pair> orphanedMembers = new HashSet<Pair>();
-         
-         int point = body.getExtremePoint(true);
-         List<Pair> markedForRemoval = new ArrayList<Pair>();
-         
-         while(point > body.getWaterLineLastChecked()){
-            
-            if (body.getElevationMap().get(point) != null) markedForRemoval.addAll(body.getElevationMap().get(point));
-
-            point--;
-         }
-         
-         for (Pair pair : markedForRemoval){
-            
-            removeMember(body, pair);
-            Set<Pair> orphans = body.removeFromConnectivityMap(pair);
-            
-            if (orphans != null){
-               orphanedMembers.addAll(orphans);
-            }
-         }
-         
-/*         for (Entry<Integer, Set<Pair>> entry : entrySet){
-            
-            if (entry.getKey() >= currentWaterLine){
-               
-               for (Pair pair : entry.getValue()){
-                  
-                  removeMember(body, pair);
-                  Set<Pair> orphans = body.removeFromConnectivityMap(pair);
-                  
-                  if (orphans != null){
-                     orphanedMembers.addAll(orphans);
-                  }
-               }
-            }
-         }*/
-
-         for (Pair orphan : orphanedMembers){
-            
-            if (body.getAllMembers().contains(orphan)){
-               
-               if (!body.tryConnectOrphan(orphan)){
-                  
-                  returnedOrphans.add(orphan);
-               }
-            }
-         }
-      //}
-      
-      return returnedOrphans;
-   }
-   
-   private boolean isBodyOfWaterCandidate(Pair pair){
-      
-      return inBody(pair) == null && map.getHex(pair).getStandingWater(0) > Environment.WATER_BODY_MIN;
-   }
-   
-   private class FloodCommand implements Evaluator{
-
-      HexMap map = HexMap.getInstance();
-      BodyOfWater body;
-      
-      FloodCommand(BodyOfWater withBody){
-         body = withBody;
-      }
-
-      public boolean evaluate(Pair pairToEvaluate) {
-         
-         BodyOfWater anotherBody = inBody(pairToEvaluate);
-         boolean ranIntoAnotherBody = anotherBody != null && !anotherBody.equals(body);
-         
-         if (ranIntoAnotherBody){
-
-            map.getBodiesThatNeedToBeJoined().add(new PairOfBodies(body, anotherBody));
-         }
-
-         return !ranIntoAnotherBody && isBodyOfWaterFloodCandidate(pairToEvaluate);
-      }
-      
-      private boolean isBodyOfWaterFloodCandidate(Pair pair){
-         
-         return !body.getAllMembers().contains(pair) && map.getHex(pair).getStandingWater(0) > Environment.WATER_BODY_MIN;
-      }
-
-      public void onSuccess(Pair pairToEvaluate) {
-
-         addMember(body, pairToEvaluate);         
-      }
-
-      public void onFail(Pair pairToEvaluate) {
-         
-         //body.addToShore(pairToEvaluate);
-      }
    }
 }

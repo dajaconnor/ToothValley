@@ -21,8 +21,9 @@ public class Propogator {
       if (evaluator.evaluate(startingPair)){
          
          evaluator.onSuccess(startingPair);
-         nextList.add(startingPair);
       }
+      
+      nextList.add(startingPair);
 
       while(nextList.size() > 0){
 

@@ -1,14 +1,12 @@
 package impl;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
 import enums.Direction;
-import models.BodyOfWater;
 import models.Environment;
 import models.Hex;
 import models.HexMap;
@@ -78,7 +76,7 @@ public class HexService {
 
       boolean returnBool = false;
 
-      if (hex.getStandingWater(0) > 1 && map.alterMoisture(hex, -1) > 0){// 
+      if (hex.getMoisture() > 1 && map.alterMoisture(hex, -1) > 0){// 
 
          //WATER MOVEMENT
          hex.setMoistureInAir(hex.getMoistureInAir() + 1);
@@ -177,7 +175,7 @@ public class HexService {
 
          if (adjHex.getFire() <= 0){
 
-            int resist = adjHex.hexFireResistence(map.getHexBodyStandingWater(hex)) + adjHex.getMoistureInAir() - adjHex.getElevation();
+            int resist = adjHex.hexFireResistence() + adjHex.getMoistureInAir() - adjHex.getElevation();
 
             for (int i = 0; i < resistance.length; i++){
 
@@ -357,8 +355,7 @@ public class HexService {
       int stability = from.getSoilStability();
       boolean returnValue = false;
 
-      if (Math.abs(slope) > stability
-            && Math.abs(slope) > Environment.MAX_SLOPE){
+      if (shouldTopple(Math.abs(slope), stability, from)){
 
          if (slope > 0){
 
@@ -376,15 +373,21 @@ public class HexService {
       return returnValue;
    }
    
+   private boolean shouldTopple(int slope, int stability, Hex from){
+      // Slope is naturally unstable
+      return (slope > stability
+ /*           // slope is steeper than should be possible above ground
+            || (slope > Environment.MAX_SLOPE 
+                  && HexMap.getInstance().getPairToWaterBodies().get(from) == null)
+            // slope is steeper than it should be anywhere
+            || (slope > Environment.MAX_UNDERWATER_SLOPE)*/);
+   }
+   
    private void handleAvalanche(Hex from, Hex to, int slope){
       
-      from.setElevation(from.getElevation() - slope/4, false);
-      
-      BodyOfWater body = map.getPairToWaterBodies().get(to.getHexID());
-      
-      if (to.setElevation(to.getElevation() + slope/4, body != null)){
-         body.addToHexesToCheckForElevation(to.getHexID());
-      }
+      from.setElevation(from.getElevation() - slope/4);
+
+      to.setElevation(to.getElevation() + slope/4);
       
       int left = to.setDensity(to.getDensity() - 1);
       from.setDensity(from.getDensity() + 1 + left);
@@ -404,28 +407,18 @@ public class HexService {
    /**
     * Attempt to flood a single hex
     */
-   public boolean flood(Hex hex, boolean findLeak, int standingBodyWater) {
+   public boolean flood(Hex hex, boolean findLeak) {
 
-      boolean returnBool = false;
-      int total = 0;
-      int bodyStandingWater = map.getHexBodyStandingWater(hex);
-
-      if (findLeak){
-         total = hex.getTotalWater(bodyStandingWater);
-      }
+      int standingWater = hex.getStandingWater();
+      boolean flooded = false;
 
       //If there is standing water, shove it around
-      if (hex.getSaturation(standingBodyWater) > 1) {
-         int elev = hex.getCombinedElevation(standingBodyWater);
+      if (hex.getSaturation() > 1) {
+         int elev = hex.getCombinedElevation();
          List<Pair> neighbors = hex.getHexID().getNeighbors();
 
          //Kill plants that aren't strong enough
-         drownPlant(hex, bodyStandingWater);
-
-         if (findLeak && total != hex.getTotalWater(bodyStandingWater)){
-            System.out.println("drown plant leak!");
-            total = hex.getTotalWater(bodyStandingWater);
-         }
+         drownPlant(hex, standingWater);
 
          int lowest = elev;
          Hex flowTo = null;
@@ -434,94 +427,39 @@ public class HexService {
          for (Pair neighbor : neighbors) {
 
             Hex adjHex = map.getHex(neighbor);
-            int adjElev = adjHex.getCombinedElevation(standingBodyWater);
+            int adjElev = adjHex.getCombinedElevation();
 
-            if (adjElev < elev && adjElev < lowest) {
-               returnBool = true;
+            if (adjElev < lowest) {
                lowest = adjElev;
                flowTo = adjHex;
             }
          }
+         
+         flooded = lowest < elev;
 
-         if (returnBool && flowTo != null){
+         if (lowest < elev && flowTo != null){
 
-            int hexAdjElev = hex.getElevation() * 4 + hex.getStandingWater(standingBodyWater);
-            int flowToAdjElev = flowTo.getElevation() * 4 + flowTo.getStandingWater(map.getHexBodyStandingWater(flowTo));
-
-            int difference = hexAdjElev - flowToAdjElev;
-
-            int toDistribute = difference / 2; //totalNeed * flooded.size() / (flooded.size() + 1);
-
-            if (toDistribute > hex.getStandingWater(standingBodyWater)){
-
-               toDistribute = hex.getStandingWater(standingBodyWater);
-            }
-
+            int toDistribute = (elev - lowest) * Environment.WATER_PER_ELEVATION / 2;
 
             if (toDistribute > 0){
+               
+               if (toDistribute > standingWater) toDistribute = standingWater;
 
-               int flowToTotal = flowTo.getTotalWater(bodyStandingWater);
                erode(hex, flowTo, toDistribute);
+               
                map.alterMoisture(flowTo, map.alterMoisture(hex, - toDistribute));
-
-               if (findLeak){
-                  if (total + flowToTotal != hex.getTotalWater(bodyStandingWater) + flowTo.getTotalWater(bodyStandingWater)){
-                     System.out.println("flow leak!");
-
-                  }
-                  total = hex.getTotalWater(bodyStandingWater);
-               }
             }
          }
       }
 
-      else{
-
-         Hex lowest = getLowestNeighber(hex.getHexID());
-
-         if (lowest.getElevation() < hex.getElevation() && map.alterMoisture(hex, - 1) > 0){
-
-            int lowestTotal = lowest.getTotalWater(bodyStandingWater);
-            map.alterMoisture(lowest, 1);
-
-            if (findLeak){
-               if (total + lowestTotal != hex.getTotalWater(bodyStandingWater) + lowest.getTotalWater(bodyStandingWater)){
-                  System.out.println("seep leak!");
-
-               }
-            }
-         }
-      }
-
-      return returnBool;
-   }
-
-   private Hex getLowestNeighber(Pair id){
-
-      List<Pair> neighbors = id.getNeighbors();
-
-      int elevation = 1000;
-      Hex lowest = map.getHex(neighbors.get(0));
-
-      for (Pair neighbor : neighbors){
-
-         Hex hex = map.getHex(neighbor);
-
-         if (hex.getElevation() < elevation){
-
-            elevation = hex.getElevation();
-            lowest = hex;
-         }
-      }
-
-      return lowest;
+      return flooded;
    }
 
    // Deletes plants if the standing water is greater than the rootstrength of the plant
    private void drownPlant(Hex hex, int standingBodyWater) {
 
-      int standing = hex.getStandingWater(standingBodyWater);
-      double saturation = hex.getSaturation(standingBodyWater);
+      int standing = hex.getStandingWater();
+      double saturation = hex.getSaturation();
 
       for (int i = 0; i < hex.getVegetation().length; i++){
 
@@ -530,14 +468,14 @@ public class HexService {
             int strength = hex.getVegetation()[i].getRootstrength();
             TheRandom rand = TheRandom.getInstance();
 
-            if (rand.get().nextInt(1 + (int) (standing * Environment.FLOOD_STRENGTH)) > strength){
+            if (rand.get().nextInt(1 + (int) (standing * Environment.FLOOD_STRENGTH)) > (strength - hex.getVegetation()[i].getRot())){
 
                hex.deletePlant(i);
             }
 
             else if (rand.get().nextFloat() < Environment.ROT_RATE){
 
-               hex.getVegetation()[i].setRootstrength(strength - 1);
+               hex.getVegetation()[i].rot();
             }
          }
       }
@@ -569,13 +507,9 @@ public class HexService {
 
             if (fromHex.getSoilStability() < erosionStrength){
                
-               fromHex.setElevation(fromHex.getElevation() - 1, false);
+               fromHex.setElevation(fromHex.getElevation() - 1);
                
-               BodyOfWater body = map.getPairToWaterBodies().get(toHex.getHexID());
-
-               boolean needsChecking = toHex.setElevation(toHex.getElevation() + 1, body != null);
-               
-               if (needsChecking) body.addToHexesToCheckForElevation(toHex.getHexID());
+               toHex.setElevation(toHex.getElevation() + 1);
 
                if (toHex.getDensity() <= 0 && 0 == rand.get().nextInt(5)){
 
@@ -665,7 +599,7 @@ public class HexService {
 
                if (adjHex.getFire() <= 0){
 
-                  if (adjHex.addPlant(plant, map.getHexBodyStandingWater(adjHex))){
+                  if (adjHex.addPlant(plant)){
 
                      break;
                   }
@@ -680,11 +614,10 @@ public class HexService {
    public boolean ignite(Pair id, int flame){
 
       Hex newHex = map.getHex(id);
-      int standingBodyWater = map.getHexBodyStandingWater(newHex);
 
-      if (newHex != null && flame > newHex.hexFireResistence(map.getHexBodyStandingWater(newHex)) && newHex.getSaturation(standingBodyWater) < 1 && newHex.getHighestVegetation() != null){
+      if (newHex != null && flame > newHex.hexFireResistence() && newHex.getSaturation() < 1 && newHex.getHighestVegetation() != null){
 
-         newHex.setFire(newHex.getFireStrength(map.getHexBodyStandingWater(newHex)));
+         newHex.setFire(newHex.getFireStrength());
 
          map.addBurningHex(id);
          return true;
@@ -716,7 +649,7 @@ public class HexService {
 
       if (hex != null){
 
-         if (hex.getSaturation(0) > 1 || map.getPairToWaterBodies().get(hex.getHexID()) != null){
+         if (hex.getSaturation() > 1){
 
             hex.setFire(0);
          }
@@ -788,7 +721,7 @@ public class HexService {
 
    public void forceGrow(Hex hex) {
 
-      hex.addPlant(new Jungle(), map.getHexBodyStandingWater(hex));
+      hex.addPlant(new Jungle());
    }
 
    /**

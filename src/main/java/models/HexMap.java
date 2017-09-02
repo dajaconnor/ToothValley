@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import enums.Direction;
 import enums.DisplayType;
 import graphics.OpenGLWindow;
 
@@ -35,14 +36,6 @@ public class HexMap {
 	private int windDirection = 0;
 	
 	private int blowing = 5;
-	
-	private Map<Pair,BodyOfWater> pairToWaterBodies = new HashMap<Pair,BodyOfWater>();
-	
-	private Set<BodyOfWater> allWaterBodies = new HashSet<BodyOfWater>();
-	
-	private Set<BodyOfWater> waterBodiesToBeRemoved = new HashSet<BodyOfWater>();
-	
-	private Set<PairOfBodies> bodiesThatNeedToBeJoined = new HashSet<PairOfBodies>();
 
 	private Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>();
 	private Map<Pair,Pair> readMap = new HashMap<Pair,Pair>();
@@ -109,9 +102,48 @@ public class HexMap {
 		clouds.remove(oldCloud);
 	}
 	
+	public void moveCloud(Pair from, Direction direction){
+	   Pair to = from.getHexIdFromDirection(direction);
+	   moveCloud(from, to);
+	}
+	
+	public void moveCloud(Pair from, Pair to){
+	   
+	   cloudOrder.add(to);
+      clouds.put(to, getCloudValue(from));
+	   removeCloud(from);
+	}
+	
+	public Pair getHighestNeighbor(Pair pair){
+	   
+	   List<Pair> neighbors = pair.getNeighbors();
+	   
+	   int elev = -100000;
+	   Pair highest = pair;
+	   
+	   for (Pair neighbor : neighbors){
+	      
+	      int thisElev = getHex(neighbor).getElevation();
+	      
+	      if (thisElev > elev){
+	         
+	         elev = thisElev;
+	         highest = neighbor;
+	      }
+	   }
+	   
+	   return highest;
+	}
+	
 	public List<Pair> getCloudOrder(){
 		
 		return cloudOrder;
+	}
+	
+	public int getCloudValue(Pair cloud){
+	   Integer val = clouds.get(cloud);
+	   
+	   return (val == null) ? 0 : val;
 	}
 
 	public Map<Pair, Integer> getClouds() {
@@ -220,83 +252,27 @@ public class HexMap {
 		return blowing;
 	}
 
-	public Map<Pair,Pair> getDisplayMap() {
-	   
-	   displayMapLock.readLock().lock();
-
-      try{
-         readMap = displayMap;
-      } finally{
-         displayMapLock.readLock().unlock();
-      }
-	   
-		return readMap;
-	}
-	
-	public Pair updateHexDisplay(Hex hex, DisplayType displayType, BodyOfWater inBody){
+	public Pair updateHexDisplay(Hex hex, DisplayType displayType){
 	   
 	   Pair displayPair = null;
+
+      int elevation = hex.getElevation();
+      int standingBodyWater = hex.getStandingWater();
+      
+      // Not until we can avoid those stupid water pyramids
+      DisplayType display = OpenGLWindow.getInstance().getDisplayType();
+      
+      if (display == DisplayType.NORMAL && standingBodyWater != 0){
+         elevation = hex.getCombinedElevation();
+      }
+      
+      Color color = hex.getColor(displayType);
+
+      displayPair = new Pair(colorToInt(color), elevation);
 	   
-	   if (inBody == null || displayType != DisplayType.NORMAL){
-	      
-	      int elevation = hex.getElevation();
-	      int standingBodyWater = hex.getStandingWater(0);
-	      
-	      // Not until we can avoid those stupid water pyramids
-/*	      if (OpenGLWindow.getInstance().getDisplayType() == DisplayType.NORMAL && standingBodyWater != 0){
-	         elevation = hex.getCombinedElevation(standingBodyWater);
-	      }*/
-	      
-	      Color color = hex.getColor(standingBodyWater, displayType);
-	      
-	      displayPair = new Pair(colorToInt(color), elevation);
-	   }
-	   
-	   else{
-	      
-	      int waterLine = inBody.getWaterLine();
-	      displayPair = new Pair(HexMap.colorToInt(Hex.WATER), waterLine);
-	   }		
 
 		return displayPair;
 	}
-	
-/*	public Pair updateBodyOfWater(BodyOfWater body){
-      
-      int elevation = hex.getElevation();
-      int standingBodyWater = getStaleHexBodyStandingWater(hex);
-      
-      // Not until we can avoid those stupid water pyramids
-      if (OpenGLWindow.getInstance().getDisplayType() == DisplayType.NORMAL && standingBodyWater != 0){
-         elevation = hex.getCombinedElevation(standingBodyWater);
-      }
-      
-      Color color = hex.getColor(standingBodyWater);
-      
-      Pair displayPair = new Pair(colorToInt(color), elevation);
-
-      return displayPair;
-   }*/
-	
-	public int getHexBodyStandingWater(Pair id){
-	   Hex hex = getHexes().get(id);
-	   return getHexBodyStandingWater(hex);
-	}
-	
-	public int getHexBodyStandingWater(Hex hex){
-
-	   BodyOfWater body = getPairToWaterBodies().get(hex.getHexID());
-	   
-	   if (body == null) return hex.getStandingWater(0);
-
-	   int bodyWaterline = body.getWaterLine();
-	   
-	   int standingWaterElevation = bodyWaterline - hex.getElevation();
-	   
-	   if (standingWaterElevation <= 0) return 0;
-	   
-	   return standingWaterElevation * Environment.WATER_PER_ELEVATION;
-   }
 	
 	public static int colorToInt(Color color){
 		
@@ -341,15 +317,9 @@ public class HexMap {
 		this.plates = plates;
 	}
 
-   public Map<Pair,BodyOfWater> getPairToWaterBodies() {
-      return pairToWaterBodies;
-   }
-
    public int alterMoisture(Hex hex, int change) {
 
-      BodyOfWater body = getPairToWaterBodies().get(hex.getHexID());
-      if (body == null) return hex.alterMoisture(change, false);
-      return body.adjustTotalWater(change);
+      return hex.alterMoisture(change);
    }
    
    public int alterMoisture(Pair hexId, int change) {
@@ -357,18 +327,6 @@ public class HexMap {
       return alterMoisture(getHex(hexId), change);
    }
 
-   public Set<PairOfBodies> getBodiesThatNeedToBeJoined() {
-      return bodiesThatNeedToBeJoined;
-   }
-
-   public void resetBodiesThatNeedToBeJoined() {
-      this.bodiesThatNeedToBeJoined = new HashSet<PairOfBodies>();
-   }
-
-   public Set<BodyOfWater> getAllWaterBodies() {
-      return allWaterBodies;
-   }
-   
    public void setDisplayMap(Map<Pair, Pair> newDisplayMap){
       displayMapLock.writeLock().lock();
 
@@ -379,16 +337,21 @@ public class HexMap {
       }
    }
    
+   public Map<Pair,Pair> getDisplayMap() {
+      
+      displayMapLock.readLock().lock();
+
+      try{
+         readMap = displayMap;
+      } finally{
+         displayMapLock.readLock().unlock();
+      }
+      
+      return readMap;
+   }
+   
    public DisplayType getDisplayType(){
       
       return OpenGLWindow.getInstance().getDisplayType();
-   }
-
-   public Set<BodyOfWater> getWaterBodiesToBeRemoved() {
-      return waterBodiesToBeRemoved;
-   }
-   
-   public void resetWaterBodiesToBeRemoved() {
-      waterBodiesToBeRemoved = new HashSet<BodyOfWater>();
    }
 }

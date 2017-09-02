@@ -80,7 +80,7 @@ public class TectonicPlateService {
 			Set<Pair> claimedEdgeSides, Pair pair, TectonicPlate plate) {
 		
 		plate.getInnerRing().add(pair);
-		HexMap.getInstance().getHex(pair).setTectonicState(1);
+		HexMap.getInstance().getHex(pair).setTectonicState((Integer)null);
 		claimedEdgeSides.add(pair);
 		List<Pair> neighbors = pair.getNeighbors();
 		

@@ -44,6 +44,7 @@ public class OpenGLWindow {
 
 	public static Color water = new Color(68, 247, 235);
 	public static Color dirt = new Color(108, 91, 46);
+	public static Color sand = new Color(225,191,146);
 	public static Color grass = new Color(251, 251, 77);
 	public static Color thicket = new Color(124, 186, 117);
 	public static Color marsh = new Color(77, 193, 129);
@@ -57,7 +58,7 @@ public class OpenGLWindow {
 	private boolean autoSpin = false;
 	private int waterChange = 1; // 1 stays the same.
 	private Pair offset = new Pair(0,0);
-	
+	private boolean drawLinesToggle = true;
 
 	private DisplayType displayType = DisplayType.NORMAL;
 	
@@ -130,24 +131,26 @@ public class OpenGLWindow {
 
 	}
 
-	public void drawTriangle(DPair vertice1, DPair vertice2, DPair vertice3,
-			Pair colorElev, int elev2, int elev3) {
+	public void drawTriangle(DPair centerVertice1, int centerElev1, DPair vertice2, 
+	      int elev2, DPair vertice3, int elev3, int color) {
+	   
+	   //drawTriangle(DPair vertice1, DPair vertice2, DPair vertice3,
+      //Pair colorElev, int elev2, int elev3) {
 
 		// Begin drawing
 		glBegin(GL11.GL_TRIANGLES);
 
 		// Set triangle color
-		int red = HexMap.intToRed(colorElev.getX());
-		int green = HexMap.intToGreen(colorElev.getX());
-		int blue = HexMap.intToBlue(colorElev.getX());
+		int red = HexMap.intToRed(color);
+		int green = HexMap.intToGreen(color);
+		int blue = HexMap.intToBlue(color);
 
 		glColor3f((float) red / 256, (float) green / 256,
 				(float) blue / 256);
 
 		// Elevations should be: colorElev.getY(), elev2, elev3
 		// Middle
-		glVertex3d(vertice1.getX(), vertice1.getY(),
-				colorElev.getY());
+		glVertex3d(centerVertice1.getX(), centerVertice1.getY(), centerElev1);
 
 		// Edges
 		glVertex3d(vertice2.getX(), vertice2.getY(), elev2);
@@ -156,13 +159,17 @@ public class OpenGLWindow {
 		glEnd();
 	}
 	
-	public void drawLine(DPair vertice1, DPair vertice2, int elev1, int elev2) {
+	public void drawLine(DPair vertice1, DPair vertice2, int elev1, int elev2, float red, float green, float blue, boolean translucent) {
 
 		// Begin drawing
 		glBegin(GL11.GL_LINES);
+		
+		if (translucent){
+		   glEnable (GL11.GL_BLEND); GL11.glBlendFunc (GL11.GL_SRC_ALPHA, GL11.GL_ONE);
+		}
 
-		glLineWidth(1);
-		glColor3f(0.5f, 0.5f, 0.5f);
+		glLineWidth(0.1f);
+		glColor3f(red, green, blue);
 
 		glVertex3d(vertice1.getX(), vertice1.getY(), elev1);
 
@@ -170,14 +177,15 @@ public class OpenGLWindow {
 		
 		glEnd();
 	}
+	
+	public void drawLine(DPair vertice1, DPair vertice2, int elev1, int elev2){
+	   drawLine(vertice1, vertice2, elev1, elev2, 0.5f, 0.5f, 0.5f, false);
+	}
 
 	public void printMap() {
 
 	   HexMap map = HexMap.getInstance();
-	   
 
-		Map<Pair,Pair> displayMap = map.getDisplayMap();
-		
 		if(isAutoSpin()){
 
 			glRotatef(1f,0f,0f,1f);
@@ -186,8 +194,11 @@ public class OpenGLWindow {
 		// Clear the screen.
 		GL11.glDepthMask(true);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+		Map<Pair,Pair> displayMap = map.getDisplayMap();
 
 		printAllPairs(displayMap, offset);
+		//printBodiesOfWater(map.getBodyDisplayMap(), displayMap, offset);
 
 		// Check inputs
 		keyInput();
@@ -200,11 +211,12 @@ public class OpenGLWindow {
    private void printAllPairs(Map<Pair, Pair> displayMap, Pair localOffset) {
       for (Pair hexId : displayMap.keySet()) {
 
-			printHex(hexId, displayMap, localOffset);
+			printHex(hexId, localOffset, displayMap);
 		}
    }
-
-	public void keyInput() {
+   
+   
+   public void keyInput() {
 		
 		while (Keyboard.next()) {
 				
@@ -247,6 +259,12 @@ public class OpenGLWindow {
 						displayType = DisplayType.TECTONICS;
 						
 						break;
+						
+					case Keyboard.KEY_F7:
+                  
+					   drawLinesToggle = !drawLinesToggle;
+                  
+                  break;
 						
 					case Keyboard.KEY_SPACE:
 						
@@ -381,11 +399,15 @@ public class OpenGLWindow {
 			if (Keyboard.isKeyDown(Keyboard.KEY_Q)){
 				
 				glRotatef(1f,0f,0f,1f);
+				glTranslatef(5*Environment.SLOW_PAN, 0, 0);
+				glTranslatef(0, -5*Environment.SLOW_PAN, 0);
 			}
 			
 			if (Keyboard.isKeyDown(Keyboard.KEY_E)){
 				
 				glRotatef(1f,0f,0f,-1f);
+				glTranslatef(-5*Environment.SLOW_PAN, 0, 0);
+            glTranslatef(0, 5*Environment.SLOW_PAN, 0);
 			}
 		}
 	}
@@ -410,80 +432,54 @@ public class OpenGLWindow {
 	   offset.setX(offset.getX() + amount);
 	}
 	
-	private void printHex(Pair northId, Map<Pair, Pair> map, Pair localOffset) {
+	private int getGroundVerticeElevation(Pair one, Pair two, Pair three, Map<Pair, Pair> display){
+	   return (display.get(one).getY() + display.get(two).getY() + display.get(three).getY()) / 3;
+	}
+	
+	private void printDiamond(Pair top, DPair baseTop, Pair bottom, DPair baseBottom, Pair left, DPair baseLeft, Pair right, DPair baseRight, Map<Pair, Pair> normalDisplayMap){
 
-		int water = HexMap.colorToInt(Hex.WATER);
+	   // draw ground first
+	   int topColor = normalDisplayMap.get(top).getX();
+	   int bottomColor = normalDisplayMap.get(bottom).getX();
+	   int topGroundElev = normalDisplayMap.get(top).getY();
+	   int leftGroundElev = getGroundVerticeElevation(top, left, bottom, normalDisplayMap);
+	   int bottomGroundElev = normalDisplayMap.get(bottom).getY();
+	   int rightGroundElev = getGroundVerticeElevation(top, right, bottom, normalDisplayMap);
 
-		Pair northColorElev = map.get(northId);
+	   drawTriangle(baseTop, topGroundElev, baseLeft, leftGroundElev, baseRight, rightGroundElev, topColor);
+	   drawTriangle(baseBottom, bottomGroundElev, baseLeft, leftGroundElev, baseRight, rightGroundElev, bottomColor);
+	   
+	   // prints the line as long as both aren't water
+	   if (drawLinesToggle 
+	        && !dontDraw(topColor, bottomColor, leftGroundElev, rightGroundElev)){
+         //Border
+         drawLine(baseLeft, baseRight, leftGroundElev, rightGroundElev, 0.5f, 0.5f, 0.5f, true);
+      }
+	}
 
-		Pair southId = northId.S();
-		Pair southColorElev = map.get(southId);
+   private boolean dontDraw(int topColor, int bottomColor, int leftGroundElev, int rightGroundElev) {
+      return displayType == DisplayType.NORMAL && 
+         (Math.abs(leftGroundElev - rightGroundElev) <= Environment.DRAW_LINE_TOLERANCE 
+               || topColor != bottomColor);
+   }
 
-		Pair eastId = northId.SE();
-		Pair eastColorElev = map.get(eastId);
+	private void printHex(Pair hexId, Pair localOffset, Map<Pair, Pair> normalDisplayMap) {
 
-		// Outer elevation guides
-		int NE_Elev = map.get(eastId.N()).getY();
-		int SE_Elev = map.get(eastId.S()).getY();
-		int W_Elev = map.get(southId.NW()).getY();
-
-		DPair north = getBasePrintCoords(northId, localOffset);
-		DPair south = getBasePrintCoords(southId, localOffset);
-		DPair east = getBasePrintCoords(eastId, localOffset);
-
-		//DPair epicenter = realSE(north);
-
-		// North hex
-		// NW
-		int outerElev = (W_Elev + northColorElev.getY() + southColorElev.getY()) / 3;
-		int centerElev = (eastColorElev.getY() + northColorElev.getY() + southColorElev
-				.getY()) / 3;
-		
-		
-		drawTriangle(north, realSW(north), realSE(north), northColorElev,
-				outerElev, centerElev);
-
-		
-		// N
-		outerElev = (NE_Elev + northColorElev.getY() + eastColorElev.getY()) / 3;
-		drawTriangle(north, realE(north), realSE(north), northColorElev,
-				outerElev, centerElev);
-		
-		if (!(northColorElev.getX() == water && eastColorElev.getX() == water)){
-			//Border
-			drawLine(realE(north),realSE(north), outerElev, centerElev);
-		}
-		
-		// East hex
-		// NE
-		drawTriangle(east, realNW(east), realW(east), eastColorElev, outerElev,
-				centerElev);
-	 
-		
-		// SE
-		outerElev = (SE_Elev + southColorElev.getY() + eastColorElev.getY()) / 3;
-		drawTriangle(east, realSW(east), realW(east), eastColorElev, outerElev,
-				centerElev);
-
-		if (!(southColorElev.getX() == water && eastColorElev.getX() == water)){
-			//Border
-			drawLine(realSW(east),realW(east), outerElev, centerElev);
-		}
-		
-		// South hex
-		// S
-		drawTriangle(south, realE(south), realNE(south), southColorElev,
-				outerElev, centerElev);
-
-		// SW
-		outerElev = (W_Elev + southColorElev.getY() + northColorElev.getY()) / 3;
-		drawTriangle(south, realNW(south), realNE(south), southColorElev,
-				outerElev, centerElev);
-		
-		if (!(southColorElev.getX() == water && northColorElev.getX() == water)){
-			//Border
-			drawLine(realNW(south),realNE(south), outerElev, centerElev);
-		}
+	   DPair baseHex = getBasePrintCoords(hexId, localOffset);
+	   DPair baseVertSW = realSW(baseHex);
+	   DPair baseVertSE = realSE(baseHex);
+	   DPair baseVertE = realE(baseHex);
+	   DPair baseVertNE = realNE(baseHex);
+	   DPair baseNE = realE(baseVertNE);
+	   DPair baseSE = realE(baseVertSE);
+	   DPair baseS = realSE(baseVertSW);
+	   
+	   // South diamond
+	   printDiamond(hexId, baseHex, hexId.S(), baseS, hexId.SW(), baseVertSW, hexId.SE(), baseVertSE, normalDisplayMap);
+	   // Southeast diamond
+	   printDiamond(hexId, baseHex, hexId.SE(), baseSE, hexId.S(), baseVertSE, hexId.NE(), baseVertE, normalDisplayMap);
+	   // Northeast
+	   printDiamond(hexId, baseHex, hexId.NE(), baseNE, hexId.SE(), baseVertE, hexId.N(), baseVertNE, normalDisplayMap);
 	}
 
 	/**
