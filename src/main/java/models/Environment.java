@@ -18,6 +18,8 @@ public class Environment {
 
    // The smaller this is, the steeper stuff gets
    public static final int SLOPE_CONSTANT = 1;
+   
+   public static final int NUM_PLANTS_PER_HEX = 4;
 
    // Defines the percent of the plants that attempt to grow
    public static final double GROW_RATE = 0.3;
@@ -28,6 +30,9 @@ public class Environment {
    // The percent of the map that quick grow will fill
    public static final double QUICK_GROW_RATE = 1;
 
+   // Number of ticks between force grows on slow growth
+   public static final int FORCE_GROW_INTERVAL = 10;
+   
    // The likelyhood that something will burn on a tick per region
    public static final double BURN_RATE = 0.0001;
 
@@ -35,7 +40,7 @@ public class Environment {
    public static final int BURN_DOWN_RATE = 18;
 
    // The ability for fire to spread, the bigger the more flammable
-   public static final double FLAMABILITY = 1.2;
+   public static final double FLAMABILITY = 1.15;
 
    // The power with which lightning strikes
    public static final int LIGHTNING_STRENGTH = 252;
@@ -91,7 +96,7 @@ public class Environment {
    public static final int PLATE_EDGE_FREQUENCY = 800;
 
    // Number of tectonic movements per tick
-   public static final int TECTONIC_ACTIVITY = 5;
+   public static final int TECTONIC_ACTIVITY = 10;
    public static final int TECTONIC_AMPLITUDE = 1;
 
    // Defines the number of times a hex can topple in a single run
@@ -132,12 +137,15 @@ public class Environment {
    public static final int SLOW_PAN = 1;
 
    // defines the number of ticks between force grows
-   public static final int FORCE_GROW_INTERVAL = 100;
    public final static boolean LOWEST = false;
    public final static boolean HIGHEST = true;
    public static final float BODY_EVAPORATION = 0.1F;
-   public static final int CHANCE_OF_TECTONIC_PLATE_CHANGE = 1000;
-   public static final int HOW_SLOW_WATER_MOVES = 5; // 2 is faster, slower as number goes up
+   public static final int CHANCE_OF_TECTONIC_PLATE_CHANGE = 10000;
+   public static final int HOW_SLOW_WATER_MOVES = 6; // 2 is faster, slower as number goes up
+   public static final int SNOW_MELT = 3; // multiplies HOW_SLOW_WATER_MOVES
+   public static final int SNOW_LEVEL = 420;
+   public static final int MAX_FULL_DIRT = 32;
+   public static final int MIN_FULL_STONE = 130;
 
    // These are set when the map is generated, and never altered.
    public static int[] MAP_GRID;

@@ -45,7 +45,7 @@ public class PerlinNoise extends JPanel {
 	 * @param x
 	 * @return
 	 */
-	public double interpolate(int y0, int y1, int y2, int y3, double x){
+	private double interpolate(int y0, int y1, int y2, int y3, double x){
 		
 		int P = (y3 - y2) - (y0 - y1);
 		int Q = (y0 - y1) - P;
@@ -63,7 +63,7 @@ public class PerlinNoise extends JPanel {
 	 * @param digits
 	 * @return
 	 */
-	public int[] makeSpline(int[] wavePoints, int waveLength, int amp, int digits){
+	private int[] makeSpline(int[] wavePoints, int waveLength, int amp, int digits){
 		
 		int numWaves = (digits / waveLength) - 1;
 		int[] spline = new int[digits];
@@ -125,25 +125,11 @@ public class PerlinNoise extends JPanel {
 		
 		//splines are the vertical ridges from which to interpolate all 2D space
 		int[][] splines = new int[wavePoints.length][size.getY()];
-		
-		//Window window = Window.getInstance();
-		
+
 		//Create vertical splines
 		for (int i = 0; i < wavePoints.length; i++){
 			
 			splines[i] = makeSpline(wavePoints[i], waveYLength, amp, size.getY());
-			
-			for (int n = 0; n < splines[i].length; n++){
-				
-				if (splines[i][n] < 0){
-					splines[i][n] = 0;
-				}
-				if (splines[i][n] > 255){
-					splines[i][n] = 255;
-				}
-				
-				//window.drawPixel(i * waveLength, n, splines[i][n]);
-			}
 		}
 		
 		//Create full landscape / Horizontal splines
@@ -180,7 +166,7 @@ public class PerlinNoise extends JPanel {
 	}
 		
 	//For horizontal splines
-	public int[] getInterPoints(int[][] splines, int wave, int yIndex){
+	private int[] getInterPoints(int[][] splines, int wave, int yIndex){
 		
 		int[] interPoints = new int[4];
 		
@@ -216,7 +202,7 @@ public class PerlinNoise extends JPanel {
 	}
 	
 	//For vertical splines
-	public int[] getInterPoints(int[] splines, int wave){
+	private int[] getInterPoints(int[] splines, int wave){
 		
 		int[] interPoints = new int[4];
 		
@@ -255,7 +241,7 @@ public class PerlinNoise extends JPanel {
 	 * @param Ylist
 	 * @return
 	 */
-	public List<Integer> perlin(float frequency, int amp, List<Integer> Ylist){
+	private List<Integer> perlin(float frequency, int amp, List<Integer> Ylist){
 		
 		int numWaves = (int) (1.0 / frequency);
 		int waveLength = (int) (frequency * Environment.MAP_WIDTH);
@@ -282,7 +268,7 @@ public class PerlinNoise extends JPanel {
 	}
 	
 	
-	public int[] makeNoise(int numWaves, int amp){
+	private int[] makeNoise(int numWaves, int amp){
 		
 		int[] noise = new int[numWaves];
 		
@@ -300,7 +286,7 @@ public class PerlinNoise extends JPanel {
 	 * @param amp
 	 * @return
 	 */
-	public List<Integer> getWavePoints(int numWaves, int amp){
+	private List<Integer> getWavePoints(int numWaves, int amp){
 		
 		List<Integer> wavePoints = new ArrayList<Integer>();
 		
@@ -310,17 +296,6 @@ public class PerlinNoise extends JPanel {
 		}
 		
 		return wavePoints;
-	}
-	
-	
-	public List<Integer> joinLists(List<Integer> List1, List<Integer> List2){
-		
-		for (int i = 0; i < List2.size(); i++){
-			
-			List1.add(List2.get(i));
-		}
-		
-		return List1;
 	}
 	
 	public int[][] combineNoise(int[][] noise1, int[][] noise2){

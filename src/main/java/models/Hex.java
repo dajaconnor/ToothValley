@@ -20,7 +20,7 @@ public class Hex {
 	private int moisture;
 	private int moistureInAir;
 	private int elevation;
-	private Plant[] vegetation = new Plant[3];
+	private Plant[] vegetation = new Plant[Environment.NUM_PLANTS_PER_HEX];
 	private Color color = DIRT;
 	private int fire = 0;
 	private Map<Direction, Integer> wind;
@@ -30,30 +30,27 @@ public class Hex {
 	public static int MAX_PLANT_STRENGTH = 16;
 	public static Color WATER = new Color(68, 247, 235);
 	public static Color DIRT = new Color(108, 91, 46);
-	public static Color GRASS = new Color(251, 251, 77);
+	public static Color GRASS = new Color(211, 221, 77);
 	public static Color THICKET = new Color(124, 226, 117);
 	public static Color MARSH = new Color(77, 193, 129);
 	public static Color FOREST = new Color(21, 181, 51);
 	public static Color JUNGLE = new Color(6, 102, 23);
 	public static Color FIRE = new Color(255, 0, 0);
-	public static Color STONE = new Color(200, 220, 180);
+	public static Color STONE = new Color(173, 193, 173);
+	public static Color SNOW = new Color(230, 230, 255);
 
 	public Plant[] getVegetation() {
 		return vegetation;
 	}
-	
-	public Plant getRandomPlant(){
-	   return vegetation[TheRandom.getInstance().get().nextInt(3)];
-	}
 
-	public void setVegetation(Plant[] vegetation) {
-		this.vegetation = vegetation;
+	public Plant getRandomPlant(){
+		return vegetation[TheRandom.getInstance().get().nextInt(vegetation.length)];
 	}
 
 	public int getDensity() {
 		return density;
 	}
-	
+
 	public int getSoil(){
 		return Environment.MAX_DENSITY + 1 - density;
 	}
@@ -67,10 +64,10 @@ public class Hex {
 		}
 
 		int leftover = 0;
-		
+
 		if (density > Environment.MAX_DENSITY){
-		   this.density = Environment.MAX_DENSITY;
-		   leftover = density - Environment.MAX_DENSITY;
+			this.density = Environment.MAX_DENSITY;
+			leftover = density - Environment.MAX_DENSITY;
 		}else{
 			this.density = density;
 		}
@@ -94,29 +91,29 @@ public class Hex {
 	public void setWind(Map<Direction, Integer> wind) {
 		this.wind = wind;
 	}
-	
+
 	public void clearWind(){
-		
+
 		this.wind = new HashMap<Direction, Integer>();
 	}
-	
+
 	public void addWind(Direction direction, int strength){
-		
+
 		this.wind.put(direction, strength);
 	}
-	
+
 	public void setMoistureInAir(int moistureInAir) {
 		this.moistureInAir = moistureInAir;
 	}
-	
+
 	public int alterMoistureInAir(int moistureInAir){
-		
+
 		if (this.moistureInAir + moistureInAir >= 0){
-		
+
 			this.moistureInAir += moistureInAir;
 			return Math.abs(moistureInAir);
 		} else {
-			
+
 			int altered = this.moistureInAir;
 			this.moistureInAir = 0;
 			return altered;
@@ -162,7 +159,7 @@ public class Hex {
 	}
 
 	public int alterMoisture(int change) {
-	   
+
 		int changed = 0;
 
 		// change is negative
@@ -178,20 +175,20 @@ public class Hex {
 				moisture += change;
 			}
 		} 
-		
+
 		// Change is positive
 		else {
-			
+
 			Plant[] plants = this.getVegetation();
-			
+
 			for (Plant plant : plants) {
 
 				if (plant != null &&
-					change > changed &&
-					plant.getMoistureRequired() > plant.getMoisture()) {
-					
+						change > changed &&
+						plant.getMoistureRequired() > plant.getMoisture()) {
+
 					int needs = plant.getMoistureRequired() - plant.getMoisture();
-					
+
 					// Need more then there is
 					if (needs >= (change - changed)){
 
@@ -199,18 +196,18 @@ public class Hex {
 						plant.setMoisture(plant.getMoisture() + change - changed);
 						changed = change;
 					}
-					
+
 					// Don't need as much as there is
 					else{
-						
+
 						plant.setMoisture(plant.getMoisture() + needs);
-						
+
 						// still some left over
 						changed += needs;
 					}
 				}
 			}
-			
+
 			// Ground gets whatever the plants leave behind
 			moisture += change - changed;
 		}
@@ -224,16 +221,16 @@ public class Hex {
 
 	// returns true if it needs to be evaluated for a body
 	public boolean setElevation(int elevation) {
-	   
-	   boolean evaluateThis = false;
 
-	   if (elevation > this.elevation){
-	      
-	      evaluateThis= true;
-	   }
-	   
+		boolean evaluateThis = false;
+
+		if (elevation > this.elevation){
+
+			evaluateThis= true;
+		}
+
 		this.elevation = elevation;
-		
+
 		return evaluateThis;
 	}
 
@@ -252,7 +249,7 @@ public class Hex {
 	}
 
 	public int getStandingWater() {
-	   
+
 		int standingWater = getMoisture() - (Environment.MAX_DENSITY + 1 - this.density);
 
 		if (standingWater < 0) {
@@ -265,9 +262,9 @@ public class Hex {
 	public int getCombinedElevation() {
 		return getStandingWater() / Environment.WATER_PER_ELEVATION + elevation;
 	}
-	
+
 	public int getPrintElevation() {
-		
+
 		return getStandingWater() + elevation;
 	}
 
@@ -292,66 +289,66 @@ public class Hex {
 
 		boolean success = false;
 		TheRandom rand = TheRandom.getInstance();
-		
+
 		// If the new plant can tolerate the saturation range
 		if (plant != null && getSoil() > plant.getRootstrength() && plant.getMoistureRequired() < getMoisture()){
-			
+
 			Plant newPlant = null;
-			
+			int index = 0;
+
 			if (plant instanceof Grass){
-				
+
 				newPlant = new Grass(plant.getRootstrength(), plant.getMoistureRequired());
+				index = 0;
 			}
-			
+
 			if (plant instanceof Thicket){
-				
+
 				newPlant = new Thicket(plant.getRootstrength(), plant.getMoistureRequired());
+				index = 1;
 			}
-			
+
 			if (plant instanceof Forest){
-				
+
 				newPlant = new Forest(plant.getRootstrength(), plant.getMoistureRequired());
+				index = 2;
 			}
-			
+
 			if (plant instanceof Jungle){
-				
+
 				newPlant = new Jungle(plant.getRootstrength(), plant.getMoistureRequired());
+				index = 3;
 			}
-			
+
 			if (newPlant != null){
-			
+
 				// Evolve for rockier soil
 				if (getSoil() == plant.getRootstrength() - 1){
-					
+
 					newPlant.setRootstrength(plant.getRootstrength() - 1);
 				}
-				
+
 				// Evolve for better strength
 				else if(getSoil() >= plant.getRootstrength() + Environment.EVOLUTION_DESIRE && rand.get().nextFloat() < Environment.EVOLUTION_RATE){
-					
+
 					newPlant.setRootstrength(plant.getRootstrength() + 1);
 				}
-				
+
 				// Evolve for drier environment
 				if (plant.getMoistureRequired() - 1 == getMoisture() && getMoisture() > 1) {
-					
+
 					newPlant.setMoistureRequired(getMoisture() - 1);
 				}
-				
+
 				// Evolve for better hierarchy
 				else if(plant.getMoistureRequired() + Environment.EVOLUTION_DESIRE <= getMoisture() && rand.get().nextFloat() < Environment.EVOLUTION_RATE){
-					
+
 					newPlant.setMoistureRequired(plant.getMoistureRequired() + 1);
 				}
-	
-				// For all plant spots
-				for (int index = 0; index < 3; index++) {
-	
-					if (addPlantAtIndex(newPlant, index)) {
-	
-						success = true;
-						break;
-					}
+
+				if (addPlantAtIndex(newPlant, index)) {
+
+					success = true;
 				}
 			}
 		}
@@ -372,6 +369,8 @@ public class Hex {
 	private boolean addPlantAtIndex(Plant plant, int index) {
 
 		boolean success = false;
+
+		plant.getClass().toString();
 
 		// If the spot is empty,fill it
 		if (this.vegetation[index] == null) {
@@ -418,13 +417,13 @@ public class Hex {
 			}
 		}
 	}
-	
+
 	public void killAllPlants(){
-	   
-	   for (int i = 0; i < vegetation.length; i++){
-	      
-	      deletePlant(i);
-	   }
+
+		for (int i = 0; i < vegetation.length; i++){
+
+			deletePlant(i);
+		}
 	}
 
 	/**
@@ -467,7 +466,7 @@ public class Hex {
 
 		return plant;
 	}
-	
+
 	/**
 	 * Finds and returns the plant which displaces the least moisture
 	 * 
@@ -486,7 +485,7 @@ public class Hex {
 				plant = veggie;
 			}
 			else{
-				
+
 				plant = null;
 				break;
 			}
@@ -566,7 +565,7 @@ public class Hex {
 
 		case MOISTURE:
 
-		   return getMoistureColor();
+			return getMoistureColor();
 
 		case HUMIDITY:
 
@@ -575,9 +574,9 @@ public class Hex {
 		case DENSITY:
 
 			return getDensityColor();
-			
+
 		case TECTONICS:
-			
+
 			return getTectonicColor();
 
 		default:
@@ -587,196 +586,207 @@ public class Hex {
 		}
 	}
 
-   private Color getNormalColor(DisplayType displayType) {
-      Plant plant = getHighestVegetation();
+	private Color getFireColor(){
+		int green = TheRandom.getInstance().get().nextInt(255);
+		return new Color(255, green, 0);
+	}
 
-      if (fire > 0) {
+	private Color getNormalColor(DisplayType displayType) {
+		Plant plant = getHighestVegetation();
 
-      	color = FIRE;
-      }
+		if (fire > 0) {
 
-      else if (plant == null) {
+			color = getFireColor();
+		}
 
-      	color = DIRT;
-      	
-      	int red = color.getRed();
-      	int green = color.getGreen();
-      	int blue = color.getBlue();
-      	
-      	float redAdjust = (float) (255 - red) / 32f;
+		else if (plant == null) {
 
-      	// Make it whiter
-      	if (density > 32){
-      		
-      		red += redAdjust * (density - 32);
-      		green += redAdjust * (density - 32);
-      		blue += redAdjust * (density - 32);
-      		
-      		red = setToRange(blue, 255);
-      		green = setToRange(green, 255);
-      		blue = setToRange(blue, 255);
-      		
-      		color = new Color(red, green, blue);
-      	}	
-      }
+			color = DIRT;
 
-      else {
+			// Make it whiter
+			if (density > Environment.MAX_FULL_DIRT){
 
-      	int redAdjust = 0;
-      	int greenAdjust = 0;
+				int densityForColor = density - Environment.MAX_FULL_DIRT;
 
-      	if (plant instanceof Grass) {
+				color = getColorMerge(DIRT, STONE, densityForColor, Environment.MIN_FULL_STONE);
 
-      		color = GRASS;
-      		
-      		redAdjust =  (plant.getRootstrength() - Environment.GRASS_STRENGTH) * Environment.COLOR_CHANGE_CONSTANT;
-      		greenAdjust = (plant.getRootstrength() - Environment.GRASS_STRENGTH + plant.getMoistureRequired() - Environment.GRASS_MOISTURE) * Environment.COLOR_CHANGE_CONSTANT;
-      	}
+			}	
+		}
 
-      	if (plant instanceof Thicket) {
+		else {
 
-      		color = THICKET;
-      		
-      		redAdjust =  (plant.getRootstrength() - Environment.THICKET_STRENGTH) * Environment.COLOR_CHANGE_CONSTANT;
-      		greenAdjust = (plant.getRootstrength() - Environment.THICKET_STRENGTH + plant.getMoistureRequired() - Environment.THICKET_MOISTURE) * Environment.COLOR_CHANGE_CONSTANT;
-      	}
+			int redAdjust = 0;
+			int greenAdjust = 0;
 
-      	if (plant instanceof Forest) {
+			if (plant instanceof Grass) {
 
-      		color = FOREST;
-      		
-      		redAdjust =  (plant.getRootstrength() - Environment.FOREST_STRENGTH) * Environment.COLOR_CHANGE_CONSTANT;
-      		greenAdjust = (plant.getRootstrength() - Environment.FOREST_STRENGTH + plant.getMoistureRequired() - Environment.FOREST_MOISTURE) * Environment.COLOR_CHANGE_CONSTANT;
-      	}
+				color = GRASS;
 
-      	if (plant instanceof Jungle) {
+				redAdjust =  (plant.getRootstrength() - Environment.GRASS_STRENGTH) * Environment.COLOR_CHANGE_CONSTANT;
+				greenAdjust = (plant.getRootstrength() - Environment.GRASS_STRENGTH + plant.getMoistureRequired() - Environment.GRASS_MOISTURE) * Environment.COLOR_CHANGE_CONSTANT;
+			}
 
-      		color = JUNGLE;
-      		
-      		redAdjust =  (plant.getRootstrength() - Environment.JUNGLE_STRENGTH)/2;
-      		greenAdjust = (plant.getRootstrength() - Environment.JUNGLE_STRENGTH)/2 + (plant.getMoistureRequired() - Environment.JUNGLE_MOISTURE)/2;
-      	}
-      	
-      	color = new Color(setToRange(color.getRed() + redAdjust,255), setToRange(color.getGreen() + greenAdjust,255), setToRange(color.getBlue(),255));
-      }
-      
-      int standingWater = getStandingWater();
-      
-      if (standingWater > 0){
-         
-         Color waterColor = WATER;
-         
-         //if (displayType == DisplayType.NO_LINE_NORMAL){
-            Color moistureColor = getMoistureColor();
-            int intColor = Math.abs(moistureColor.getBlue() - 255);
-            waterColor = new Color(0,intColor / 2,moistureColor.getBlue());
-         //}
-         
-         if (standingWater >= Environment.WATER_BUFFER){
-            
-            color = waterColor;
-         } else{
-            
-            int blue = getWaterColorMerge(color.getBlue(), waterColor.getBlue(), standingWater);
-            int green = getWaterColorMerge(color.getGreen(), waterColor.getGreen(), standingWater);
-            int red = getWaterColorMerge(color.getRed(), waterColor.getRed(), standingWater);
-            
-            color = new Color(red, green, blue);
-         }
-      }
+			if (plant instanceof Thicket) {
 
-      return color;
-   }
+				color = THICKET;
 
-   private Color getElevationColor() {
-      if (elevation > 255) {
+				redAdjust =  (plant.getRootstrength() - Environment.THICKET_STRENGTH) * Environment.COLOR_CHANGE_CONSTANT;
+				greenAdjust = (plant.getRootstrength() - Environment.THICKET_STRENGTH + plant.getMoistureRequired() - Environment.THICKET_MOISTURE) * Environment.COLOR_CHANGE_CONSTANT;
+			}
 
-      	return Color.WHITE;
-      }
-      if (elevation < 0) {
+			if (plant instanceof Forest) {
 
-      	return Color.BLACK;
-      }
+				color = FOREST;
 
-      return new Color(elevation, elevation, elevation);
-   }
+				redAdjust =  (plant.getRootstrength() - Environment.FOREST_STRENGTH) * Environment.COLOR_CHANGE_CONSTANT;
+				greenAdjust = (plant.getRootstrength() - Environment.FOREST_STRENGTH + plant.getMoistureRequired() - Environment.FOREST_MOISTURE) * Environment.COLOR_CHANGE_CONSTANT;
+			}
 
-   private Color getHumidityColor() {
-      if (moistureInAir * 3 > 255) {
+			if (plant instanceof Jungle) {
 
-      	return new Color(85, 85, 255);
-      } 
-      else if (moistureInAir < 0){
-      	
-      	return new Color(85, 85, 0);
-      }
-      else {
+				color = JUNGLE;
 
-      	int colorForAir = moistureInAir;
-      	
-      	if (colorForAir > 64){
-      		colorForAir = 64;
-      	}
-      	
-      	return new Color(colorForAir / 2, colorForAir / 2,
-      			colorForAir * 3);
-      }
-   }
+				redAdjust =  (plant.getRootstrength() - Environment.JUNGLE_STRENGTH)/2;
+				greenAdjust = (plant.getRootstrength() - Environment.JUNGLE_STRENGTH)/2 + (plant.getMoistureRequired() - Environment.JUNGLE_MOISTURE)/2;
+			}
 
-   private Color getDensityColor() {
-      if (density * 4 > 255) {
+			color = new Color(setToRange(color.getRed() + redAdjust,255), setToRange(color.getGreen() + greenAdjust,255), setToRange(color.getBlue(),255));
+		}
 
-      	return Color.BLACK;
-      }
-      if (density < 0) {
+		int standingWater = getStandingWater();
 
-      	return Color.WHITE;
-      } else {
+		if (standingWater > 0){
 
-      	return new Color(255 - density * 4, 255 - density * 4,
-      			255 - density * 4);
-      }
-   }
+			// only snow if there's standing water and no plant, 
+			// or the snow is above the rootstrength
+			if (elevation > Environment.SNOW_LEVEL){
+				if (plant == null || standingWater > plant.getRootstrength()){
+					color = SNOW;
+				}
+			} else {
 
-   private Color getTectonicColor() {
-      if (tectonicState == null){
-      	return Color.WHITE;
-      } else {
-      
-      switch (tectonicState){
-      	
-      	case -2:
-      		return Color.RED;
-      	case -1:
-      		return new Color(127,0,0);
-      	case 0:
-      		return Color.GRAY;
-      	case 1:
-      		return new Color(0,0,127);
-      	case 2:
-      		return Color.BLUE;
-      	}
-      }
-      return Color.WHITE;
-   }
+				Color waterColor = WATER;
 
-   private Color getMoistureColor() {
-      int moisture = getMoisture();
-      
-      if (moisture > 255 || moisture > 255) {
+				Color moistureColor = getMoistureColor();
+				int intColor = Math.abs(moistureColor.getBlue() - 255);
+				waterColor = new Color(0,intColor / 2,moistureColor.getBlue());
 
-      	return new Color(0, 0, 255);
-      }
-      if (getMoisture() < 0) {
 
-      	return new Color(0, 0, 0);
-      } else {
-      	return new Color(0, 0, moisture);
-      }
-   }
-	
-	private int getWaterColorMerge(int hexColor, int waterColor, int standingWater){
-	   return ((hexColor * (Environment.WATER_BUFFER - standingWater)) + (waterColor * standingWater)) / Environment.WATER_BUFFER;
+				if (standingWater >= Environment.WATER_BUFFER){
+
+					color = waterColor;
+				} else{
+
+					color = getColorMerge(color, waterColor, standingWater, Environment.WATER_BUFFER);
+				}
+			}
+		}
+
+		return color;
+	}
+
+	private Color getElevationColor() {
+		if (elevation > 255) {
+
+			return Color.WHITE;
+		}
+		if (elevation < 0) {
+
+			return Color.BLACK;
+		}
+
+		return new Color(elevation, elevation, elevation);
+	}
+
+	private Color getHumidityColor() {
+		if (moistureInAir * 3 > 255) {
+
+			return new Color(85, 85, 255);
+		} 
+		else if (moistureInAir < 0){
+
+			return new Color(85, 85, 0);
+		}
+		else {
+
+			int colorForAir = moistureInAir;
+
+			if (colorForAir > 64){
+				colorForAir = 64;
+			}
+
+			return new Color(colorForAir / 2, colorForAir / 2,
+					colorForAir * 3);
+		}
+	}
+
+	private Color getDensityColor() {
+		if (density * 4 > 255) {
+
+			return Color.BLACK;
+		}
+		if (density < 0) {
+
+			return Color.WHITE;
+		} else {
+
+			return new Color(255 - density * 4, 255 - density * 4,
+					255 - density * 4);
+		}
+	}
+
+	private Color getTectonicColor() {
+		if (tectonicState == null){
+			return Color.WHITE;
+		} else {
+
+			switch (tectonicState){
+
+			case -2:
+				return Color.RED;
+			case -1:
+				return new Color(127,0,0);
+			case 0:
+				return Color.GRAY;
+			case 1:
+				return new Color(0,0,127);
+			case 2:
+				return Color.BLUE;
+			}
+		}
+		return Color.WHITE;
+	}
+
+	private Color getMoistureColor() {
+		int moisture = getMoisture();
+
+		if (moisture > 255 || moisture > 255) {
+
+			return new Color(0, 0, 255);
+		}
+		if (getMoisture() < 0) {
+
+			return new Color(0, 0, 0);
+		} else {
+			return new Color(0, 0, moisture);
+		}
+	}
+
+	private Color getColorMerge(Color colorLow, Color colorHigh, int determiningValue, int cutoff){
+
+		int blue = getColorMergeOneColor(colorLow.getBlue(), colorHigh.getBlue(), determiningValue, cutoff);
+		int green = getColorMergeOneColor(colorLow.getGreen(), colorHigh.getGreen(), determiningValue, cutoff);
+		int red = getColorMergeOneColor(colorLow.getRed(), colorHigh.getRed(), determiningValue, cutoff);
+
+		return new Color(red, green, blue);
+	}
+
+	private int getColorMergeOneColor(int colorLow, int colorHigh, int determiningValue, int cutoff){
+
+		if (determiningValue <= 0) return colorLow;
+		if (determiningValue >= cutoff) return colorHigh;
+
+		return ((colorLow * (cutoff - determiningValue)) + (colorHigh * determiningValue)) / cutoff;
 	}
 
 	/**
@@ -818,57 +828,57 @@ public class Hex {
 	public void setFire(int fire) {
 		this.fire = fire;
 	}
-	
+
 	public int setToRange(int var, int max){
-		
+
 		int returnInt = var;
-		
+
 		if (var < 0){
-			
+
 			returnInt = 0;
 		}
 		if (var > max){
-			
+
 			returnInt = max;
 		}
-		
+
 		return returnInt;
 	}
-	
+
 	public Plant getNextLowestPlant(Plant plant){
-		
+
 		Plant returnPlant = null;
-		
+
 		if (plant instanceof Jungle){
-			
+
 			returnPlant = new Forest();
 		}
 		if (plant instanceof Forest){
-			
+
 			returnPlant = new Thicket();
 		}
 		if (plant instanceof Thicket){
-			
+
 			returnPlant = new Grass();
 		}
-		
+
 		return returnPlant;
 	}
-	
+
 	public Pair[] getAdj(){
 
 		Pair[] pairs = new Pair[6];
-		
+
 		pairs[0] = hexID.N();
 		pairs[1] = hexID.NE();
 		pairs[2] = hexID.SE();
 		pairs[3] = hexID.S();
 		pairs[4] = hexID.SW();
 		pairs[5] = hexID.NW();
-		
+
 		return pairs;
 	}
-	
+
 	public Integer getTectonicState() {
 		return tectonicState;
 	}
@@ -877,24 +887,24 @@ public class Hex {
 		this.tectonicState = tectonicState;
 	}
 
-   public void setTectonicState(TectonicEdgeDirection edgeDirection) {
-      
-      switch(edgeDirection){
-      
-      case UP:
-         
-         tectonicState = 1;
-         break;
-      
-      case DOWN:
-         
-         tectonicState = -1;
-         break;
-         
-      case STABLE:
-         
-         tectonicState = 0;
-         break;
-      }
-   }
+	public void setTectonicState(TectonicEdgeDirection edgeDirection) {
+
+		switch(edgeDirection){
+
+		case UP:
+
+			tectonicState = 1;
+			break;
+
+		case DOWN:
+
+			tectonicState = -1;
+			break;
+
+		case STABLE:
+
+			tectonicState = 0;
+			break;
+		}
+	}
 }

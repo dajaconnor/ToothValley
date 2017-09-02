@@ -204,6 +204,13 @@ public class Pair {
        return returnPair;
     }
     
+    public Pair getRandomNeighbor(){
+    	
+    	List<Pair> neighbors = getNeighbors();
+    	int index = TheRandom.getInstance().get().nextInt(neighbors.size());
+    	return neighbors.get(index);
+    }
+    
     public List<Pair> getNeighbors() {
 
        List<Pair> neighbors = new ArrayList<Pair>();

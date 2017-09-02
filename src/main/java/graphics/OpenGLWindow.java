@@ -59,12 +59,13 @@ public class OpenGLWindow {
 	private int waterChange = 1; // 1 stays the same.
 	private Pair offset = new Pair(0,0);
 	private boolean drawLinesToggle = false;
+	private boolean fullScreen = false;
 
-	private DisplayType displayType = DisplayType.NORMAL;
+	private DisplayType displayType = DisplayType.MOISTURE;
 	
 
 	// To make singleton
-	private static final OpenGLWindow INSTANCE = new OpenGLWindow(false);
+	private static final OpenGLWindow INSTANCE = new OpenGLWindow();
 
 	public static OpenGLWindow getInstance() {
 		return INSTANCE;
@@ -72,14 +73,14 @@ public class OpenGLWindow {
 
 	// ****
 
-	private OpenGLWindow(boolean fullscreen) {
-
+	private OpenGLWindow() {
+		
 		if (INSTANCE != null) {
 			throw new IllegalStateException("Already instantiated");
 		}
 
 		try {
-			init(fullscreen);
+			init(false);
 
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
@@ -116,10 +117,10 @@ public class OpenGLWindow {
 		// povy in radians, aspect ratio X/Y, zNear, zFar
 		gluPerspective(45f, (float) (Environment.MAP_WIDTH / Environment.MAP_HEIGHT), 1000f , 5000f);
 		
-		//I don't know why, but this puts the map on the screen...
-		//glTranslatef(-500, -500, -2000);
-		glTranslatef(0, 0, -2000);
+		// center view
+		glTranslatef(-200, 100, -2000);
 
+		// roll into view
 		glRotatef(-50f,1f,0f,0f);
 
 		glMatrixMode(GL_MODELVIEW);
@@ -290,6 +291,20 @@ for (Pair hexId : displayMap.keySet()) {
 
 						break;
 						
+					case Keyboard.KEY_F11:
+
+						fullScreen = !fullScreen;
+						
+						try{
+							Display.setFullscreen(fullScreen);
+							if (fullScreen) Display.setDisplayModeAndFullscreen(Display.getDesktopDisplayMode());
+						}catch(Exception e){
+							System.out.println("Setting to fullscreen didn't work...  " + e.getMessage());
+						}
+						
+
+						break;
+
 					case Keyboard.KEY_SPACE:
 						
 						if (isPaused()){

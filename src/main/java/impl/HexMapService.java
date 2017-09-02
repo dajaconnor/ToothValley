@@ -114,7 +114,7 @@ public class HexMapService {
 			plant = 1;
 		}
 
-		Plant[] newPlant = new Plant[3];
+		Plant[] newPlant = new Plant[Environment.NUM_PLANTS_PER_HEX];
 		
 		switch (plant) {
 
@@ -151,11 +151,11 @@ public class HexMapService {
 	 * @param noiseSize
 	 * @return int[][]
 	 */
-	public int[][] getPerlinPixels(PerlinNoise perlin, Pair noiseSize) {
+	private int[][] getPerlinPixels(PerlinNoise perlin, Pair noiseSize) {
 
 		int[][] slopeNoise = perlin.twoDNoise(0.07F, 160, noiseSize);
-		int[][] noise = perlin.twoDNoise(0.12F, 200, noiseSize);
-		int[][] smallnoise = perlin.twoDNoise(0.02F, -60, noiseSize);
+		int[][] noise = perlin.twoDNoise(0.12F, 300, noiseSize);
+		int[][] smallnoise = perlin.twoDNoise(0.02F, -160, noiseSize);
 
 		return perlin.combineNoise(smallnoise, perlin.combineNoise(noise, slopeNoise));
 	}

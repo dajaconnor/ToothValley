@@ -158,6 +158,7 @@ public class EnvironmentService {
       if (map.getPlates().size() > 0) {
 
          int i = 0;
+         int leftoverElev = 0;
 
          while (i++ < Environment.TECTONIC_ACTIVITY) {
 
@@ -174,16 +175,33 @@ public class EnvironmentService {
                if (plate.getActiveEdges().get(keyPair) == TectonicEdgeDirection.UP) {
 
                   map.getHex(hexService.getAreaPair(keyPair))
-                  .setElevation(map.getHex(keyPair).getElevation() + Environment.TECTONIC_AMPLITUDE);
+                  	.setElevation(map.getHex(keyPair).getElevation() + Environment.TECTONIC_AMPLITUDE);
                   
                   hexService.topple(keyPair, 0);
+                  
+                  leftoverElev -= Environment.TECTONIC_AMPLITUDE;
                }
 
                if (plate.getActiveEdges().get(keyPair) == TectonicEdgeDirection.DOWN) {
 
                   map.getHex(hexService.getAreaPair(keyPair))
                   .setElevation(map.getHex(keyPair).getElevation() - Environment.TECTONIC_AMPLITUDE);
+                  
+                  leftoverElev += Environment.TECTONIC_AMPLITUDE;
                }
+            }
+            
+            if (leftoverElev != 0){
+            	
+            	for (Pair pair : plate.getAllEdges()){
+            		
+            		map.getHex(hexService.getAreaPair(pair))
+                    .setElevation(map.getHex(pair).getElevation() + leftoverElev);
+            		
+            		leftoverElev = 0;
+            		
+            		break;
+            	}
             }
          }
       }

@@ -21,192 +21,192 @@ import models.plants.Thicket;
 @Component
 public class HexService {
 
-   public HexService() {
+	public HexService() {
 
-   }
-   
-   HexMap map = HexMap.getInstance();
+	}
 
-   public List<Pair> getSharedNeighbors(Pair pair1, Pair pair2){
+	HexMap map = HexMap.getInstance();
 
-      List<Pair> neighborList = pair1.getNeighbors();
-      Set<Pair> neighborSet = pair1.getNeighborsSet();
-      List<Pair> returnList = new ArrayList<Pair>();
+	public List<Pair> getSharedNeighbors(Pair pair1, Pair pair2){
 
-      for (Pair pair : neighborList){
+		List<Pair> neighborList = pair1.getNeighbors();
+		Set<Pair> neighborSet = pair1.getNeighborsSet();
+		List<Pair> returnList = new ArrayList<Pair>();
 
-         if (neighborSet.contains(pair)){
+		for (Pair pair : neighborList){
 
-            returnList.add(pair);
-         }
-      }
+			if (neighborSet.contains(pair)){
 
-      return returnList;
-   }
+				returnList.add(pair);
+			}
+		}
 
-   public Pair getRandomPair(){
+		return returnList;
+	}
 
-      TheRandom rand = TheRandom.getInstance();
+	public Pair getRandomPair(){
 
-      int seedInt = rand.get().nextInt(Environment.MAP_GRID[0] * Environment.MAP_GRID[1]);
+		TheRandom rand = TheRandom.getInstance();
 
-      return Pair.wrap(seedInt % Environment.MAP_GRID[0],seedInt / Environment.MAP_GRID[0]);
-   }
+		int seedInt = rand.get().nextInt(Environment.MAP_GRID[0] * Environment.MAP_GRID[1]);
 
-   public Direction getRandomDirection() {
+		return Pair.wrap(seedInt % Environment.MAP_GRID[0],seedInt / Environment.MAP_GRID[0]);
+	}
 
-      TheRandom rand = TheRandom.getInstance();
+	public Direction getRandomDirection() {
 
-      return Direction.values()[rand.get().nextInt(6)];
-   }
+		TheRandom rand = TheRandom.getInstance();
 
-   public Pair getAreaPair(Pair ID){
+		return Direction.values()[rand.get().nextInt(6)];
+	}
 
-      List<Pair> neighborhood = ID.getNeighbors();
-      neighborhood.add(ID);
-      TheRandom rand = TheRandom.getInstance();
-      return neighborhood.get(rand.get().nextInt(neighborhood.size()));
-   }
+	public Pair getAreaPair(Pair ID){
 
-   /**
-    * This will attempt to evaporate. Succeeds if saturation > 100%. Else,
-    * returns false.
-    * 
-    * @param hex
-    * @return
-    */
-   public boolean evaporate(Hex hex, boolean findLeak, boolean foundLeak) {
+		List<Pair> neighborhood = ID.getNeighbors();
+		neighborhood.add(ID);
+		TheRandom rand = TheRandom.getInstance();
+		return neighborhood.get(rand.get().nextInt(neighborhood.size()));
+	}
 
-      boolean returnBool = false;
+	/**
+	 * This will attempt to evaporate. Succeeds if saturation > 100%. Else,
+	 * returns false.
+	 * 
+	 * @param hex
+	 * @return
+	 */
+	public boolean evaporate(Hex hex, boolean findLeak, boolean foundLeak) {
 
-      if (hex.getMoisture() > 1 && map.alterMoisture(hex, -1) > 0){// 
+		boolean returnBool = false;
 
-         //WATER MOVEMENT
-         hex.setMoistureInAir(hex.getMoistureInAir() + 1);
+		if (hex.getMoisture() > 1 && map.alterMoisture(hex, -1) > 0){// 
 
-         returnBool = true;
-      }
-      else{
+			//WATER MOVEMENT
+			hex.setMoistureInAir(hex.getMoistureInAir() + 1);
 
-         TheRandom rand = TheRandom.getInstance();
+			returnBool = true;
+		}
+		else{
 
-         if (0 == rand.get().nextInt(Environment.EVAPORATION_RESISTANCE)){
+			TheRandom rand = TheRandom.getInstance();
 
-            Plant plant = hex.getHighestVegetation();
+			if (0 == rand.get().nextInt(Environment.EVAPORATION_RESISTANCE)){
 
-            if(plant != null && rand.get().nextInt(Environment.DRY_PLANT) < plant.getMoisture()){
+				Plant plant = hex.getHighestVegetation();
 
-               hex.alterMoistureInAir(1);
+				if(plant != null && rand.get().nextInt(Environment.DRY_PLANT) < plant.getMoisture()){
 
-               if (map.alterMoisture(hex, -1) == 0){
+					hex.alterMoistureInAir(1);
 
-                  plant.setMoisture(plant.getMoisture() - 1);
-               }
+					if (map.alterMoisture(hex, -1) == 0){
 
-               if (plant.getMoisture() <= 0){
+						plant.setMoisture(plant.getMoisture() - 1);
+					}
 
-                  hex.deletePlant(plant.getIndex());
-               }
-            }
-         }
-      }
+					if (plant.getMoisture() <= 0){
 
-      if (hex.getMoistureInAir() >= Environment.CLOUD){
+						hex.deletePlant(plant.getIndex());
+					}
+				}
+			}
+		}
 
-         map.addCloud(hex.getHexID());
-      }
+		if (hex.getMoistureInAir() >= Environment.CLOUD){
 
-      return returnBool;
-   }
+			map.addCloud(hex.getHexID());
+		}
 
-   /**
-    * Returns hex with lowest pressure
-    */
-   public Pair[] getEasyFirePath(Hex hex) {
+		return returnBool;
+	}
 
-      Pair[] path = new Pair[2];
-      int[] resistance = new int[2];
-      resistance[0] = 1000;
-      resistance[1] = 1000;
+	/**
+	 * Returns hex with lowest pressure
+	 */
+	public Pair[] getEasyFirePath(Hex hex) {
 
-      List<Pair> neighbors = hex.getHexID().getNeighbors();
+		Pair[] path = new Pair[2];
+		int[] resistance = new int[2];
+		resistance[0] = 1000;
+		resistance[1] = 1000;
 
-      for (Pair hexId : neighbors) {
+		List<Pair> neighbors = hex.getHexID().getNeighbors();
 
-         Hex adjHex = map.getHex(hexId);
+		for (Pair hexId : neighbors) {
 
-         if (adjHex.getFire() <= 0){
+			Hex adjHex = map.getHex(hexId);
 
-            int resist = adjHex.hexFireResistence() + adjHex.getMoistureInAir() - adjHex.getElevation();
+			if (adjHex.getFire() <= 0){
 
-            for (int i = 0; i < resistance.length; i++){
+				int resist = adjHex.hexFireResistence() + adjHex.getMoistureInAir() - adjHex.getElevation();
 
-               if (resistance[i] > resist){
+				for (int i = 0; i < resistance.length; i++){
 
-                  resistance[i] = resist;
-                  path[i] = adjHex.getHexID();
-                  break;
-               }
-            }
-         }
-      }
+					if (resistance[i] > resist){
 
-      return path;
-   }
+						resistance[i] = resist;
+						path[i] = adjHex.getHexID();
+						break;
+					}
+				}
+			}
+		}
 
-   /**
-    * Takes two adjacent hexes ids and returns the direction 
-    * from the first to the second.
-    * 
-    * Returns '6' if the hexes aren't adjacent
-    */
-   public Direction getDirectionBetweenHexes(Pair origin, Pair destination){
+		return path;
+	}
 
-      Direction direction = null;
+	/**
+	 * Takes two adjacent hexes ids and returns the direction 
+	 * from the first to the second.
+	 * 
+	 * Returns '6' if the hexes aren't adjacent
+	 */
+	public Direction getDirectionBetweenHexes(Pair origin, Pair destination){
 
-      if (destination != null && origin != null){
+		Direction direction = null;
 
-         if (destination.equals(origin.N())){
+		if (destination != null && origin != null){
 
-            direction = Direction.north;
-         }
+			if (destination.equals(origin.N())){
 
-         else if (destination.equals(origin.NE())){
+				direction = Direction.north;
+			}
 
-            direction = Direction.northeast;
-         }
+			else if (destination.equals(origin.NE())){
 
-         else if (destination.equals(origin.SE())){
+				direction = Direction.northeast;
+			}
 
-            direction = Direction.southeast;
-         }
+			else if (destination.equals(origin.SE())){
 
-         else if (destination.equals(origin.S())){
+				direction = Direction.southeast;
+			}
 
-            direction = Direction.south;
-         }
+			else if (destination.equals(origin.S())){
 
-         else if (destination.equals(origin.SW())){
+				direction = Direction.south;
+			}
 
-            direction = Direction.southwest;
-         }
+			else if (destination.equals(origin.SW())){
 
-         else if (destination.equals(origin.NW())){
+				direction = Direction.southwest;
+			}
 
-            direction = Direction.northwest;
-         }
-      }
+			else if (destination.equals(origin.NW())){
 
-      return direction;
-   }
+				direction = Direction.northwest;
+			}
+		}
 
-   // for leak test
-   /*HexMapImpl hexMapImpl = new HexMapImpl();
+		return direction;
+	}
+
+	// for leak test
+	/*HexMapImpl hexMapImpl = new HexMapImpl();
 		int totalWater = hexMapImpl.allWater()[0];
 		boolean found = false;*/
 
-   //Get strong wind start point
-   /*
+	//Get strong wind start point
+	/*
 		int strength = map.isBlowing();
 
 		while (strength > 0){
@@ -215,8 +215,8 @@ public class HexService {
 			strength--;
 		}*/
 
-   //If it can blow
-   /*		if (hex.getMoistureInAir() >= Environment.CLOUD && map.inWindWhiteHexes(hex.getHexID())) {
+	//If it can blow
+	/*		if (hex.getMoistureInAir() >= Environment.CLOUD && map.inWindWhiteHexes(hex.getHexID())) {
 
 			Direction direction = getWindDirection(hex.getHexID());
 
@@ -231,7 +231,7 @@ public class HexService {
 		}
 	}*/
 
-   /*	private Hashtable<Pair, Integer> collectCloud(
+	/*	private Hashtable<Pair, Integer> collectCloud(
 			Hashtable<Pair, Integer> cloud, Pair hexID) {
 
 		if (cloud.size() < Environment.CLOUD_SIZE){
@@ -272,10 +272,10 @@ public class HexService {
 		return cloud;
 	}*/
 
-   /**
-    * Move all adjacent hex pressure too!
-    */
-   /*	public void moveCloud(Hashtable<Pair,Integer> cloud, Direction direction){
+	/**
+	 * Move all adjacent hex pressure too!
+	 */
+	/*	public void moveCloud(Hashtable<Pair,Integer> cloud, Direction direction){
 
 		HexMap map = HexMap.getInstance();
 
@@ -296,442 +296,456 @@ public class HexService {
 		}
 	}*/
 
-   public void removeAllVegetation(Hex hex){
+	public void removeAllVegetation(Hex hex){
 
-      for (int i = 0; i < hex.getVegetation().length; i++){
+		for (int i = 0; i < hex.getVegetation().length; i++){
 
-         hex.deletePlant(i);
-      }
-   }
+			hex.deletePlant(i);
+		}
+	}
 
-   /**
-    * compares elevation in two hexes and if slope is too great, the higher of the two falls
-    * Vegetation is removed in both hexes
-    * 
-    * @param from
-    * @param to
-    */
-   public boolean avalanche(Hex from, Hex to){
+	/**
+	 * compares elevation in two hexes and if slope is too great, the higher of the two falls
+	 * Vegetation is removed in both hexes
+	 * 
+	 * @param from
+	 * @param to
+	 */
+	public boolean avalanche(Hex from, Hex to){
 
-      int slope = from.getElevation() - to.getElevation();
-      int stability = from.getSoilStability();
-      boolean returnValue = false;
+		int slope = from.getElevation() - to.getElevation();
+		int stability = from.getSoilStability();
+		boolean returnValue = false;
 
-      if (shouldTopple(Math.abs(slope), stability, from)){
+		if (shouldTopple(Math.abs(slope), stability, from)){
 
-         if (slope > 0){
+			if (slope > 0){
 
-            handleAvalanche(from, to, slope);
-         }
+				handleAvalanche(from, to, slope);
+			}
 
-         else{
+			else{
 
-            handleAvalanche(to, from, Math.abs(slope));
-         }
+				handleAvalanche(to, from, Math.abs(slope));
+			}
 
-         returnValue = true;
-      }
+			returnValue = true;
+		}
 
-      return returnValue;
-   }
-   
-   private boolean shouldTopple(int slope, int stability, Hex from){
-      // Slope is naturally unstable
-      return (slope > stability
- /*           // slope is steeper than should be possible above ground
+		return returnValue;
+	}
+
+	private boolean shouldTopple(int slope, int stability, Hex from){
+		// Slope is naturally unstable
+		return (slope > stability
+				/*           // slope is steeper than should be possible above ground
             || (slope > Environment.MAX_SLOPE 
                   && HexMap.getInstance().getPairToWaterBodies().get(from) == null)
             // slope is steeper than it should be anywhere
             || (slope > Environment.MAX_UNDERWATER_SLOPE)*/);
-   }
-   
-   private void handleAvalanche(Hex from, Hex to, int slope){
-      
-      from.setElevation(from.getElevation() - slope/4);
-
-      to.setElevation(to.getElevation() + slope/4);
-      
-      int left = to.setDensity(to.getDensity() - 1);
-      from.setDensity(from.getDensity() + 1 + left);
-
-      removeAllVegetation(from);
-      removeAllVegetation(to);
-   }
+	}
 
-   /**
-    * Body of water:
-    * No erosion in body
-    * added or subtracted by unrelated services (grow, blow, etc)... alg might be tricky
-    * shared sum of water
-    * shared elevation
-    */
+	private void handleAvalanche(Hex from, Hex to, int slope){
 
-   /**
-    * Attempt to flood a single hex
-    */
-   public boolean flood(Hex hex, boolean findLeak) {
+		from.setElevation(from.getElevation() - slope/4);
 
-      int standingWater = hex.getStandingWater();
-      boolean flooded = false;
+		to.setElevation(to.getElevation() + slope/4);
 
-      //If there is standing water, shove it around
-      if (hex.getSaturation() > 1) {
-         int elev = hex.getCombinedElevation();
-         List<Pair> neighbors = hex.getHexID().getNeighbors();
+		int left = to.setDensity(to.getDensity() - 1);
+		from.setDensity(from.getDensity() + 1 + left);
 
-         //Kill plants that aren't strong enough
-         drownPlant(hex, standingWater);
+		removeAllVegetation(from);
+		removeAllVegetation(to);
+	}
 
-         int lowest = elev;
-         Hex flowTo = null;
+	/**
+	 * Body of water:
+	 * No erosion in body
+	 * added or subtracted by unrelated services (grow, blow, etc)... alg might be tricky
+	 * shared sum of water
+	 * shared elevation
+	 */
 
-         //Find a hex for it to flow to
-         for (Pair neighbor : neighbors) {
+	/**
+	 * Attempt to flood a single hex
+	 */
+	public boolean flood(Hex hex, boolean findLeak) {
 
-            Hex adjHex = map.getHex(neighbor);
-            int adjElev = adjHex.getCombinedElevation();
+		int standingWater = hex.getStandingWater();
+		boolean flooded = false;
 
-            if (adjElev < lowest) {
-               lowest = adjElev;
-               flowTo = adjHex;
-            }
-         }
-         
-         flooded = lowest < elev;
+		//If there is standing water, shove it around
+		if (hex.getSaturation() > 1) {
+			int elev = hex.getCombinedElevation();
+			List<Pair> neighbors = hex.getHexID().getNeighbors();
 
-         if (lowest < elev && flowTo != null){
+			//Kill plants that aren't strong enough
+			drownPlant(hex, standingWater);
 
-            int toDistribute = (elev - lowest) * Environment.WATER_PER_ELEVATION / Environment.HOW_SLOW_WATER_MOVES;
+			int lowest = elev;
+			Hex flowTo = null;
 
-            if (toDistribute == 0) toDistribute = (elev - lowest)/2 + 1;
-            
-            if (toDistribute > 0){
-               
-               if (toDistribute > standingWater) toDistribute = standingWater;
-
-               erode(hex, flowTo, toDistribute);
-               
-               map.alterMoisture(flowTo, map.alterMoisture(hex, - toDistribute));
-            }
-         }
-      }
-
-      return flooded;
-   }
-
-   // Deletes plants if the standing water is greater than the rootstrength of the plant
-   private void drownPlant(Hex hex, int standingBodyWater) {
-
-      int standing = hex.getStandingWater();
-      double saturation = hex.getSaturation();
-
-      for (int i = 0; i < hex.getVegetation().length; i++){
-
-         if (hex.getVegetation()[i] != null && saturation > hex.getVegetation()[i].getMaxSaturation()){
-
-            int strength = hex.getVegetation()[i].getRootstrength();
-            TheRandom rand = TheRandom.getInstance();
-
-            if (rand.get().nextInt(1 + (int) (standing * Environment.FLOOD_STRENGTH)) > (strength - hex.getVegetation()[i].getRot())){
-
-               hex.deletePlant(i);
-            }
-
-            else if (rand.get().nextFloat() < Environment.ROT_RATE){
-
-               hex.getVegetation()[i].rot();
-            }
-         }
-      }
-   }
-
-   /**
-    * Erodes, increasing density of fromHex, decreasing density of toHex
-    * @param fromHex
-    * @param toHex
-    * @return Boolean
-    */
-   public boolean erode(Hex fromHex, Hex toHex, int maxStrength) {
-
-      boolean eroded = false;
-
-      int slope = fromHex.getElevation() - toHex.getElevation();
-
-      if (slope > 2){
-
-         TheRandom rand = TheRandom.getInstance();
-         slope -= 2;
-         slope *= slope * slope;
-         int strength = Math.abs(maxStrength) * slope - slope;
-
-         if (strength > 0){
-
-            // replaced 'Environment.EROSION_INDEX with slope
-            int erosionStrength = rand.get().nextInt(strength);
-
-            if (fromHex.getSoilStability() < erosionStrength){
-               
-               fromHex.setElevation(fromHex.getElevation() - 1);
-               
-               toHex.setElevation(toHex.getElevation() + 1);
-
-               if (toHex.getDensity() <= 0 && 0 == rand.get().nextInt(5)){
-
-                  fromHex.setDensity(fromHex.getDensity() + 1);
-                  toHex.setDensity(toHex.getDensity() - 1);
-               }
-
-               eroded = true;
-            }
-         }
-      }
-
-      return eroded;
-   }
-
-   /**
-    * 
-    * @param plants
-    * @return int index
-    */
-   public int getIndexOfWeakestPlant(Plant[] plants) {
-
-      int smallestPlant = 16;
-      int smallPlantIndex = 0;
-
-      for (int i = 0; i < plants.length; i++) {
-
-         if (plants[i] == null){
-            smallPlantIndex = i;
-            break;
-         }
-         else{
-            int moisture = plants[i].getMoisture();
-            if (moisture < smallestPlant) {
-               smallPlantIndex = i;
-            }
-         }
-      }
+			//Find a hex for it to flow to
+			for (Pair neighbor : neighbors) {
 
-      return smallPlantIndex;
-   }
+				Hex adjHex = map.getHex(neighbor);
+				int adjElev = adjHex.getCombinedElevation();
 
-   /**
-    * The strongest plant
-    * @param hexes
-    * @return
-    */
-   public int getStrengthOfStrongestPlantInHexes(List<Hex> hexes) {
-      int possiblePlant = 0;
-      for (Hex adjHex : hexes) {
-         for (Plant plant : adjHex.getVegetation()) {
-            if (plant != null) {
-               if (plant.getMoisture() > possiblePlant) {
-                  possiblePlant = plant.getMoisture();
-               }
-            }
-         }
-         if (possiblePlant == Hex.MAX_PLANT_STRENGTH) {
-            break;
-         }
-      }
-      return possiblePlant;
-   }
+				if (adjElev < lowest) {
+					lowest = adjElev;
+					flowTo = adjHex;
+				}
+			}
 
-   /**
-    * Picks a hex, and attempts for it to grow to an adjacent hex
-    * @param hex
-    * @return
-    */
-   public boolean grow(Pair id) {
+			flooded = lowest < elev;
 
-      boolean grew = false;
-      Hex hex = map.getHex(id);
+			if (lowest < elev && flowTo != null){
 
-      //Shouldn't grow out when on fire
-      if (hex.getFire() <= 0){
+				int toDistribute = 0;
 
-         Plant plant = hex.getRandomPlant();
+				if (elev > Environment.SNOW_LEVEL){
 
-         if(plant != null){
+					toDistribute = 1 + (elev - lowest) * Environment.WATER_PER_ELEVATION / (Environment.SNOW_MELT * Environment.HOW_SLOW_WATER_MOVES);
+				}else{
+					toDistribute = (elev - lowest) * Environment.WATER_PER_ELEVATION / Environment.HOW_SLOW_WATER_MOVES;
+				}
 
-            List<Pair> neighbors = id.getNeighbors();
 
-            for (Pair neighbor : neighbors){
+				if (toDistribute == 0) toDistribute = (elev - lowest)/2 + 1;
 
-               Hex adjHex = map.getHex(neighbor);
+				if (toDistribute > 0){
 
-               if (adjHex.getFire() <= 0){
+					if (toDistribute > standingWater) toDistribute = standingWater;
 
-                  if (adjHex.addPlant(plant)){
+					erode(hex, flowTo, toDistribute);
 
-                     break;
-                  }
-               }
-            }
-         }
-      }
+					map.alterMoisture(flowTo, map.alterMoisture(hex, - toDistribute));
+				}
+			}
+		}
 
-      return grew;
-   }
+		return flooded;
+	}
 
-   public boolean ignite(Pair id, int flame){
+	// Deletes plants if the standing water is greater than the rootstrength of the plant
+	private void drownPlant(Hex hex, int standingBodyWater) {
 
-      Hex newHex = map.getHex(id);
+		int standing = hex.getStandingWater();
+		double saturation = hex.getSaturation();
 
-      if (newHex != null && flame > newHex.hexFireResistence() && newHex.getSaturation() < 1 && newHex.getHighestVegetation() != null){
+		for (int i = 0; i < hex.getVegetation().length; i++){
 
-         newHex.setFire(newHex.getFireStrength());
+			if (hex.getVegetation()[i] != null && saturation > hex.getVegetation()[i].getMaxSaturation()){
 
-         map.addBurningHex(id);
-         return true;
+				int strength = hex.getVegetation()[i].getRootstrength();
+				TheRandom rand = TheRandom.getInstance();
 
-      }
-      return false;
-   }
+				if (rand.get().nextInt(1 + (int) (standing * Environment.FLOOD_STRENGTH)) > (strength - hex.getVegetation()[i].getRot())){
 
-   /**
-    * Attempts to burn
-    * 
-    * @param hex
-    * @param strength
-    * @return
-    */
-   public void igniteNext(Hex hex) {
+					hex.deletePlant(i);
+				}
+
+				else if (rand.get().nextFloat() < Environment.ROT_RATE){
+
+					hex.getVegetation()[i].rot();
+				}
+			}
+		}
+	}
+
+	/**
+	 * Erodes, increasing density of fromHex, decreasing density of toHex
+	 * @param fromHex
+	 * @param toHex
+	 * @return Boolean
+	 */
+	public boolean erode(Hex fromHex, Hex toHex, int maxStrength) {
+
+		boolean eroded = false;
+
+		int slope = fromHex.getElevation() - toHex.getElevation();
+
+		if (slope > 2){
+
+			TheRandom rand = TheRandom.getInstance();
+			slope -= 2;
+			slope *= slope * slope;
+			int strength = Math.abs(maxStrength) * slope - slope;
+
+			if (strength > 0){
+
+				// replaced 'Environment.EROSION_INDEX with slope
+				int erosionStrength = rand.get().nextInt(strength);
 
-      if (hex != null){
+				if (fromHex.getSoilStability() < erosionStrength){
 
-         Pair[] path = getEasyFirePath(hex);
+					fromHex.setElevation(fromHex.getElevation() - 1);
+
+					toHex.setElevation(toHex.getElevation() + 1);
+
+					if (toHex.getDensity() <= 0 && 0 == rand.get().nextInt(5)){
+
+						fromHex.setDensity(fromHex.getDensity() + 1);
+						toHex.setDensity(toHex.getDensity() - 1);
+					}
+
+					eroded = true;
+				}
+			}
+		}
 
-         ignite(path[0], hex.getFire());
-         ignite(path[1], hex.getFire());
+		return eroded;
+	}
 
-      }
-   }
+	/**
+	 * 
+	 * @param plants
+	 * @return int index
+	 */
+	public int getIndexOfWeakestPlant(Plant[] plants) {
 
-   public void burnDown(Hex hex) {
+		int smallestPlant = 16;
+		int smallPlantIndex = 0;
 
-      if (hex != null){
+		for (int i = 0; i < plants.length; i++) {
 
-         if (hex.getSaturation() > 1){
+			if (plants[i] == null){
+				smallPlantIndex = i;
+				break;
+			}
+			else{
+				int moisture = plants[i].getMoisture();
+				if (moisture < smallestPlant) {
+					smallPlantIndex = i;
+				}
+			}
+		}
 
-            hex.setFire(0);
-         }
+		return smallPlantIndex;
+	}
 
-         else{
+	/**
+	 * The strongest plant
+	 * @param hexes
+	 * @return
+	 */
+	public int getStrengthOfStrongestPlantInHexes(List<Hex> hexes) {
+		int possiblePlant = 0;
+		for (Hex adjHex : hexes) {
+			for (Plant plant : adjHex.getVegetation()) {
+				if (plant != null) {
+					if (plant.getMoisture() > possiblePlant) {
+						possiblePlant = plant.getMoisture();
+					}
+				}
+			}
+			if (possiblePlant == Hex.MAX_PLANT_STRENGTH) {
+				break;
+			}
+		}
+		return possiblePlant;
+	}
 
-            hex.setFire(hex.getFire() - Environment.BURN_DOWN_RATE);
+	/**
+	 * Picks a hex, and attempts for it to grow to an adjacent hex
+	 * @param hex
+	 * @return
+	 */
+	public boolean grow(Pair id) {
 
-            if (hex.getFire() <= 0){
+		Hex hex = map.getHex(id);
+		boolean grew = false;
 
-               hex.setFire(0);
+		//Shouldn't grow out when on fire
+		if (hex.getFire() <= 0){
 
-               map.removeBurningHex(hex.getHexID());
+			Plant[] vegetation = hex.getVegetation();
+			List<Pair> neighbors = id.getNeighbors();
 
-               for (int i = 0; i < hex.getVegetation().length; i++){
+			for (Plant plant : vegetation){
 
-                  hex.deletePlant(i);
+				for (Pair neighbor : neighbors){
 
-               }
-            }
-         }
-      }
-   }
+					Hex adjHex = map.getHex(neighbor);
 
-   /**
-    * If strong wind is blowing, this will pick the hex the wind will pretend to originate from
-    * @param pair
-    * @return
-    */
-   public Pair getStrongWindHex(Pair pair){
+					if (adjHex.getFire() <= 0){
 
-      Pair returnPair = new Pair(pair.getX(), pair.getY());
+						if (adjHex.addPlant(plant)){
 
-      switch(map.getWindDirection()){
+							grew = true;
 
-      case 0:
+							if (TheRandom.getInstance().flipCoin()){
 
-         returnPair = pair.N();
-         break;
+								return grew;
+							} else{
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
 
-      case 1:
+		return grew;
+	}
 
-         returnPair = pair.NE();
-         break;
+	public boolean ignite(Pair id, int flame){
 
-      case 2:
+		Hex newHex = map.getHex(id);
 
-         returnPair = pair.SE();
-         break;
+		if (newHex != null && flame > newHex.hexFireResistence() && newHex.getSaturation() < 1 && newHex.getHighestVegetation() != null){
 
-      case 3:
+			newHex.setFire(newHex.getFireStrength());
 
-         returnPair = pair.S();
-         break;
+			map.addBurningHex(id);
+			return true;
 
-      case 4:
+		}
+		return false;
+	}
 
-         returnPair = pair.SW();
-         break;
+	/**
+	 * Attempts to burn
+	 * 
+	 * @param hex
+	 * @param strength
+	 * @return
+	 */
+	public void igniteNext(Hex hex) {
 
-      case 5:
+		if (hex != null){
 
-         returnPair = pair.NW();
-         break;
-      }	
+			Pair[] path = getEasyFirePath(hex);
 
-      return returnPair;
-   }
+			ignite(path[0], hex.getFire());
+			ignite(path[1], hex.getFire());
 
-   public void forceGrow(Hex hex) {
+		}
+	}
 
-	   int plant = TheRandom.getInstance().get().nextInt(4);
-	   
-	   switch(plant){
-	   
-	   case 0:
-		   hex.addPlant(new Grass());
-		   break;
-		   
-	   case 1:
-		   hex.addPlant(new Thicket());
-		   break;
-		   
-	   case 2:
-		   hex.addPlant(new Forest());
-		   break;
-		   
-	   case 3:
-		   hex.addPlant(new Jungle());
-		   break;
-	   }
-      
-   }
+	public void burnDown(Hex hex) {
 
-   /**
-    * Spreads excess elevation to all neighboring hexes
-    * @param hexID
-    */
-   public int topple(Pair id, int toppleCount) {
+		if (hex != null){
 
-      List<Pair> neighbors = id.getNeighbors();
-      Hex hexToTopple = map.getHex(id);
-      TheRandom rand = TheRandom.getInstance();
-      toppleCount ++;
+			if (hex.getSaturation() > 1){
 
-      while (neighbors.size() > 0 && toppleCount < Environment.TOPPLE_DEPTH) {
+				hex.setFire(0);
+			}
 
-         int index = rand.get().nextInt(neighbors.size());
-         Pair targetPair = neighbors.get(index);
-         neighbors.remove(index);
+			else{
 
-         if (targetPair != null && avalanche(hexToTopple, map.getHex(targetPair))){
+				hex.setFire(hex.getFire() - Environment.BURN_DOWN_RATE);
 
-            toppleCount = topple(targetPair, toppleCount);
-         }
-      }
+				if (hex.getFire() <= 0){
 
-      return toppleCount;
-   }
+					hex.setFire(0);
+
+					map.removeBurningHex(hex.getHexID());
+
+					for (int i = 0; i < hex.getVegetation().length; i++){
+
+						hex.deletePlant(i);
+
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * If strong wind is blowing, this will pick the hex the wind will pretend to originate from
+	 * @param pair
+	 * @return
+	 */
+	public Pair getStrongWindHex(Pair pair){
+
+		Pair returnPair = new Pair(pair.getX(), pair.getY());
+
+		switch(map.getWindDirection()){
+
+		case 0:
+
+			returnPair = pair.N();
+			break;
+
+		case 1:
+
+			returnPair = pair.NE();
+			break;
+
+		case 2:
+
+			returnPair = pair.SE();
+			break;
+
+		case 3:
+
+			returnPair = pair.S();
+			break;
+
+		case 4:
+
+			returnPair = pair.SW();
+			break;
+
+		case 5:
+
+			returnPair = pair.NW();
+			break;
+		}	
+
+		return returnPair;
+	}
+
+	public void forceGrow(Hex hex) {
+
+		int plant = TheRandom.getInstance().get().nextInt(4);
+
+		switch(plant){
+
+		case 0:
+			hex.addPlant(new Grass());
+			break;
+
+		case 1:
+			hex.addPlant(new Thicket());
+			break;
+
+		case 2:
+			hex.addPlant(new Forest());
+			break;
+
+		case 3:
+			hex.addPlant(new Jungle());
+			break;
+		}
+
+	}
+
+	/**
+	 * Spreads excess elevation to all neighboring hexes
+	 * @param hexID
+	 */
+	public int topple(Pair id, int toppleCount) {
+
+		List<Pair> neighbors = id.getNeighbors();
+		Hex hexToTopple = map.getHex(id);
+		TheRandom rand = TheRandom.getInstance();
+		toppleCount ++;
+
+		while (neighbors.size() > 0 && toppleCount < Environment.TOPPLE_DEPTH) {
+
+			int index = rand.get().nextInt(neighbors.size());
+			Pair targetPair = neighbors.get(index);
+			neighbors.remove(index);
+
+			if (targetPair != null && avalanche(hexToTopple, map.getHex(targetPair))){
+
+				toppleCount = topple(targetPair, toppleCount);
+			}
+		}
+
+		return toppleCount;
+	}
 
 }
