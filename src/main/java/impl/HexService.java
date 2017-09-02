@@ -401,8 +401,10 @@ public class HexService {
 
          if (lowest < elev && flowTo != null){
 
-            int toDistribute = (elev - lowest) * Environment.WATER_PER_ELEVATION / 4;
+            int toDistribute = (elev - lowest) * Environment.WATER_PER_ELEVATION / Environment.HOW_SLOW_WATER_MOVES;
 
+            if (toDistribute == 0) toDistribute = (elev - lowest)/2 + 1;
+            
             if (toDistribute > 0){
                
                if (toDistribute > standingWater) toDistribute = standingWater;

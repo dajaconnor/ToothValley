@@ -137,6 +137,7 @@ public class Environment {
    public final static boolean HIGHEST = true;
    public static final float BODY_EVAPORATION = 0.1F;
    public static final int CHANCE_OF_TECTONIC_PLATE_CHANGE = 1000;
+   public static final int HOW_SLOW_WATER_MOVES = 5; // 2 is faster, slower as number goes up
 
    // These are set when the map is generated, and never altered.
    public static int[] MAP_GRID;

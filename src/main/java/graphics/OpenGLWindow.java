@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
@@ -31,7 +32,6 @@ import enums.DisplayType;
 import impl.HexService;
 import models.DPair;
 import models.Environment;
-import models.Hex;
 import models.HexMap;
 import models.Pair;
 
@@ -58,7 +58,7 @@ public class OpenGLWindow {
 	private boolean autoSpin = false;
 	private int waterChange = 1; // 1 stays the same.
 	private Pair offset = new Pair(0,0);
-	private boolean drawLinesToggle = true;
+	private boolean drawLinesToggle = false;
 
 	private DisplayType displayType = DisplayType.NORMAL;
 	
@@ -94,7 +94,7 @@ public class OpenGLWindow {
 	 * Initialise the game
 	 * 
 	 * @throws Exception
-	 *             if init fails
+	 * if init fails
 	 */
 	private static void init(boolean fullscreen) throws Exception {
 
@@ -118,7 +118,7 @@ public class OpenGLWindow {
 		
 		//I don't know why, but this puts the map on the screen...
 		//glTranslatef(-500, -500, -2000);
-		glTranslatef(-Environment.MAP_WIDTH/2, -300, -2000);
+		glTranslatef(0, 0, -2000);
 
 		glRotatef(-50f,1f,0f,0f);
 
@@ -132,10 +132,7 @@ public class OpenGLWindow {
 	}
 
 	public void drawTriangle(DPair centerVertice1, int centerElev1, DPair vertice2, 
-	      int elev2, DPair vertice3, int elev3, int color) {
-	   
-	   //drawTriangle(DPair vertice1, DPair vertice2, DPair vertice3,
-      //Pair colorElev, int elev2, int elev3) {
+	int elev2, DPair vertice3, int elev3, int color) {
 
 		// Begin drawing
 		glBegin(GL11.GL_TRIANGLES);
@@ -165,7 +162,7 @@ public class OpenGLWindow {
 		glBegin(GL11.GL_LINES);
 		
 		if (translucent){
-		   glEnable (GL11.GL_BLEND); GL11.glBlendFunc (GL11.GL_SRC_ALPHA, GL11.GL_ONE);
+		 glEnable (GL11.GL_BLEND); GL11.glBlendFunc (GL11.GL_SRC_ALPHA, GL11.GL_ONE);
 		}
 
 		glLineWidth(0.1f);
@@ -179,12 +176,12 @@ public class OpenGLWindow {
 	}
 	
 	public void drawLine(DPair vertice1, DPair vertice2, int elev1, int elev2){
-	   drawLine(vertice1, vertice2, elev1, elev2, 0.5f, 0.5f, 0.5f, false);
+	 drawLine(vertice1, vertice2, elev1, elev2, 0.5f, 0.5f, 0.5f, false);
 	}
 
 	public void printMap() {
 
-	   HexMap map = HexMap.getInstance();
+	 HexMap map = HexMap.getInstance();
 
 		if(isAutoSpin()){
 
@@ -198,25 +195,52 @@ public class OpenGLWindow {
 		Map<Pair,Pair> displayMap = map.getDisplayMap();
 
 		printAllPairs(displayMap, offset);
-		//printBodiesOfWater(map.getBodyDisplayMap(), displayMap, offset);
 
 		// Check inputs
 		keyInput();
+		mouseInput();
 
 		// Flip display
 		Display.update();
 
 	}
 
-   private void printAllPairs(Map<Pair, Pair> displayMap, Pair localOffset) {
-      for (Pair hexId : displayMap.keySet()) {
+ private void printAllPairs(Map<Pair, Pair> displayMap, Pair localOffset) {
+for (Pair hexId : displayMap.keySet()) {
 
 			printHex(hexId, localOffset, displayMap);
 		}
-   }
-   
-   
-   public void keyInput() {
+ }
+ 
+ public void mouseInput(){
+	 
+	 while (Mouse.next()){
+		 
+		 if(Mouse.getEventButtonState()){
+			 
+			 int event = Mouse.getEventButton();
+			 
+			 // LEFT(0), MIDDLE(2), RIGHT(1), SCROLL_BUTTON(4), UP(3);
+			 switch(event){
+			 
+			 case 0:
+				 System.out.println("LEFT " + Mouse.getEventX() + ", " + Mouse.getEventY());
+				 break;
+				 
+			 case 1:
+				 System.out.println("RIGHT " + Mouse.getEventX() + ", " + Mouse.getEventY());
+				 break;
+				 
+			 case 2:
+				 System.out.println("MIDDLE " + Mouse.getEventX() + ", " + Mouse.getEventY());
+				 break;
+			 }
+			 
+		 }
+	 }
+ }
+ 
+ public void keyInput() {
 		
 		while (Keyboard.next()) {
 				
@@ -261,10 +285,10 @@ public class OpenGLWindow {
 						break;
 						
 					case Keyboard.KEY_F7:
-                  
-					   drawLinesToggle = !drawLinesToggle;
-                  
-                  break;
+
+						drawLinesToggle = !drawLinesToggle;
+
+						break;
 						
 					case Keyboard.KEY_SPACE:
 						
@@ -316,20 +340,21 @@ public class OpenGLWindow {
 				
 				if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
 					
-				   if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
-				      
-				      glTranslatef(0, 5*Environment.FAST_PAN, 0);
-				   }else{
-				   
-				      glTranslatef(0, 5*Environment.SLOW_PAN, 0);
-				   }
+				 if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
+				
+					 glTranslatef(0, 5*Environment.SLOW_PAN, 0);
+
+				 }else{
+				 
+					 glTranslatef(0, 5*Environment.FAST_PAN, 0);
+				 }
 					
 				}else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
 					
-					shiftUp(Environment.FAST_PAN);
+					shiftUp(Environment.SLOW_PAN);
 				}else{
 				
-				   shiftUp(Environment.SLOW_PAN);
+					shiftUp(Environment.FAST_PAN);
 				}
 			}
 			
@@ -337,20 +362,22 @@ public class OpenGLWindow {
 				
 				if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
 					
-				   if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
-                  
-                  glTranslatef(0, -5*Environment.FAST_PAN, 0);
-               }else{
-               
-                  glTranslatef(0, -5*Environment.SLOW_PAN, 0);
-               }
+				 if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
+
+					 glTranslatef(0, -5*Environment.SLOW_PAN, 0);
+				
+				 }else{
+					 glTranslatef(0, -5*Environment.FAST_PAN, 0);
+				
+				 }
 					
 				}else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
 					
-					shiftDown(Environment.FAST_PAN);
+					shiftDown(Environment.SLOW_PAN);
+
 				}else{
 				
-				   shiftDown(Environment.SLOW_PAN);
+					shiftDown(Environment.FAST_PAN);
 				}
 			}
 			
@@ -358,20 +385,22 @@ public class OpenGLWindow {
 				
 				if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
 					
-				   if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
-                  
-                  glTranslatef(-5*Environment.FAST_PAN, 0, 0);
-               }else{
-               
-                  glTranslatef(-5*Environment.SLOW_PAN, 0, 0);
-               }
+				 if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
+					 
+					 glTranslatef(-5*Environment.SLOW_PAN, 0, 0);
+
+				 }else{
+					 
+					 glTranslatef(-5*Environment.FAST_PAN, 0, 0);
+				 }
 					
 				}else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
 					
-					shiftLeft(Environment.FAST_PAN);
-				}else{
-				
 					shiftLeft(Environment.SLOW_PAN);
+
+				}else{
+					
+					shiftLeft(Environment.FAST_PAN);
 				}
 			}
 			
@@ -380,106 +409,116 @@ public class OpenGLWindow {
 				if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
 					
 					if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
-                  
-                  glTranslatef(5*Environment.FAST_PAN, 0, 0);
-               }else{
-               
-                  glTranslatef(5*Environment.SLOW_PAN, 0, 0);
-               }
+
+						glTranslatef(5*Environment.SLOW_PAN, 0, 0);
+					}else{
+ 
+						glTranslatef(5*Environment.FAST_PAN, 0, 0);
+					}
 					
 				}else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
 					
-					shiftRight(Environment.FAST_PAN);
+					shiftRight(Environment.SLOW_PAN);
+
 				}else{
 					
-				   shiftRight(Environment.SLOW_PAN);
+					shiftRight(Environment.FAST_PAN);
 				}
 			}
 			
 			if (Keyboard.isKeyDown(Keyboard.KEY_Q)){
 				
-				glRotatef(1f,0f,0f,1f);
-				glTranslatef(5*Environment.SLOW_PAN, 0, 0);
-				glTranslatef(0, -5*Environment.SLOW_PAN, 0);
+				if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
+					
+					glRotatef(Environment.SLOW_PAN,0f,0f,Environment.SLOW_PAN);
+				} else{
+					
+					glRotatef(Environment.FAST_PAN,0f,0f,Environment.FAST_PAN);
+				}
 			}
 			
 			if (Keyboard.isKeyDown(Keyboard.KEY_E)){
 				
-				glRotatef(1f,0f,0f,-1f);
-				glTranslatef(-5*Environment.SLOW_PAN, 0, 0);
-            glTranslatef(0, 5*Environment.SLOW_PAN, 0);
+				if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
+					
+					glRotatef(Environment.SLOW_PAN,0f,0f,-Environment.SLOW_PAN);
+
+				} else{
+					glRotatef(Environment.FAST_PAN,0f,0f,-Environment.FAST_PAN);
+
+				}
 			}
 		}
 	}
 
 	private void shiftUp(int amount){
-	   
-	   offset.setY(offset.getY() + amount);
+	 
+	 offset.setY(offset.getY() + amount);
 	}
 	
 	private void shiftDown(int amount){
-      
-	   offset.setY(offset.getY() - amount);
-   }
+
+	 offset.setY(offset.getY() - amount);
+ }
 
 	private void shiftLeft(int amount){
-   
-	   offset.setX(offset.getX() - amount);
+ 
+	 offset.setX(offset.getX() - amount);
 	}
 
 	private void shiftRight(int amount){
-   
-	   offset.setX(offset.getX() + amount);
+ 
+	 offset.setX(offset.getX() + amount);
 	}
 	
 	private int getGroundVerticeElevation(Pair one, Pair two, Pair three, Map<Pair, Pair> display){
-	   return (display.get(one).getY() + display.get(two).getY() + display.get(three).getY()) / 3;
+	 return (display.get(one).getY() + display.get(two).getY() + display.get(three).getY()) / 3;
 	}
 	
 	private void printDiamond(Pair top, DPair baseTop, Pair bottom, DPair baseBottom, Pair left, DPair baseLeft, Pair right, DPair baseRight, Map<Pair, Pair> normalDisplayMap){
 
-	   // draw ground first
-	   int topColor = normalDisplayMap.get(top).getX();
-	   int bottomColor = normalDisplayMap.get(bottom).getX();
-	   int topGroundElev = normalDisplayMap.get(top).getY();
-	   int leftGroundElev = getGroundVerticeElevation(top, left, bottom, normalDisplayMap);
-	   int bottomGroundElev = normalDisplayMap.get(bottom).getY();
-	   int rightGroundElev = getGroundVerticeElevation(top, right, bottom, normalDisplayMap);
+	 // draw ground first
+	 int topColor = normalDisplayMap.get(top).getX();
+	 int bottomColor = normalDisplayMap.get(bottom).getX();
+	 int topGroundElev = normalDisplayMap.get(top).getY();
+	 int leftGroundElev = getGroundVerticeElevation(top, left, bottom, normalDisplayMap);
+	 int bottomGroundElev = normalDisplayMap.get(bottom).getY();
+	 int rightGroundElev = getGroundVerticeElevation(top, right, bottom, normalDisplayMap);
 
-	   drawTriangle(baseTop, topGroundElev, baseLeft, leftGroundElev, baseRight, rightGroundElev, topColor);
-	   drawTriangle(baseBottom, bottomGroundElev, baseLeft, leftGroundElev, baseRight, rightGroundElev, bottomColor);
-	   
-	   // prints the line as long as both aren't water
-	   if (drawLinesToggle 
-	        && !dontDraw(topColor, bottomColor, leftGroundElev, rightGroundElev)){
-         //Border
-         drawLine(baseLeft, baseRight, leftGroundElev, rightGroundElev, 0.5f, 0.5f, 0.5f, true);
-      }
+	 drawTriangle(baseTop, topGroundElev, baseLeft, leftGroundElev, baseRight, rightGroundElev, topColor);
+	 drawTriangle(baseBottom, bottomGroundElev, baseLeft, leftGroundElev, baseRight, rightGroundElev, bottomColor);
+	 
+	 // prints the line as long as both aren't water
+	 if (drawLinesToggle 
+	&& !dontDraw(topColor, bottomColor, leftGroundElev, rightGroundElev)){
+ //Border
+ drawLine(baseLeft, baseRight, leftGroundElev, rightGroundElev, 0.5f, 0.5f, 0.5f, true);
+}
 	}
 
-   private boolean dontDraw(int topColor, int bottomColor, int leftGroundElev, int rightGroundElev) {
-      return displayType == DisplayType.NORMAL && 
-         (Math.abs(leftGroundElev - rightGroundElev) <= Environment.DRAW_LINE_TOLERANCE 
-               || topColor != bottomColor);
-   }
+ private boolean dontDraw(int topColor, int bottomColor, int leftGroundElev, int rightGroundElev) {
+return displayType == DisplayType.NORMAL && 
+ (Math.abs(leftGroundElev - rightGroundElev) <= Environment.DRAW_LINE_TOLERANCE 
+ || topColor != bottomColor);
+ }
 
 	private void printHex(Pair hexId, Pair localOffset, Map<Pair, Pair> normalDisplayMap) {
 
-	   DPair baseHex = getBasePrintCoords(hexId, localOffset);
-	   DPair baseVertSW = realSW(baseHex);
-	   DPair baseVertSE = realSE(baseHex);
-	   DPair baseVertE = realE(baseHex);
-	   DPair baseVertNE = realNE(baseHex);
-	   DPair baseNE = realE(baseVertNE);
-	   DPair baseSE = realE(baseVertSE);
-	   DPair baseS = realSE(baseVertSW);
-	   
-	   // South diamond
-	   printDiamond(hexId, baseHex, hexId.S(), baseS, hexId.SW(), baseVertSW, hexId.SE(), baseVertSE, normalDisplayMap);
-	   // Southeast diamond
-	   printDiamond(hexId, baseHex, hexId.SE(), baseSE, hexId.S(), baseVertSE, hexId.NE(), baseVertE, normalDisplayMap);
-	   // Northeast
-	   printDiamond(hexId, baseHex, hexId.NE(), baseNE, hexId.SE(), baseVertE, hexId.N(), baseVertNE, normalDisplayMap);
+	 DPair baseHex = getBasePrintCoords(hexId, localOffset);
+	 DPair baseVertSW = realSW(baseHex);
+	 DPair baseVertSE = realSE(baseHex);
+	 DPair baseVertE = realE(baseHex);
+	 DPair baseVertNE = realNE(baseHex);
+	 DPair baseNE = realE(baseVertNE);
+	 DPair baseSE = realE(baseVertSE);
+	 DPair baseS = realSE(baseVertSW);
+	 
+	 // South diamond
+	 printDiamond(hexId, baseHex, hexId.S(), baseS, hexId.SW(), baseVertSW, hexId.SE(), baseVertSE, normalDisplayMap);
+	 // Southeast diamond
+	 printDiamond(hexId, baseHex, hexId.SE(), baseSE, hexId.S(), baseVertSE, hexId.NE(), baseVertE, normalDisplayMap);
+	 // Northeast
+	 printDiamond(hexId, baseHex, hexId.NE(), baseNE, hexId.SE(), baseVertE, hexId.N(), baseVertNE, normalDisplayMap);
 	}
 
 	/**
@@ -490,11 +529,16 @@ public class OpenGLWindow {
 	 * @param localOffset 
 	 * @return
 	 */
-	public DPair getBasePrintCoords(double x, double y) {
-	   
+	public DPair getBasePrintCoords(double x, double y, boolean includeMapCenterOffset) {
+	 
 		double xCoord = x * (Environment.HEX_BODY_WIDTH + Environment.HEX_SIDE_WIDTH);
 		double yCoord = y * Environment.HEX_HEIGHT + Environment.HEX_HEIGHT / 2 - x * Environment.HEX_HEIGHT / 2;
 
+		if(includeMapCenterOffset){
+			xCoord -= Environment.MAP_HEIGHT / 2;
+			yCoord -= Environment.MAP_WIDTH / 2;
+		}
+		
 		return new DPair(xCoord, yCoord);
 	}
 
@@ -504,7 +548,7 @@ public class OpenGLWindow {
 
 		Pair printPair = pair.merge(yOffsetDifferential);
 
-		return getBasePrintCoords(printPair.getX(), printPair.getY());
+		return getBasePrintCoords(printPair.getX(), printPair.getY(), true);
 	}
 
 	private DPair realNW(DPair middle) {
@@ -578,4 +622,6 @@ public class OpenGLWindow {
 	public void alterWaterChangeBy(int changeBy) {
 		this.waterChange += changeBy;
 	}
+	
+	
 }

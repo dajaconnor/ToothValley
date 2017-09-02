@@ -49,7 +49,7 @@ public class HexMapService {
 		PerlinNoise perlin = new PerlinNoise();
 		
 		//Set the size of the perlin pixel grid
-		Pair noiseSize = OpenGLWindow.getInstance().getBasePrintCoords(width, height * 2 - 1).toPair();
+		Pair noiseSize = OpenGLWindow.getInstance().getBasePrintCoords(width, height * 2 - 1, false).toPair();
 		noiseSize.setX(noiseSize.getX() - (int)Environment.HEX_HEIGHT / 2);
 		
 		//Get perlin pixel grids for all hex attributes
@@ -72,26 +72,12 @@ public class HexMapService {
 				TheRandom rand = TheRandom.getInstance();
 				int plant = rand.get().nextInt(7) - 2;
 				
-				Pair pairCoordinates = Pair.wrap(x, y + x/5);// new Pair(x, Y).getYbyXdifferential());
-				Pair pair = OpenGLWindow.getInstance().getBasePrintCoords(pairCoordinates.getX(), pairCoordinates.getY()).toPair();
-				
-//				if (pair.getX() >= elevations.length){
-//					 pair.setX(pair.getX() - elevations.length);
-//				}
-//				if (pair.getY() >= elevations[pair.getX()].length){
-//					pair.setY(pair.getY() - elevations[pair.getX()].length);
-//				}
-//				if (pair.getY() < 0){
-//					pair.setY(pair.getY() + elevations[pair.getX()].length);
-//				}
-//				if (pair.getX() < 0){
-//					pair.setX(pair.getX() + elevations.length);
-//				}
-				
+				Pair pairCoordinates = Pair.wrap(x, y + x/5);
+				Pair pair = OpenGLWindow.getInstance().getBasePrintCoords(pairCoordinates.getX(), pairCoordinates.getY(), false).toPair();
+
 				Hex hex = makeHex(x, Y, elevations[pair.getX()][pair.getY()] * 2 - Environment.MAX_ELEVATION / 2, (densityMap[pair.getX()][pair.getY()]) / 4, 
 				      Environment.AVE_WATER / 2, Environment.AVE_WATER / 2, plant);
 				map.addHex(hex);
-				//map.updateHexDisplay(hex, DisplayType.NORMAL, null);
 			}
 		}
 		map.setPlates(plateService.generateTectonicPlates(noiseSize));
