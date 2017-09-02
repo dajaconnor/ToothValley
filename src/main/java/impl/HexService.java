@@ -1,14 +1,12 @@
 package impl;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
 import enums.Direction;
-import models.BodyOfWater;
 import models.Environment;
 import models.Hex;
 import models.HexMap;
@@ -78,7 +76,7 @@ public class HexService {
 
       boolean returnBool = false;
 
-      if (hex.getStandingWater(0) > 1 && map.alterMoisture(hex, -1) > 0){// 
+      if (hex.getMoisture() > 1 && map.alterMoisture(hex, -1) > 0){// 
 
          //WATER MOVEMENT
          hex.setMoistureInAir(hex.getMoistureInAir() + 1);
@@ -177,7 +175,7 @@ public class HexService {
 
          if (adjHex.getFire() <= 0){
 
-            int resist = adjHex.hexFireResistence(map.getHexBodyStandingWater(hex)) + adjHex.getMoistureInAir() - adjHex.getElevation();
+            int resist = adjHex.hexFireResistence() + adjHex.getMoistureInAir() - adjHex.getElevation();
 
             for (int i = 0; i < resistance.length; i++){
 
@@ -387,13 +385,9 @@ public class HexService {
    
    private void handleAvalanche(Hex from, Hex to, int slope){
       
-      from.setElevation(from.getElevation() - slope/4, false);
-      
-      BodyOfWater body = map.getPairToWaterBodies().get(to.getHexID());
-      
-      if (to.setElevation(to.getElevation() + slope/4, body != null)){
-         body.addToHexesToCheckForElevation(to.getHexID());
-      }
+      from.setElevation(from.getElevation() - slope/4);
+
+      to.setElevation(to.getElevation() + slope/4);
       
       int left = to.setDensity(to.getDensity() - 1);
       from.setDensity(from.getDensity() + 1 + left);
@@ -415,13 +409,12 @@ public class HexService {
     */
    public boolean flood(Hex hex, boolean findLeak) {
 
-      int total = 0;
-      int standingWater = hex.getStandingWater(0);
+      int standingWater = hex.getStandingWater();
       boolean flooded = false;
 
       //If there is standing water, shove it around
-      if (hex.getSaturation(standingWater) > 1) {
-         int elev = hex.getCombinedElevation(standingWater);
+      if (hex.getSaturation() > 1) {
+         int elev = hex.getCombinedElevation();
          List<Pair> neighbors = hex.getHexID().getNeighbors();
 
          //Kill plants that aren't strong enough
@@ -434,7 +427,7 @@ public class HexService {
          for (Pair neighbor : neighbors) {
 
             Hex adjHex = map.getHex(neighbor);
-            int adjElev = adjHex.getCombinedElevation(adjHex.getStandingWater(0));
+            int adjElev = adjHex.getCombinedElevation();
 
             if (adjElev < lowest) {
                lowest = adjElev;
@@ -465,8 +458,8 @@ public class HexService {
    // Deletes plants if the standing water is greater than the rootstrength of the plant
    private void drownPlant(Hex hex, int standingBodyWater) {
 
-      int standing = hex.getStandingWater(standingBodyWater);
-      double saturation = hex.getSaturation(standingBodyWater);
+      int standing = hex.getStandingWater();
+      double saturation = hex.getSaturation();
 
       for (int i = 0; i < hex.getVegetation().length; i++){
 
@@ -475,14 +468,14 @@ public class HexService {
             int strength = hex.getVegetation()[i].getRootstrength();
             TheRandom rand = TheRandom.getInstance();
 
-            if (rand.get().nextInt(1 + (int) (standing * Environment.FLOOD_STRENGTH)) > strength){
+            if (rand.get().nextInt(1 + (int) (standing * Environment.FLOOD_STRENGTH)) > (strength - hex.getVegetation()[i].getRot())){
 
                hex.deletePlant(i);
             }
 
             else if (rand.get().nextFloat() < Environment.ROT_RATE){
 
-               hex.getVegetation()[i].setRootstrength(strength - 1);
+               hex.getVegetation()[i].rot();
             }
          }
       }
@@ -514,13 +507,9 @@ public class HexService {
 
             if (fromHex.getSoilStability() < erosionStrength){
                
-               fromHex.setElevation(fromHex.getElevation() - 1, false);
+               fromHex.setElevation(fromHex.getElevation() - 1);
                
-               BodyOfWater body = map.getPairToWaterBodies().get(toHex.getHexID());
-
-               boolean needsChecking = toHex.setElevation(toHex.getElevation() + 1, body != null);
-               
-               if (needsChecking) body.addToHexesToCheckForElevation(toHex.getHexID());
+               toHex.setElevation(toHex.getElevation() + 1);
 
                if (toHex.getDensity() <= 0 && 0 == rand.get().nextInt(5)){
 
@@ -608,9 +597,9 @@ public class HexService {
 
                Hex adjHex = map.getHex(neighbor);
 
-               if (adjHex.getFire() <= 0 && !map.getPairToWaterBodies().containsKey(neighbor)){
+               if (adjHex.getFire() <= 0){
 
-                  if (adjHex.addPlant(plant, map.getHexBodyStandingWater(adjHex))){
+                  if (adjHex.addPlant(plant)){
 
                      break;
                   }
@@ -625,11 +614,10 @@ public class HexService {
    public boolean ignite(Pair id, int flame){
 
       Hex newHex = map.getHex(id);
-      int standingBodyWater = map.getHexBodyStandingWater(newHex);
 
-      if (newHex != null && flame > newHex.hexFireResistence(map.getHexBodyStandingWater(newHex)) && newHex.getSaturation(standingBodyWater) < 1 && newHex.getHighestVegetation() != null){
+      if (newHex != null && flame > newHex.hexFireResistence() && newHex.getSaturation() < 1 && newHex.getHighestVegetation() != null){
 
-         newHex.setFire(newHex.getFireStrength(map.getHexBodyStandingWater(newHex)));
+         newHex.setFire(newHex.getFireStrength());
 
          map.addBurningHex(id);
          return true;
@@ -661,7 +649,7 @@ public class HexService {
 
       if (hex != null){
 
-         if (hex.getSaturation(0) > 1 || map.getPairToWaterBodies().get(hex.getHexID()) != null){
+         if (hex.getSaturation() > 1){
 
             hex.setFire(0);
          }
@@ -733,7 +721,7 @@ public class HexService {
 
    public void forceGrow(Hex hex) {
 
-      hex.addPlant(new Jungle(), map.getHexBodyStandingWater(hex));
+      hex.addPlant(new Jungle());
    }
 
    /**

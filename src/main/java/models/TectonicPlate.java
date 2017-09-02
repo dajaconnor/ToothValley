@@ -74,6 +74,8 @@ public class TectonicPlate {
 			returnDirection = TectonicEdgeDirection.UP;
 		}
 		
+		HexMap.getInstance().getHex(targetPair).setTectonicState(returnDirection);
+		
 		return returnDirection;
 	}
 	public Set<Pair> getInnerRing() {

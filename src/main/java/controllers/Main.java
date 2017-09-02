@@ -80,8 +80,6 @@ public class Main {
 				foundLeak = true;
 			}
 
-			waterService.bodyOfWaterCycle();
-			
 			lastMark = new Date().getTime();
 			waterService.waterCycle(findLeak, foundLeak, ticks);
 			waterCycleTime += new Date().getTime() - lastMark;

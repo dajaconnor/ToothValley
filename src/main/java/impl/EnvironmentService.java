@@ -6,8 +6,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import enums.Direction;
 import enums.TectonicEdgeDirection;
-import models.BodyOfWater;
 import models.Environment;
 import models.Hex;
 import models.HexMap;
@@ -30,9 +30,6 @@ public class EnvironmentService {
    @Autowired
    private HexMapService hexMapService;
 
-   @Autowired
-   private WaterService waterService;
-
    /**
     * Grows the whole map
     */
@@ -49,7 +46,7 @@ public class EnvironmentService {
 
             Pair hexId = map.getGreenHexes().getRandom();
 
-            if (hexId != null && waterService.inBody(hexId) == null) {
+            if (hexId != null) {
 
                hexService.grow(hexId);
             }
@@ -135,7 +132,6 @@ public class EnvironmentService {
 
       for (Pair hexID : allHexes) {
 
-         BodyOfWater body = waterService.inBody(hexID);
          count++;
 
          if (count == randomHex) {
@@ -143,21 +139,14 @@ public class EnvironmentService {
             int elev = map.getHex(hexID).getElevation();
             elev += lowestElevation * (numberOfHexes - 1);
 
-            if (map.getHex(hexID).setElevation(elev, body != null)){
-               
-               body.addToHexesToCheckForElevation(hexID);
-            }
+            map.getHex(hexID).setElevation(elev);
 
             hexService.topple(hexID, 0);
          }
 
          else {
 
-            if (map.getHex(hexID).setElevation(map.getHex(hexID).getElevation() - lowestElevation, 
-                  body != null)){
-               
-               body.addToHexesToCheckForElevation(hexID);
-            }
+            map.getHex(hexID).setElevation(map.getHex(hexID).getElevation() - lowestElevation);
          }
       }
    }
@@ -173,25 +162,27 @@ public class EnvironmentService {
          while (i++ < Environment.TECTONIC_ACTIVITY) {
 
             TectonicPlate plate = hexMapService.pickRandomPlate();
+            
+            if (TheRandom.getInstance().get().nextInt(Environment.CHANCE_OF_TECTONIC_PLATE_CHANGE) == 1){
+               
+               Direction newDirection = plate.getDirection().takeRandomTurn();
+               plate.setDirection(newDirection);
+            }
 
             for (Pair keyPair : plate.getActiveEdges().keySet()) {
 
                if (plate.getActiveEdges().get(keyPair) == TectonicEdgeDirection.UP) {
 
-                  BodyOfWater body = waterService.inBody(keyPair);
-                  
-                  boolean needsChecking = map.getHex(hexService.getAreaPair(keyPair))
-                  .setElevation(map.getHex(keyPair).getElevation() + Environment.TECTONIC_AMPLITUDE, body != null);
+                  map.getHex(hexService.getAreaPair(keyPair))
+                  .setElevation(map.getHex(keyPair).getElevation() + Environment.TECTONIC_AMPLITUDE);
                   
                   hexService.topple(keyPair, 0);
-                  
-                  if (needsChecking) body.addToHexesToCheckForElevation(keyPair);
                }
 
                if (plate.getActiveEdges().get(keyPair) == TectonicEdgeDirection.DOWN) {
 
                   map.getHex(hexService.getAreaPair(keyPair))
-                  .setElevation(map.getHex(keyPair).getElevation() - Environment.TECTONIC_AMPLITUDE, false);
+                  .setElevation(map.getHex(keyPair).getElevation() - Environment.TECTONIC_AMPLITUDE);
                }
             }
          }

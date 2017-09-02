@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import enums.DisplayType;
 import graphics.OpenGLWindow;
 import models.Environment;
 import models.Hex;
@@ -240,8 +239,8 @@ public class HexMapService {
 			
 			if (hexID != null){
 				
-				water[0] += map.getHex(hexID).getTotalWater(map.getHexBodyStandingWater(hexID));
-				water[1] += map.getHex(hexID).getMoisture(map.getHexBodyStandingWater(hexID));
+				water[0] += map.getHex(hexID).getTotalWater();
+				water[1] += map.getHex(hexID).getMoisture();
 				water[2] += map.getHex(hexID).getPlantMoisture();
 				water[3] += map.getHex(hexID).getMoistureInAir();
 				

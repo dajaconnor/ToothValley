@@ -8,6 +8,7 @@ public abstract class Plant {
 	private int moistureRequired;
 	private int index;
 	private int moisture;
+	private int rot;
 	/*
 	public static Grass GRASS = new Grass();
 	public static Thicket THICKET = new Thicket();
@@ -22,6 +23,7 @@ public abstract class Plant {
 		this.moistureRequired = moistureRequired;
 		this.index = index;
 		this.moisture = moistureRequired;
+		this.rot = 0;
 	}
 	
 	public Plant(int rootstrength, double maxSaturation, int moistureRequired){
@@ -29,6 +31,15 @@ public abstract class Plant {
 		this.maxSaturation = maxSaturation;
 		this.moistureRequired = moistureRequired;
 		this.index = 0;
+		this.rot = 0;
+	}
+	
+	public int getRot(){
+	   return rot;
+	}
+	
+	public void rot(){
+	   rot--;
 	}
 
 	public int getRootstrength() {

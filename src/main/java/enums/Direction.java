@@ -24,4 +24,12 @@ public enum Direction {
 	public Direction turnLeft() {
 		return Direction.values()[(this.ordinal() + Direction.values().length - 1) % Direction.values().length];
 	}
+	
+	public Direction takeRandomTurn(){
+	   if (TheRandom.getInstance().get().nextInt(2) == 1){
+	      return turnRight();
+	   } else{
+	      return turnLeft();
+	   }
+	}
 }
