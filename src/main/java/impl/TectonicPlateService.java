@@ -268,7 +268,7 @@ public class TectonicPlateService {
 		
 		if (nextPair != null){
 		
-			returnDirection = hexService.getDirectionBetweenHexes(elbowPair, nextPair);
+			returnDirection = elbowPair.getDirectionToPair(nextPair);
 
 		} else {
 			generateStartPoint(bucket);

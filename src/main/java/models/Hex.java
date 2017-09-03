@@ -1,10 +1,7 @@
 package models;
 
 import java.awt.Color;
-import java.util.HashMap;
-import java.util.Map;
 
-import enums.Direction;
 import enums.DisplayType;
 import enums.TectonicEdgeDirection;
 import models.plants.Forest;
@@ -19,11 +16,11 @@ public class Hex {
 	private int density;
 	private int moisture;
 	private int moistureInAir;
+	private int incomingMoistureInAir;
 	private int elevation;
 	private Plant[] vegetation = new Plant[Environment.NUM_PLANTS_PER_HEX];
 	private Color color = DIRT;
 	private int fire = 0;
-	private Map<Direction, Integer> wind;
 	private Integer tectonicState;
 
 
@@ -79,45 +76,45 @@ public class Hex {
 		return moistureInAir;
 	}
 
-	public int getPressure() {
+	public int alterMoistureInAir(int change){
 
-		return moistureInAir - elevation / 16 + 16;
-	}
+		if (this.moistureInAir + change >= 0){
 
-	public Map<Direction, Integer> getWind() {
-		return wind;
-	}
-
-	public void setWind(Map<Direction, Integer> wind) {
-		this.wind = wind;
-	}
-
-	public void clearWind(){
-
-		this.wind = new HashMap<Direction, Integer>();
-	}
-
-	public void addWind(Direction direction, int strength){
-
-		this.wind.put(direction, strength);
-	}
-
-	public void setMoistureInAir(int moistureInAir) {
-		this.moistureInAir = moistureInAir;
-	}
-
-	public int alterMoistureInAir(int moistureInAir){
-
-		if (this.moistureInAir + moistureInAir >= 0){
-
-			this.moistureInAir += moistureInAir;
-			return Math.abs(moistureInAir);
+			this.moistureInAir += change;
+			return Math.abs(change);
 		} else {
 
 			int altered = this.moistureInAir;
 			this.moistureInAir = 0;
 			return altered;
 		}
+	}
+	
+	public int getIncomingMoistureInAir() {
+		return incomingMoistureInAir;
+	}
+
+	public int alterIncomingMoistureInAir(int incoming){
+		
+		incomingMoistureInAir += incoming;
+		return incoming;
+	}
+	
+	public void resolveMoistureInAir(){
+		
+		moistureInAir += incomingMoistureInAir;
+		incomingMoistureInAir = 0;
+	}
+	
+	public void rain(){
+
+		int excessHumidity = elevation + moistureInAir - Environment.RAIN_THRESHHOLD;
+		
+		if (excessHumidity <= 0) return;
+		
+		int amountToRain = (excessHumidity * Environment.PERCENT_MOISTURE_EXCESS_TO_DROP) / 100;
+
+		alterMoisture(alterMoistureInAir(-amountToRain));
 	}
 
 	public Hex() {
@@ -148,10 +145,6 @@ public class Hex {
 
 	public Pair getHexID() {
 		return this.hexID;
-	}
-
-	public void setHexID(Pair hexID) {
-		this.hexID = hexID;
 	}
 
 	public int getMoisture() {
@@ -241,7 +234,7 @@ public class Hex {
 
 	public double getHumidity() {
 		return ((double) this.moistureInAir * ((double) this.elevation / Environment.MAX_ELEVATION))
-				/ Environment.AIR_DENSITY;
+				/ Environment.RAIN_THRESHHOLD;
 	}
 
 	/**
@@ -534,7 +527,7 @@ public class Hex {
 	 */
 	public int getTotalWater() {
 
-		return getPlantMoisture() + getMoisture() + getMoistureInAir();
+		return getPlantMoisture() + getMoisture() + getMoistureInAir() + getIncomingMoistureInAir();
 	}
 
 	/**

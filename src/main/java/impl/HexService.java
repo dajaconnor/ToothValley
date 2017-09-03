@@ -75,14 +75,14 @@ public class HexService {
 	 * @param hex
 	 * @return
 	 */
-	public boolean evaporate(Hex hex, boolean findLeak, boolean foundLeak) {
+	public boolean evaporate(Hex hex, boolean findLeak) {
 
 		boolean returnBool = false;
 
-		if (hex.getMoisture() > 1 && map.alterMoisture(hex, -1) > 0){// 
+		if (hex.getStandingWater() > 1 && map.alterMoisture(hex, -1) > 0){// 
 
 			//WATER MOVEMENT
-			hex.setMoistureInAir(hex.getMoistureInAir() + 1);
+			hex.alterMoistureInAir(1);
 
 			returnBool = true;
 		}
@@ -109,11 +109,6 @@ public class HexService {
 					}
 				}
 			}
-		}
-
-		if (hex.getMoistureInAir() >= Environment.CLOUD){
-
-			map.addCloud(hex.getHexID());
 		}
 
 		return returnBool;
@@ -153,148 +148,6 @@ public class HexService {
 
 		return path;
 	}
-
-	/**
-	 * Takes two adjacent hexes ids and returns the direction 
-	 * from the first to the second.
-	 * 
-	 * Returns '6' if the hexes aren't adjacent
-	 */
-	public Direction getDirectionBetweenHexes(Pair origin, Pair destination){
-
-		Direction direction = null;
-
-		if (destination != null && origin != null){
-
-			if (destination.equals(origin.N())){
-
-				direction = Direction.north;
-			}
-
-			else if (destination.equals(origin.NE())){
-
-				direction = Direction.northeast;
-			}
-
-			else if (destination.equals(origin.SE())){
-
-				direction = Direction.southeast;
-			}
-
-			else if (destination.equals(origin.S())){
-
-				direction = Direction.south;
-			}
-
-			else if (destination.equals(origin.SW())){
-
-				direction = Direction.southwest;
-			}
-
-			else if (destination.equals(origin.NW())){
-
-				direction = Direction.northwest;
-			}
-		}
-
-		return direction;
-	}
-
-	// for leak test
-	/*HexMapImpl hexMapImpl = new HexMapImpl();
-		int totalWater = hexMapImpl.allWater()[0];
-		boolean found = false;*/
-
-	//Get strong wind start point
-	/*
-		int strength = map.isBlowing();
-
-		while (strength > 0){
-
-			pseudoId = getStrongWindHex(pseudoId);
-			strength--;
-		}*/
-
-	//If it can blow
-	/*		if (hex.getMoistureInAir() >= Environment.CLOUD && map.inWindWhiteHexes(hex.getHexID())) {
-
-			Direction direction = getWindDirection(hex.getHexID());
-
-			if (direction != null){
-
-				Hashtable<Pair,Integer> cloud = new Hashtable<Pair,Integer>();
-
-				cloud = collectCloud(cloud, hex.getHexID());
-
-				moveCloud(cloud, direction);
-			}
-		}
-	}*/
-
-	/*	private Hashtable<Pair, Integer> collectCloud(
-			Hashtable<Pair, Integer> cloud, Pair hexID) {
-
-		if (cloud.size() < Environment.CLOUD_SIZE){
-
-			List<Pair> neighbors = getNeighbors(hexID);
-			HexMap map = HexMap.getInstance();
-
-			ArrayList<Pair> hexesToCollect = new ArrayList<Pair>();
-
-			for (Pair neighbor : neighbors){
-
-				if (!cloud.contains(neighbor) && map.inWindWhiteHexes(neighbor)){
-
-					map.removeWindWhiteHex(neighbor);
-					Hex neighborHex = map.getHex(neighbor);
-
-					if (neighborHex.getMoistureInAir() < Environment.CLOUD){
-
-						map.getHex(hexID).alterMoistureInAir(neighborHex.getMoistureInAir());
-						neighborHex.setMoistureInAir(0);
-					}
-
-					else{
-
-						hexesToCollect.add(neighbor);
-					}
-				}
-			}
-
-			cloud.put(hexID, map.getHex(hexID).getMoistureInAir());
-
-			for (Pair hexId : hexesToCollect){
-
-				cloud = collectCloud(cloud, hexId);
-			}
-		}
-
-		return cloud;
-	}*/
-
-	/**
-	 * Move all adjacent hex pressure too!
-	 */
-	/*	public void moveCloud(Hashtable<Pair,Integer> cloud, Direction direction){
-
-		HexMap map = HexMap.getInstance();
-
-		Enumeration<Pair> ids = cloud.keys();
-
-		while (ids.hasMoreElements()){
-
-			Pair origin = (Pair) ids.nextElement();
-			Pair target = getHexIdFromDirection(origin, direction);
-
-			if (map.getHex(origin).alterMoistureInAir(-Math.abs(cloud.get(origin)))){
-
-				map.getHex(target).alterMoistureInAir(Math.abs(cloud.get(origin)));
-			}
-
-			map.removeWindWhiteHex(origin);
-			map.removeWindWhiteHex(target);
-		}
-	}*/
 
 	public void removeAllVegetation(Hex hex){
 
@@ -369,7 +222,7 @@ public class HexService {
 	/**
 	 * Attempt to flood a single hex
 	 */
-	public boolean flood(Hex hex, boolean findLeak) {
+	public boolean flood(Hex hex) {
 
 		int standingWater = hex.getStandingWater();
 		boolean flooded = false;
@@ -449,8 +302,6 @@ public class HexService {
 	private int getSnowMelt(int elev, int lowest) {
 		return 1 + (elev - lowest) * Environment.WATER_PER_ELEVATION / (Environment.SNOW_MELT * Environment.HOW_SLOW_WATER_MOVES);
 	}
-	
-
 
 	// Deletes plants if the standing water is greater than the rootstrength of the plant
 	private void drownPlant(Hex hex, int standingBodyWater) {
@@ -677,51 +528,6 @@ public class HexService {
 		}
 	}
 
-	/**
-	 * If strong wind is blowing, this will pick the hex the wind will pretend to originate from
-	 * @param pair
-	 * @return
-	 */
-	public Pair getStrongWindHex(Pair pair){
-
-		Pair returnPair = new Pair(pair.getX(), pair.getY());
-
-		switch(map.getWindDirection()){
-
-		case 0:
-
-			returnPair = pair.N();
-			break;
-
-		case 1:
-
-			returnPair = pair.NE();
-			break;
-
-		case 2:
-
-			returnPair = pair.SE();
-			break;
-
-		case 3:
-
-			returnPair = pair.S();
-			break;
-
-		case 4:
-
-			returnPair = pair.SW();
-			break;
-
-		case 5:
-
-			returnPair = pair.NW();
-			break;
-		}	
-
-		return returnPair;
-	}
-
 	public void forceGrow(Hex hex) {
 
 		int plant = TheRandom.getInstance().get().nextInt(4);
@@ -773,4 +579,23 @@ public class HexService {
 		return toppleCount;
 	}
 
+	// Returns null if no dry neighbors found
+	public Pair getTallestDryNeighbor(Pair pair){
+		
+		List<Pair> neighbors = pair.getNeighbors();
+		Hex tallest = null;
+		
+		for (Pair neighbor : neighbors){
+			
+			Hex hex = map.getHex(neighbor);
+			
+			if (hex.getStandingWater() == 0
+					&& (tallest == null || hex.getElevation() > tallest.getElevation())){
+				
+				tallest = hex;
+			}
+		}
+		
+		return tallest == null ? null : tallest.getHexID();
+	}
 }

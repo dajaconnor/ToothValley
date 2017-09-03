@@ -5,24 +5,15 @@ public class Environment {
    // Maximum values
    public static final int MAX_ELEVATION = 512;
    public static final int MAX_DENSITY = 127;
-   public static final int MAX_SLOPE = 30;
-   public static final int MAX_UNDERWATER_SLOPE = 30;
-
-   // Number of ticks between underwater topples.
-   public static final int UNDERWATER_TOPPLE_FREQUENCY = 100;
 
    // Defines the average amount of water for each hex
-   public static final int AVE_WATER = 400;
-   public static final int AVE_DENSITY = 40;
-   public static final int AVE_ELEVATION = 128; 
-
-   // The smaller this is, the steeper stuff gets
-   public static final int SLOPE_CONSTANT = 1;
+   public static final int AVE_WATER = 300;
+   public static final int AVE_ELEVATION = 128;
    
    public static final int NUM_PLANTS_PER_HEX = 4;
 
    // Defines the percent of the plants that attempt to grow
-   public static final double GROW_RATE = 0.3;
+   public static final double GROW_RATE = 0.1;
 
    // The percent of the map that quick grow will fill
    public static final double QUICK_GROW_LIMIT = 0.03;
@@ -31,7 +22,7 @@ public class Environment {
    public static final double QUICK_GROW_RATE = 1;
 
    // Number of ticks between force grows on slow growth
-   public static final int FORCE_GROW_INTERVAL = 10;
+   public static final int FORCE_GROW_INTERVAL = 1;
    
    // The likelyhood that something will burn on a tick per region
    public static final double BURN_RATE = 0.0001;
@@ -59,29 +50,16 @@ public class Environment {
    // Defines the change in water level required to alter hex color
    public static final int WATER_BUFFER = 20;
 
-   // Defines the water level required to be body of water candidate
-   public static final int WATER_BODY_MIN = 10;
-
-   // Defines number of elevations to check for flooding
-   public static final int ELEVS_TO_FLOOD = 2;
-
-   // Defines the speed at which wind changes (lower is faster), must be at
-   // least 3
-   public static final int WIND_CHANGE = 250;
-
-   // Defines the strength with which wind blows (minimum disparity between air
-   // moisture for wind)
-   public static final int WIND_POWER = 50;
-
-   // Defines the humidity at which rain starts by itself
-   public static final int RAIN_INDEX = 16;
-
-   // Defines the point of condensation (when moistureInAir + elevation/4 ==
-   // AIR_DENSITY, it rains
-   public static final double AIR_DENSITY = 20;
+   // Defines the point of condensation (when moistureInAir + elevation >
+   // RAIN_THRESHHOLD, it rains
+   public static final int RAIN_THRESHHOLD = 200;
+   
+   // The percent of moisture above the computed rain threshold to rain
+   public static final int PERCENT_MOISTURE_EXCESS_TO_DROP = 5;
 
    // Determines the amount of moistureInAir required to constitute a 'cloud'
-   public static final int CLOUD = 24;
+   public static final int CLOUD = 64;
+   public static final int MAX_CLOUD_SIZE = 50;
 
    // Plant resistance to evaporation
    public static final int EVAPORATION_RESISTANCE = 8;
@@ -136,12 +114,8 @@ public class Environment {
    public static final int FAST_PAN = 6;
    public static final int SLOW_PAN = 1;
 
-   // defines the number of ticks between force grows
-   public final static boolean LOWEST = false;
-   public final static boolean HIGHEST = true;
-   public static final float BODY_EVAPORATION = 0.1F;
    public static final int CHANCE_OF_TECTONIC_PLATE_CHANGE = 10000;
-   public static final int HOW_SLOW_WATER_MOVES = 6; // 2 is faster, slower as number goes up
+   public static final int HOW_SLOW_WATER_MOVES = 2; // 2 is faster, slower as number goes up
    public static final int SNOW_MELT = 3; // multiplies HOW_SLOW_WATER_MOVES
    public static final int SNOW_LEVEL = AVE_ELEVATION * 2;
    public static final int MAX_FULL_DIRT = 32;

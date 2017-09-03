@@ -54,8 +54,10 @@ public class Propogator {
       }
    }
    
-   public void propogateFromOrigin(DirectionalEvaluator evaluator, Pair startingPair) 
+   public boolean propogateFromOrigin(DirectionalEvaluator evaluator, Pair startingPair) 
    {
+	   boolean successfullyStarted = false;
+	   
       Set<Pair> traversedPairs = new HashSet<Pair>();
       
       List<Pair> thisList = new ArrayList<Pair>();
@@ -65,6 +67,7 @@ public class Propogator {
          evaluator.onInitialSuccess(startingPair);
          thisList.add(startingPair);
          traversedPairs.add(startingPair);
+         successfullyStarted = true;
       }else{
          evaluator.onInitialFail(startingPair);
       }
@@ -94,5 +97,7 @@ public class Propogator {
          
          thisList = nextList;
       }
+      
+      return successfullyStarted;
    }
 }

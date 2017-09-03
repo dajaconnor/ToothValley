@@ -150,6 +150,52 @@ public class Pair {
 
        return wrap(x, y);
     }
+
+	/**
+	 * Takes two adjacent hexes ids and returns the direction 
+	 * from the first to the second.
+	 * 
+	 * Returns null if the hexes aren't adjacent
+	 */
+	public Direction getDirectionToPair(Pair destination){
+
+		Direction direction = null;
+
+		if (destination != null && this != null){
+
+			if (destination.equals(N())){
+
+				direction = Direction.north;
+			}
+
+			else if (destination.equals(NE())){
+
+				direction = Direction.northeast;
+			}
+
+			else if (destination.equals(SE())){
+
+				direction = Direction.southeast;
+			}
+
+			else if (destination.equals(S())){
+
+				direction = Direction.south;
+			}
+
+			else if (destination.equals(SW())){
+
+				direction = Direction.southwest;
+			}
+
+			else if (destination.equals(NW())){
+
+				direction = Direction.northwest;
+			}
+		}
+
+		return direction;
+	}
     
     public Pair getHexIdFromDirection(Direction direction){
 
