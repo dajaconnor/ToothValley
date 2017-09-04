@@ -4,7 +4,7 @@ public class Environment {
 
    // Maximum values
    public static final int MAX_ELEVATION = 512;
-   public static final int MAX_DENSITY = 127;
+   public static final int MAX_DENSITY = 63;
 
    // Defines the average amount of water for each hex
    public static final int AVE_WATER = 300;
@@ -55,11 +55,15 @@ public class Environment {
    public static final int RAIN_THRESHHOLD = 200;
    
    // The percent of moisture above the computed rain threshold to rain
-   public static final int PERCENT_MOISTURE_EXCESS_TO_DROP = 5;
+   public static final int PERCENT_MOISTURE_EXCESS_TO_DROP = 10;
+   public static final int MAX_RAINFALL_PER_TICK = 10;
 
    // Determines the amount of moistureInAir required to constitute a 'cloud'
    public static final int CLOUD = 64;
    public static final int MAX_CLOUD_SIZE = 50;
+   
+   // The bigger, the more you see the coriolis
+   public static final double CORIOLIS_RELIANCE = 0.5;
 
    // Plant resistance to evaporation
    public static final int EVAPORATION_RESISTANCE = 8;
@@ -109,22 +113,27 @@ public class Environment {
    public static final int MAP_HEIGHT = 1500; // should correlate with screen
                                               // size in pixels
    public static final int MAP_WIDTH = 1900;
-   public static final double ZOOM = 8;
+   public static final double ZOOM = 6;
 
    public static final int FAST_PAN = 6;
    public static final int SLOW_PAN = 1;
+   public static final int MOVE_MULTIPLIER = 5;
 
    public static final int CHANCE_OF_TECTONIC_PLATE_CHANGE = 10000;
    public static final int HOW_SLOW_WATER_MOVES = 2; // 2 is faster, slower as number goes up
    public static final int SNOW_MELT = 3; // multiplies HOW_SLOW_WATER_MOVES
-   public static final int SNOW_LEVEL = AVE_ELEVATION * 2;
+   public static final int YEAR_IN_TICKS = 128; // used for snow level change sine frequecy
+   public static final int SNOW_LEVEL_AMPLITUDE = 64;
+   
    public static final int MAX_FULL_DIRT = 32;
    public static final int MIN_FULL_STONE = 130;
    public static final int NORMALIZE_EVEL_FREQ = 100;
+   public static final float CHANCE_OF_MUTATION = 0.7f;
 
 
    // These are set when the map is generated, and never altered.
    public static int[] MAP_GRID;
+   public static int[] TRUE_CENTER;
    public static double HEX_HEIGHT = ((double) ZOOM * Math.pow(3D, 0.5D));
    public static double HEX_SIDE_WIDTH = ZOOM / 2;
    public static double HEX_BODY_WIDTH = ZOOM;

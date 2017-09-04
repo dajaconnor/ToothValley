@@ -1,5 +1,10 @@
 package models.plants;
 
+import java.util.Random;
+
+import models.Environment;
+import models.TheRandom;
+
 public abstract class Plant {
 	//put functions of plants
 	
@@ -47,7 +52,7 @@ public abstract class Plant {
 		return maxSaturation;
 	}
 
-	public void setMaxSaturation(int maxSaturation) {
+	public void setMaxSaturation(double maxSaturation) {
 		this.maxSaturation = maxSaturation;
 	}
 
@@ -73,5 +78,47 @@ public abstract class Plant {
 
 	public void setIndex(int index) {
 		this.index = index;
+	}
+
+	public void geneticDrift() {
+		
+		Random rand = TheRandom.getInstance().get();
+		
+		if (rand.nextFloat() < Environment.CHANCE_OF_MUTATION){
+		
+			switch(rand.nextInt(6)){
+			
+			case 0:
+			
+				setRootstrength(getRootstrength() - 1);
+				break;
+				
+			case 1:
+				
+				setRootstrength(getRootstrength() + 1);
+				break;
+	
+			
+			case 2:
+				
+				setMoistureRequired(getMoistureRequired() - 1);
+				break;
+				
+			case 3:
+				
+				setMoistureRequired(getMoistureRequired() + 1);
+				break;
+				
+			case 4:
+				
+				setMaxSaturation(getMaxSaturation() - 0.1);
+				break;
+				
+			case 5:
+				
+				setMaxSaturation(getMaxSaturation() + 0.1);
+				break;
+			}
+		}
 	}
 }

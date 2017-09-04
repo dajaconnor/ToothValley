@@ -33,7 +33,7 @@ public class EnvironmentService {
    /**
     * Grows the whole map
     */
-   public void grow(int ticks) {
+   public void grow() {
 
       HexMap map = HexMap.getInstance();
       boolean quickGrow = quickGrowMode();
@@ -53,7 +53,7 @@ public class EnvironmentService {
          }
       }
       
-      if (ticks % Environment.FORCE_GROW_INTERVAL == 0 && map.getHexes().size() > 0){
+      if (map.getTicks() % Environment.FORCE_GROW_INTERVAL == 0 && map.getHexes().size() > 0){
 
          Hex randomHex = hexMapService.pickRandomHex();
          hexService.forceGrow(randomHex);

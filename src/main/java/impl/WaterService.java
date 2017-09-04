@@ -28,7 +28,7 @@ public class WaterService {
 	
 	HexMap map = HexMap.getInstance();
 
-	public void waterCycle(boolean findLeak, boolean leakFound, int ticks) {
+	public void waterCycle(boolean findLeak, boolean leakFound) {
 
 		int totalWater = 0;
 		int totalElevation = 0;
@@ -70,7 +70,7 @@ public class WaterService {
 
 			displayMap.put(hexID, displayPair);
 
-			if (ticks % Environment.NORMALIZE_EVEL_FREQ == 0){
+			if (map.getTicks() % Environment.NORMALIZE_EVEL_FREQ == 0){
 
 				totalElevation += hex.getElevation();
 			}
@@ -78,7 +78,7 @@ public class WaterService {
 		
 		map.resetAppliedBlown();
 
-		if (ticks % Environment.NORMALIZE_EVEL_FREQ == 0){
+		if (map.getTicks() % Environment.NORMALIZE_EVEL_FREQ == 0){
 
 			hexMapService.normalizeElevation(allHexes ,totalElevation);
 		}

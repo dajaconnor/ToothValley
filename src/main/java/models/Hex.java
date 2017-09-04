@@ -114,6 +114,8 @@ public class Hex {
 		
 		int amountToRain = (excessHumidity * Environment.PERCENT_MOISTURE_EXCESS_TO_DROP) / 100;
 
+		if (amountToRain > Environment.MAX_RAINFALL_PER_TICK) amountToRain = Environment.MAX_RAINFALL_PER_TICK;
+		
 		alterMoisture(alterMoistureInAir(-amountToRain));
 	}
 
@@ -256,8 +258,15 @@ public class Hex {
 
 		return standingWater;
 	}
+	
+	public int getDisplayElevation(int snowLevel){
+		
+		if (elevation > snowLevel) return getStandingWater() / (Environment.WATER_PER_ELEVATION * 2) + elevation;
+		return getCombinedElevation();
+	}
 
 	public int getCombinedElevation() {
+		
 		return getStandingWater() / Environment.WATER_PER_ELEVATION + elevation;
 	}
 
@@ -319,30 +328,8 @@ public class Hex {
 			}
 
 			if (newPlant != null){
-
-				// Evolve for rockier soil
-				if (getSoil() == plant.getRootstrength() - 1){
-
-					newPlant.setRootstrength(plant.getRootstrength() - 1);
-				}
-
-				// Evolve for better strength
-				else if(getSoil() >= plant.getRootstrength() + Environment.EVOLUTION_DESIRE && rand.get().nextFloat() < Environment.EVOLUTION_RATE){
-
-					newPlant.setRootstrength(plant.getRootstrength() + 1);
-				}
-
-				// Evolve for drier environment
-				if (plant.getMoistureRequired() - 1 == getMoisture() && getMoisture() > 1) {
-
-					newPlant.setMoistureRequired(getMoisture() - 1);
-				}
-
-				// Evolve for better hierarchy
-				else if(plant.getMoistureRequired() + Environment.EVOLUTION_DESIRE <= getMoisture() && rand.get().nextFloat() < Environment.EVOLUTION_RATE){
-
-					newPlant.setMoistureRequired(plant.getMoistureRequired() + 1);
-				}
+				
+				newPlant.geneticDrift();
 
 				if (addPlantAtIndex(newPlant, index)) {
 
@@ -553,7 +540,7 @@ public class Hex {
 	/**
 	 * Returns the color this hex should be
 	 */
-	public Color getColor(DisplayType displayType) {
+	public Color getColor(DisplayType displayType, int snowLevel) {
 
 		switch (displayType) {
 
@@ -579,7 +566,7 @@ public class Hex {
 
 		default:
 
-			return getNormalColor(displayType);
+			return getNormalColor(displayType, snowLevel);
 
 		}
 	}
@@ -589,7 +576,7 @@ public class Hex {
 		return new Color(255, green, 0);
 	}
 
-	private Color getNormalColor(DisplayType displayType) {
+	private Color getNormalColor(DisplayType displayType, int snowLevel) {
 		Plant plant = getHighestVegetation();
 
 		if (fire > 0) {
@@ -657,7 +644,7 @@ public class Hex {
 
 			// only snow if there's standing water and no plant, 
 			// or the snow is above the rootstrength
-			if (elevation > Environment.SNOW_LEVEL){
+			if (elevation > snowLevel){
 				if (plant == null || standingWater > plant.getRootstrength()){
 					color = SNOW;
 				}

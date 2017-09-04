@@ -45,10 +45,10 @@ public class Main {
 		display.start();
 
 		boolean findLeak = false;
-		int ticks = 0;
 		boolean foundLeak = false;
+		HexMap map = HexMap.getInstance();
 
-		while (display.isCreatingMap() && HexMap.getInstance().getHexes().size() != Environment.MAP_GRID[0] * Environment.MAP_GRID[1]){
+		while (display.isCreatingMap() && map.getHexes().size() != Environment.MAP_GRID[0] * Environment.MAP_GRID[1]){
 			sleep();
 		}
 
@@ -81,7 +81,7 @@ public class Main {
 			}
 
 			lastMark = new Date().getTime();
-			waterService.waterCycle(findLeak, foundLeak, ticks);
+			waterService.waterCycle(findLeak, foundLeak);
 			waterCycleTime += new Date().getTime() - lastMark;
 
 			if (findLeak && cycleTotal != hexMapService.allWater()[0] && !foundLeak){
@@ -91,7 +91,7 @@ public class Main {
 			}
 
 			lastMark = new Date().getTime();
-			environmentService.grow(ticks);
+			environmentService.grow();
 			growTime += new Date().getTime() - lastMark;
 
 			if (findLeak && cycleTotal != hexMapService.allWater()[0] && !foundLeak){
@@ -103,12 +103,12 @@ public class Main {
 			lastMark = new Date().getTime();
 			environmentService.shiftTectonics();
 			tectonicsTime += new Date().getTime() - lastMark;
+			
+			map.tick();
 
-			ticks ++;
+			if (map.getTicks() % 100 == 0){
 
-			if (ticks % 100 == 0){
-
-				System.out.println("Run ticks: " + ticks);
+				System.out.println("Run ticks: " + map.getTicks());
 				System.out.println("Burn time: " + burnTime / 1000);
 				System.out.println("Water cycle time: " + waterCycleTime / 1000);
 				System.out.println("Grow time: " + growTime / 1000);
@@ -151,7 +151,12 @@ public class Main {
 		int[] hexSize = new int[2];
 		hexSize[0] = width;
 		hexSize[1] = height;
+		
+		int[] trueCenter = new int[2];
+		trueCenter[0] = (int) ((width/2) * (Environment.HEX_BODY_WIDTH + Environment.HEX_SIDE_WIDTH) + Environment.HEX_SIDE_WIDTH);
+		trueCenter[1] = (int) ((height/2) * Environment.HEX_HEIGHT + Environment.HEX_HEIGHT / 2);
 
 		Environment.MAP_GRID = hexSize;
+		Environment.TRUE_CENTER = trueCenter;
 	}
 }

@@ -20,6 +20,8 @@ public class HexMap {
 	private int mapID;
 
 	private Hashtable<Pair,Hex> hexes = new Hashtable<Pair,Hex>();
+	
+	private int ticks = 0;
 
 	private Set<Pair> saturatedHexes = new HashSet<Pair>();
 
@@ -169,10 +171,10 @@ public class HexMap {
 		DisplayType display = OpenGLWindow.getInstance().getDisplayType();
 
 		if (display == DisplayType.NORMAL && standingBodyWater != 0){
-			elevation = hex.getCombinedElevation();
+			elevation = hex.getDisplayElevation(getSnowLevel());
 		}
 
-		Color color = hex.getColor(displayType);
+		Color color = hex.getColor(displayType, getSnowLevel());
 
 		displayPair = new Pair(colorToInt(color), elevation);
 
@@ -303,5 +305,39 @@ public class HexMap {
 
 	public void resetHexesInCloud() {
 		hexesInCloud = new ArrayList<Pair>();
+	}
+
+	public int getTicks() {
+		return ticks;
+	}
+
+	public void tick() {
+		ticks++;
+	}
+	
+	// returns null if no effect
+	public Direction getCoriolis(int longitude){
+		
+		Direction returnDir = null;
+		
+		double chance = Environment.CORIOLIS_RELIANCE * Math.sin(((double)longitude * Math.PI) / (Environment.MAP_GRID[0]/2));
+		
+		if (TheRandom.getInstance().get().nextDouble() <= Math.abs(chance)){
+			
+			if (chance < 0){
+				returnDir = Direction.north;
+			} else{
+				returnDir = Direction.south;
+			}
+		}
+		
+		return returnDir;
+	}
+	
+	public int getSnowLevel(){
+		
+		return Environment.AVE_ELEVATION * 2 + 
+				(int) (Environment.SNOW_LEVEL_AMPLITUDE * 
+						Math.sin(((double)ticks) / Environment.YEAR_IN_TICKS));
 	}
 }

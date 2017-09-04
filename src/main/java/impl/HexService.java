@@ -264,7 +264,7 @@ public class HexService {
 
 			int toDistribute = 0;
 
-			if (elev > Environment.SNOW_LEVEL){
+			if (elev > map.getSnowLevel()){
 
 				toDistribute = getSnowMelt(elev, lowest);
 			}else{
@@ -307,7 +307,7 @@ public class HexService {
 	private void drownPlant(Hex hex, int standingBodyWater) {
 
 		int standing = hex.getStandingWater();
-		double saturation = hex.getSaturation();
+		double saturation = hex.getStandingWater();
 
 		for (int i = 0; i < hex.getVegetation().length; i++){
 

@@ -28,8 +28,8 @@ public class WeatherService {
 		if (new Propogator().propogateFromOrigin(new CloudCollector(), pair)){
 			
 			List<Pair> hexesInCloud = map.getHexesInCloud();
-			Direction direction = map.getDirectionToTarget();
-			
+			Direction direction = map.getCoriolis(pair.getX());
+			if (direction == null) direction = map.getDirectionToTarget();
 			if (direction == null) direction = Direction.randomDirection();
 			
 			for (Pair cloudPair : hexesInCloud){
