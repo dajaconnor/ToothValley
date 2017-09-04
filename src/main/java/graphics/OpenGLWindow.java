@@ -61,7 +61,7 @@ public class OpenGLWindow {
 	private boolean drawLinesToggle = false;
 	private boolean fullScreen = false;
 	private int rotation = 90;
-	private boolean toggleFlyoverType = false;
+	private boolean toggleFlyoverType = true;
 
 	private DisplayType displayType = DisplayType.NORMAL;
 
@@ -335,6 +335,29 @@ public class OpenGLWindow {
 
 					break;
 
+				case Keyboard.KEY_Z:
+					
+					if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
+						HexMap.getInstance().incrementWaterChangedByUser(1);
+					}
+					
+					else HexMap.getInstance().incrementWaterChangedByUser(5);
+					break;
+					
+				case Keyboard.KEY_X:
+					
+					if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
+						HexMap.getInstance().incrementWaterChangedByUser(-2);
+					}
+					
+					else HexMap.getInstance().incrementWaterChangedByUser(-10);
+					break;
+					
+				case Keyboard.KEY_T:
+						
+					toggleFlyoverType = !toggleFlyoverType;
+					break;
+					
 				default:
 
 				}
@@ -463,11 +486,6 @@ public class OpenGLWindow {
 					rotate(Environment.FAST_PAN, true);
 				}
 			}
-			
-			if (Keyboard.isKeyDown(Keyboard.KEY_T)){
-				
-				toggleFlyoverType = !toggleFlyoverType;
-			}
 		}
 	}
 
@@ -572,6 +590,38 @@ public class OpenGLWindow {
 	private void shiftRight(int amount){
 
 		offset.setX(offset.getX() + amount);
+	}
+	
+	private void shiftN(int amount) {
+
+		offset.setY(offset.getY() - amount);
+	}
+	
+	private void shiftNE(int amount) {
+		
+		offset.setX(offset.getX() + amount);
+	}
+	
+	private void shiftSE(int amount) {
+		
+		offset.setX(offset.getX() + amount);
+		offset.setY(offset.getY() + amount);
+	}
+	
+	private void shiftS(int amount) {
+		
+		offset.setY(offset.getY() + amount);		
+	}
+	
+	private void shiftSW(int amount) {
+
+		offset.setX(offset.getX() - amount);
+	}
+	
+	private void shiftNW(int amount) {
+
+		offset.setX(offset.getX() - amount);
+		offset.setY(offset.getY() - amount);		
 	}
 
 	private int getGroundVerticeElevation(Pair one, Pair two, Pair three, Map<Pair, Pair> display){

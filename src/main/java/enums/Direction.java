@@ -11,7 +11,8 @@ public enum Direction {
 	north, northeast, southeast, south, southwest, northwest;
 	
 	public static final List<Direction> VALUES = Collections.unmodifiableList(Arrays.asList(values()));
-	private static final int SIZE = VALUES.size();
+	public static final int SIZE = VALUES.size();
+	public static final int DEGREES_PER_DIRECTION = 360 / SIZE;
 
 	public static Direction randomDirection() {
 		return VALUES.get(TheRandom.getInstance().get().nextInt(SIZE));
@@ -31,5 +32,13 @@ public enum Direction {
 	   } else{
 	      return turnLeft();
 	   }
+	}
+	
+	public static Direction getByDegree(int degrees){
+		
+		degrees %= 360;
+		if (degrees < 0) degrees += 360;
+		int shiftRight = (degrees + (DEGREES_PER_DIRECTION / 2)) / DEGREES_PER_DIRECTION;
+		return VALUES.get(shiftRight % SIZE);
 	}
 }

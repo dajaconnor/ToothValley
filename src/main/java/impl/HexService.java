@@ -256,7 +256,7 @@ public class HexService {
 				}
 			}
 
-			if (flowTo != null) {
+			if (Environment.QUICK_FLOW && flowTo != null) {
 				flooded = flowHexToHex(hex, standingWater, elev, lowest, flowTo, false);
 			}
 		}

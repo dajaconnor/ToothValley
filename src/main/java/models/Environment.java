@@ -133,6 +133,7 @@ public class Environment {
    
    // don't move stuff around underwater if it super deep
    public static final int STANDING_WATER_EROSION_CUTOFF = WATER_PER_ELEVATION * 10;
+   public static final boolean QUICK_FLOW = true;
    public static final int FLOOD_WATER_CONTINUE_SIZE = 15;
    public static final int AVE_TICKS_BETWEEN_TECTONIC_VERTICAL_MOVE = 5;
 

@@ -43,13 +43,9 @@ public class WaterService {
 		Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>();
 		DisplayType displayType = map.getDisplayType();
 		map.resetWindBlown();
-		
-/*		for (Pair hexID : allHexes) {
-			
-			weatherService.handleWeather(hexID);
-		}*/
-		
+
 		leakFound = checkForLeak(findLeak, totalWater, leakFound, "handleWeather leak");
+		int alterWaterBy = map.getWaterChangedByUser();
 
 		for (Pair hexID : allHexes) {
 
@@ -58,6 +54,7 @@ public class WaterService {
 			weatherService.handleWeather(hexID);
 			
 			hexService.evaporate(hex, findLeak);
+			hex.alterMoisture(alterWaterBy);
 			//leakFound = checkForLeak(findLeak, totalWater, leakFound, "evaporate leak");
 			applyCloudMovementAndRain(hex);
 			//leakFound = checkForLeak(findLeak, totalWater, leakFound, "applyCloudMovementAndRain leak");
