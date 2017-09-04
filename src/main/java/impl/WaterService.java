@@ -58,13 +58,13 @@ public class WaterService {
 			weatherService.handleWeather(hexID);
 			
 			hexService.evaporate(hex, findLeak);
-			leakFound = checkForLeak(findLeak, totalWater, leakFound, "evaporate leak");
+			//leakFound = checkForLeak(findLeak, totalWater, leakFound, "evaporate leak");
 			applyCloudMovementAndRain(hex);
-			leakFound = checkForLeak(findLeak, totalWater, leakFound, "applyCloudMovementAndRain leak");
+			//leakFound = checkForLeak(findLeak, totalWater, leakFound, "applyCloudMovementAndRain leak");
 			hexService.flood(hex);
-			leakFound = checkForLeak(findLeak, totalWater, leakFound, "flood leak");
+			//leakFound = checkForLeak(findLeak, totalWater, leakFound, "flood leak");
 			hexService.topple(hexID, 0);
-			leakFound = checkForLeak(findLeak, totalWater, leakFound, "topple leak");
+			//leakFound = checkForLeak(findLeak, totalWater, leakFound, "topple leak");
 
 			Pair displayPair = map.updateHexDisplay(hex, displayType);
 

@@ -75,8 +75,10 @@ public class HexMapService {
 				Pair pairCoordinates = Pair.wrap(x, y + x/5);
 				Pair pair = OpenGLWindow.getInstance().getBasePrintCoords(pairCoordinates.getX(), pairCoordinates.getY(), false).toPair();
 
-				Hex hex = makeHex(x, Y, elevations[pair.getX()][pair.getY()] * 2 - Environment.MAX_ELEVATION / 2, (densityMap[pair.getX()][pair.getY()]) / 4, 
-				      Environment.AVE_WATER / 2, Environment.AVE_WATER / 2, plant);
+				int elevation = elevations[pair.getX()][pair.getY()] * 2 - Environment.MAX_ELEVATION / 2;
+				
+				Hex hex = makeHex(x, Y, elevation, (densityMap[pair.getX()][pair.getY()]) / 4, 
+				      0, Environment.AVE_WATER, plant);
 				map.addHex(hex);
 			}
 		}

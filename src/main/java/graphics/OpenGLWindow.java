@@ -57,14 +57,13 @@ public class OpenGLWindow {
 	private boolean running = true;
 	private boolean paused = false;
 	private boolean autoSpin = false;
-	private int waterChange = 1; // 1 stays the same.
 	private Pair offset = new Pair(0,0);
 	private boolean drawLinesToggle = false;
 	private boolean fullScreen = false;
-	private int rotation = 0;
+	private int rotation = 90;
 	private boolean toggleFlyoverType = false;
 
-	private DisplayType displayType = DisplayType.MOISTURE;
+	private DisplayType displayType = DisplayType.NORMAL;
 
 
 	// To make singleton
@@ -125,6 +124,8 @@ public class OpenGLWindow {
 
 		// roll into view
 		glRotatef(-50f,1f,0f,0f);
+		// initial rotation
+		glRotatef(90,0f,0f,1f);
 
 		glMatrixMode(GL_MODELVIEW);
 
@@ -322,7 +323,7 @@ public class OpenGLWindow {
 
 					break;
 
-				case Keyboard.KEY_R:
+				case Keyboard.KEY_G:
 
 					if (isAutoSpin()){
 
@@ -334,18 +335,6 @@ public class OpenGLWindow {
 
 					break;
 
-				case Keyboard.KEY_X:
-
-					alterWaterChangeBy(Environment.WATER_CHANGE_PER_KEY_PRESS);
-
-					break;
-
-				case Keyboard.KEY_Z:
-
-					alterWaterChangeBy(-Environment.WATER_CHANGE_PER_KEY_PRESS);
-
-					break;	
-
 				default:
 
 				}
@@ -353,6 +342,16 @@ public class OpenGLWindow {
 		}
 
 		if (!isAutoSpin()){
+			
+			if (Keyboard.isKeyDown(Keyboard.KEY_R)){
+
+				moveMapVertically(true);
+			}
+			
+			if (Keyboard.isKeyDown(Keyboard.KEY_F)){
+
+				moveMapVertically(false);
+			}
 
 			if (Keyboard.isKeyDown(Keyboard.KEY_W) || Keyboard.isKeyDown(Keyboard.KEY_UP)){
 
@@ -470,6 +469,19 @@ public class OpenGLWindow {
 				toggleFlyoverType = !toggleFlyoverType;
 			}
 		}
+	}
+
+	private void moveMapVertically(boolean UP) {
+		
+		if (toggleFlyoverType) UP = !UP;
+		
+		int amount = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)
+				? Environment.MOVE_MULTIPLIER*Environment.SLOW_PAN
+				: Environment.MOVE_MULTIPLIER*Environment.FAST_PAN;
+		
+		if (!UP) amount = -amount;
+		
+		glTranslatef(0, 0, amount);
 	}
 	
 	private void rotate(int amount, boolean clockwise){
@@ -676,6 +688,19 @@ public class OpenGLWindow {
 		return new DPair(middle.getX() - Environment.HEX_RADIUS, middle.getY());
 	}
 
+/*	private void applyShaders(){
+		
+		glCreateShader(GL11.GL_VER);
+	}
+	
+	private void ambientShader(){
+		float ambientStrength = 0.1;
+	    vec3 ambient = ambientStrength * lightColor;
+
+	    vec3 result = ambient * objectColor;
+	    FragColor = vec4(result, 1.0);
+	}*/
+	
 	public boolean isRunning() {
 		return running;
 	}
@@ -707,14 +732,4 @@ public class OpenGLWindow {
 	public void setAutoSpin(boolean autoSpin) {
 		this.autoSpin = autoSpin;
 	}
-
-	public int getWaterChange() {
-		return waterChange;
-	}
-
-	public void alterWaterChangeBy(int changeBy) {
-		this.waterChange += changeBy;
-	}
-
-
 }

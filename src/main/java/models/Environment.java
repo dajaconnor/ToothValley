@@ -7,7 +7,7 @@ public class Environment {
    public static final int MAX_DENSITY = 63;
 
    // Defines the average amount of water for each hex
-   public static final int AVE_WATER = 300;
+   public static final int AVE_WATER = 500;
    public static final int AVE_ELEVATION = 128;
    
    public static final int NUM_PLANTS_PER_HEX = 4;
@@ -56,14 +56,14 @@ public class Environment {
    
    // The percent of moisture above the computed rain threshold to rain
    public static final int PERCENT_MOISTURE_EXCESS_TO_DROP = 10;
-   public static final int MAX_RAINFALL_PER_TICK = 10;
+   public static final int MAX_RAINFALL_PER_TICK = 30;
 
    // Determines the amount of moistureInAir required to constitute a 'cloud'
    public static final int CLOUD = 64;
    public static final int MAX_CLOUD_SIZE = 50;
    
    // The bigger, the more you see the coriolis
-   public static final double CORIOLIS_RELIANCE = 0.5;
+   public static final double CORIOLIS_RELIANCE = 0.7;
 
    // Plant resistance to evaporation
    public static final int EVAPORATION_RESISTANCE = 8;
@@ -121,7 +121,7 @@ public class Environment {
 
    public static final int CHANCE_OF_TECTONIC_PLATE_CHANGE = 10000;
    public static final int HOW_SLOW_WATER_MOVES = 2; // 2 is faster, slower as number goes up
-   public static final int SNOW_MELT = 3; // multiplies HOW_SLOW_WATER_MOVES
+   public static final int SNOW_MELT = 1; // multiplies HOW_SLOW_WATER_MOVES
    public static final int YEAR_IN_TICKS = 128; // used for snow level change sine frequecy
    public static final int SNOW_LEVEL_AMPLITUDE = 64;
    
@@ -129,6 +129,12 @@ public class Environment {
    public static final int MIN_FULL_STONE = 130;
    public static final int NORMALIZE_EVEL_FREQ = 100;
    public static final float CHANCE_OF_MUTATION = 0.7f;
+   public static final int CATACLISMIC_AVALANCHE = 15;
+   
+   // don't move stuff around underwater if it super deep
+   public static final int STANDING_WATER_EROSION_CUTOFF = WATER_PER_ELEVATION * 10;
+   public static final int FLOOD_WATER_CONTINUE_SIZE = 15;
+   public static final int AVE_TICKS_BETWEEN_TECTONIC_VERTICAL_MOVE = 5;
 
 
    // These are set when the map is generated, and never altered.

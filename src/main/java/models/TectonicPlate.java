@@ -7,6 +7,9 @@ import java.util.Set;
 
 import enums.Direction;
 import enums.TectonicEdgeDirection;
+import impl.WeatherService.CloudCollector;
+import propogation.Evaluator;
+import propogation.Propogator;
 
 public class TectonicPlate {
 	
@@ -14,6 +17,7 @@ public class TectonicPlate {
 	private Set<Pair> allEdges;
 	private Set<Pair> innerRing;
 	private Direction direction;
+	private int verticalDirection = 0;
 	private float velocity;
 	
 	public TectonicPlate(){
@@ -23,6 +27,16 @@ public class TectonicPlate {
 		setInnerRing(new HashSet<Pair>());
 	}
 	
+	public void handleVerticalChange(){
+		
+		if (innerRing.isEmpty()) return;
+		
+		for (Pair pair : innerRing){
+			
+			new Propogator().propogate(new PlateCollector(), pair);
+			break;
+		}
+	}
 	
 	public Map<Pair, TectonicEdgeDirection> getActiveEdges() {
 		return activeEdges;
@@ -55,6 +69,17 @@ public class TectonicPlate {
 		
 		this.direction = plateDirection;
 	}
+	public int getVerticalDirection() {
+		return verticalDirection;
+	}
+
+	public void setVerticalDirection(int verticalDirection) {
+		
+		if (verticalDirection > 1) this.verticalDirection = 1;
+		if (verticalDirection < -1) this.verticalDirection = -1;
+		
+		this.verticalDirection = verticalDirection;
+	}
 
 	public float getVelocity() {
 		return velocity;
@@ -83,5 +108,24 @@ public class TectonicPlate {
 	}
 	public void setInnerRing(Set<Pair> innerRing) {
 		this.innerRing = innerRing;
+	}
+	
+	private class PlateCollector implements Evaluator {
+
+		public boolean evaluate(Pair pairToEvaluate) {
+
+			return !allEdges.contains(pairToEvaluate);
+		}
+
+		public void onSuccess(Pair pairToEvaluate) {
+			
+			HexMap.getInstance().getHex(pairToEvaluate).alterElevation(verticalDirection);
+		}
+
+		public void onFail(Pair pairToEvaluate) {
+			
+		}
+		
+		
 	}
 }

@@ -2,6 +2,7 @@ package impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -154,6 +155,7 @@ public class EnvironmentService {
    public void shiftTectonics() {
 
       HexMap map = HexMap.getInstance();
+      Random rand = TheRandom.getInstance().get();
 
       if (map.getPlates().size() > 0) {
 
@@ -164,11 +166,15 @@ public class EnvironmentService {
 
             TectonicPlate plate = hexMapService.pickRandomPlate();
             
-            if (TheRandom.getInstance().get().nextInt(Environment.CHANCE_OF_TECTONIC_PLATE_CHANGE) == 1){
+            if (rand.nextInt(Environment.CHANCE_OF_TECTONIC_PLATE_CHANGE) == 1){
                
                Direction newDirection = plate.getDirection().takeRandomTurn();
                plate.setDirection(newDirection);
+               plate.setVerticalDirection(plate.getVerticalDirection() 
+            		   + TheRandom.getInstance().get().nextInt(3) - 1);
             }
+            
+            if (rand.nextInt(Environment.AVE_TICKS_BETWEEN_TECTONIC_VERTICAL_MOVE) == 1) plate.handleVerticalChange();
 
             for (Pair keyPair : plate.getActiveEdges().keySet()) {
 

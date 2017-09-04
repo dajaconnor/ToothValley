@@ -276,7 +276,7 @@ public class Hex {
 	}
 
 	public int getSoilStability() {
-		int stability = density;
+		int stability = density / 2;
 		for (Plant plant : vegetation) {
 			if (plant != null) {
 				stability += plant.getRootstrength() * 3;
@@ -295,7 +295,6 @@ public class Hex {
 	public boolean addPlant(Plant plant) {
 
 		boolean success = false;
-		TheRandom rand = TheRandom.getInstance();
 
 		// If the new plant can tolerate the saturation range
 		if (plant != null && getSoil() > plant.getRootstrength() && plant.getMoistureRequired() < getMoisture()){
@@ -671,16 +670,19 @@ public class Hex {
 	}
 
 	private Color getElevationColor() {
-		if (elevation > 255) {
+		
+		int color = elevation / 2;
+		
+		if (color > 255) {
 
 			return Color.WHITE;
 		}
-		if (elevation < 0) {
+		if (color < 0) {
 
 			return Color.BLACK;
 		}
 
-		return new Color(elevation, elevation, elevation);
+		return new Color(color, color, color);
 	}
 
 	private Color getHumidityColor() {

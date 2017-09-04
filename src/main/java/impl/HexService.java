@@ -78,8 +78,14 @@ public class HexService {
 	public boolean evaporate(Hex hex, boolean findLeak) {
 
 		boolean returnBool = false;
+		
+		TheRandom rand = TheRandom.getInstance();
+		
+		//if (rand.flipCoin()) return returnBool;
 
-		if (hex.getStandingWater() > 1 && map.alterMoisture(hex, -1) > 0){// 
+		if (hex.getStandingWater() > 1
+				&& (hex.getMoistureInAir() + hex.getIncomingMoistureInAir()) > Environment.CLOUD
+				&& map.alterMoisture(hex, -1) > 0){// 
 
 			//WATER MOVEMENT
 			hex.alterMoistureInAir(1);
@@ -87,8 +93,6 @@ public class HexService {
 			returnBool = true;
 		}
 		else{
-
-			TheRandom rand = TheRandom.getInstance();
 
 			if (0 == rand.get().nextInt(Environment.EVAPORATION_RESISTANCE)){
 
@@ -207,8 +211,10 @@ public class HexService {
 		int left = to.setDensity(to.getDensity() - 1);
 		from.setDensity(from.getDensity() + 1 + left);
 
-		removeAllVegetation(from);
-		removeAllVegetation(to);
+		if (slope > Environment.CATACLISMIC_AVALANCHE){
+			removeAllVegetation(from);
+			removeAllVegetation(to);
+		}
 	}
 
 	/**
@@ -228,7 +234,7 @@ public class HexService {
 		boolean flooded = false;
 
 		//If there is standing water, shove it around
-		if (hex.getSaturation() > 1) {
+		if (standingWater > 1) {
 			int elev = hex.getCombinedElevation();
 			List<Pair> neighbors = hex.getHexID().getNeighbors();
 
@@ -250,28 +256,34 @@ public class HexService {
 				}
 			}
 
-			flooded = flowHexToHex(hex, standingWater, elev, lowest, flowTo);
+			if (flowTo != null) {
+				flooded = flowHexToHex(hex, standingWater, elev, lowest, flowTo, false);
+			}
 		}
 
 		return flooded;
 	}
 
-	private boolean flowHexToHex(Hex hex, int standingWater, int elev, int lowest, Hex flowTo) {
+	private boolean flowHexToHex(Hex hex, int standingWater, int realElev, int realLowest, Hex flowTo, boolean beenHereOnce) {
 		boolean flooded;
-		flooded = lowest < elev;
+		flooded = realLowest < realElev;
+		
+		int waterElev = realElev * Environment.WATER_PER_ELEVATION;
+		int waterLowest = realLowest * Environment.WATER_PER_ELEVATION;
+		int flowToStandingWater = flowTo.getStandingWater();
+		int toDistribute = 0;
 
-		if (lowest < elev && flowTo != null){
+		if (realLowest < realElev && flowTo != null){
 
-			int toDistribute = 0;
+			if (realElev > map.getSnowLevel()){
 
-			if (elev > map.getSnowLevel()){
-
-				toDistribute = getSnowMelt(elev, lowest);
+				toDistribute = getSnowMelt(waterElev, waterLowest);
 			}else{
-				toDistribute = getWaterDistribution(elev, lowest, flowTo);
+				
+				toDistribute = getWaterDistribution(waterElev, waterLowest, flowToStandingWater);
 			}
 
-			toDistribute = normalizeForLowFlowAreas(elev, lowest, toDistribute);
+			toDistribute = normalizeForLowFlowAreas(waterElev, waterLowest, toDistribute);
 
 			if (toDistribute > 0){
 
@@ -282,7 +294,43 @@ public class HexService {
 				map.alterMoisture(flowTo, map.alterMoisture(hex, - toDistribute));
 			}
 		}
+
+		// if running madly down dry hill, just keep going
+		continueFlowing(hex, flowTo, flowToStandingWater, toDistribute, beenHereOnce);
+		
 		return flooded;
+	}
+
+	private void continueFlowing(Hex hex, Hex flowTo, int oldFlowToStandingWater, int toDistribute, boolean beenHereOnce) {
+		int realElev;
+		int realLowest;
+		int newFlowToStandingWater = flowTo.getStandingWater();
+		
+		if ((newFlowToStandingWater > 0) 
+				&& (oldFlowToStandingWater == 0 || toDistribute > Environment.FLOOD_WATER_CONTINUE_SIZE )){
+			
+			List<Pair> flowToNeighbors = flowTo.getHexID().getNeighbors();
+			realElev = flowTo.getCombinedElevation();
+			realLowest = realElev;
+			Hex nextFlowTo = null;
+			
+			for (Pair neighberPair : flowToNeighbors){
+				
+				Hex neighbor = map.getHex(neighberPair);
+				int neighborCombined = neighbor.getCombinedElevation();
+				
+				if (neighborCombined < realLowest){
+					
+					realLowest = neighborCombined;
+					nextFlowTo = neighbor;
+				}
+			}
+			
+			if (nextFlowTo != null && !beenHereOnce) {
+				flowHexToHex(flowTo, flowTo.getStandingWater(), realElev,
+						realLowest, nextFlowTo, true);
+			}
+		}
 	}
 
 	private int normalizeForLowFlowAreas(int elev, int lowest, int toDistribute) {
@@ -290,24 +338,24 @@ public class HexService {
 		return toDistribute;
 	}
 
-	private int getWaterDistribution(int elev, int lowest, Hex flowTo) {
+	private int getWaterDistribution(int elev, int lowest, int flowToStandingWater) {
 		
-		int waterDiff = (elev - lowest) * Environment.WATER_PER_ELEVATION;
+		int waterDiff = elev - lowest;
 		
-		if (flowTo.getStandingWater() == 0) return waterDiff / 2;
+		if (flowToStandingWater == 0) return waterDiff;
 		
 		return waterDiff / Environment.HOW_SLOW_WATER_MOVES;
 	}
 
 	private int getSnowMelt(int elev, int lowest) {
-		return 1 + (elev - lowest) * Environment.WATER_PER_ELEVATION / (Environment.SNOW_MELT * Environment.HOW_SLOW_WATER_MOVES);
+		return 1 + (elev - lowest) / (Environment.SNOW_MELT * Environment.HOW_SLOW_WATER_MOVES);
 	}
 
 	// Deletes plants if the standing water is greater than the rootstrength of the plant
 	private void drownPlant(Hex hex, int standingBodyWater) {
 
 		int standing = hex.getStandingWater();
-		double saturation = hex.getStandingWater();
+		int saturation = hex.getStandingWater();
 
 		for (int i = 0; i < hex.getVegetation().length; i++){
 
@@ -341,7 +389,7 @@ public class HexService {
 
 		int slope = fromHex.getElevation() - toHex.getElevation();
 
-		if (slope > 2){
+		if (slope > 2 && toHex.getStandingWater() < Environment.STANDING_WATER_EROSION_CUTOFF){
 
 			TheRandom rand = TheRandom.getInstance();
 			slope -= 2;

@@ -53,6 +53,7 @@ public class TectonicPlateService {
 		for (TectonicPlate plate : plates){
 			
 			plate.setDirection(Direction.randomDirection());
+			plate.setVerticalDirection(TheRandom.getInstance().get().nextInt(3) - 1);
 		}
 
 		return plates;
