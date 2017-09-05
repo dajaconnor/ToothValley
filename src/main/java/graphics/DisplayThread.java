@@ -1,6 +1,9 @@
 package graphics;
 
+import org.lwjgl.opengl.Display;
+
 import impl.HexMapService;
+import models.HexMap;
 
 public class DisplayThread implements Runnable {
 
@@ -24,13 +27,15 @@ public class DisplayThread implements Runnable {
       int ticks = 0;
       setCreatingMap(false);
 
-      while(true){
+      while(!Display.isCloseRequested()){
          window.printMap();
          ticks++;
          if (ticks % 10000 == 0){
             System.out.println("Print ticks: " + ticks);
          }
       }
+      
+      HexMap.getInstance().setCloseProgram();
    }
 		   
    public void start ()

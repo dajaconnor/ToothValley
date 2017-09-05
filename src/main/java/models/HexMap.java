@@ -45,6 +45,10 @@ public class HexMap {
 	
 	private Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>();
 	private Map<Pair,Pair> readMap = new HashMap<Pair,Pair>();
+
+	private boolean closeProgram = false;
+	private static ReadWriteLock closeProgramLock = new ReentrantReadWriteLock();
+	
 	private static ReadWriteLock displayMapLock = new ReentrantReadWriteLock();
 
 	//For singletonhood
@@ -368,6 +372,22 @@ public class HexMap {
 			this.waterChangedByUser += change;
 		} finally{
 			waterChangedByUserLock.writeLock().unlock();
+		}
+	}
+
+	public boolean isCloseProgram() {
+		return closeProgram;
+	}
+
+	public void setCloseProgram() {
+		
+		closeProgramLock.writeLock().lock();
+
+		try{ 
+
+			closeProgram = true;
+		} finally{
+			closeProgramLock.writeLock().unlock();
 		}
 	}
 }

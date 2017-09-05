@@ -3,6 +3,7 @@ package controllers;
 
 import java.util.Date;
 
+import org.lwjgl.opengl.Display;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -64,7 +65,7 @@ public class Main {
 		long printTime = 0;
 		long lastMark = 0;
 
-		while (true){
+		while (!map.isCloseProgram()){
 
 			if (findLeak && !foundLeak){
 				cycleTotal = hexMapService.allWater()[0];
@@ -127,6 +128,8 @@ public class Main {
 
 			}
 		}
+		
+		System.exit(0);
 	}
 
 	private void sleep(){

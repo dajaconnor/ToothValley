@@ -16,9 +16,13 @@ import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glRotatef;
 import static org.lwjgl.opengl.GL11.glTranslatef;
 import static org.lwjgl.opengl.GL11.glVertex3d;
+import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.util.glu.GLU.gluPerspective;
 
 import java.awt.Color;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Map;
 
 import org.lwjgl.Sys;
@@ -62,7 +66,6 @@ public class OpenGLWindow {
 	private boolean fullScreen = false;
 	private int rotation = 90;
 	private boolean toggleFlyoverType = true;
-
 	private DisplayType displayType = DisplayType.NORMAL;
 
 
@@ -133,7 +136,7 @@ public class OpenGLWindow {
 
 		// Setup Keyboard
 		Keyboard.enableRepeatEvents(false);
-
+		//setupShaders();
 	}
 
 	public void drawTriangle(DPair centerVertice1, int centerElev1, DPair vertice2, 
@@ -738,19 +741,49 @@ public class OpenGLWindow {
 		return new DPair(middle.getX() - Environment.HEX_RADIUS, middle.getY());
 	}
 
-/*	private void applyShaders(){
+	private static void setupShaders(){
 		
-		glCreateShader(GL11.GL_VER);
+		int shaderProgram = glCreateProgram();
+		int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+		
+		StringBuilder fragmentShaderSource = new StringBuilder();
+		
+		try{
+			BufferedReader reader = new BufferedReader(new FileReader("src/main/shaders/lighting.frag"));
+			String line;
+			
+			while((line = reader.readLine()) != null){
+				
+				fragmentShaderSource.append(line).append("\n");
+			}
+			
+			reader.close();
+			
+		} catch(IOException e){
+			System.err.println("Shader failed to load from file");
+		}
+		
+		glShaderSource(fragmentShader, fragmentShaderSource);
+		glCompileShader(fragmentShader);
+		
+		if (glGetShaderi(fragmentShader, GL_COMPILE_STATUS) == 0){
+			System.err.println("Shader failed to compile");
+		}
+		
+		glAttachShader(shaderProgram, fragmentShader);
+		glLinkProgram(shaderProgram);
+		glValidateProgram(shaderProgram);
+		
+		glUseProgram(shaderProgram);
+		// to disable, glUseProgram(0); // uses default shader
+		
+		System.out.println(fragmentShaderSource);
+		
+		// to cleanup, use the following:
+		//glDeleteShader(fragmentShader);
+		//glDeleteProgram(shaderProgram);
 	}
-	
-	private void ambientShader(){
-		float ambientStrength = 0.1;
-	    vec3 ambient = ambientStrength * lightColor;
 
-	    vec3 result = ambient * objectColor;
-	    FragColor = vec4(result, 1.0);
-	}*/
-	
 	public boolean isRunning() {
 		return running;
 	}
