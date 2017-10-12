@@ -38,21 +38,6 @@ public class EnvironmentService {
 
       HexMap map = HexMap.getInstance();
       boolean quickGrow = quickGrowMode();
-      int hexesToGrow = quickGrow ? (int) (map.getGreenHexes().size() * Environment.QUICK_GROW_RATE)
-            : (int) (map.getGreenHexes().size() * Environment.GROW_RATE);
-
-      if (map.getGreenHexes().size() > 0) {
-
-         for (int i = 0; i < hexesToGrow; i++) {
-
-            Pair hexId = map.getGreenHexes().getRandom();
-
-            if (hexId != null) {
-
-               hexService.grow(hexId);
-            }
-         }
-      }
       
       if (map.getTicks() % Environment.FORCE_GROW_INTERVAL == 0 && map.getHexes().size() > 0){
 
@@ -74,11 +59,9 @@ public class EnvironmentService {
       
       HexMap map = HexMap.getInstance();
       
-      return map.getGreenHexes().size() < map.getHexes().size() * Environment.QUICK_GROW_LIMIT
-            && map.getHexes().size() > 0;
+      return map.getTicks() < Environment.QUICK_GROW_LENGTH;
    }
    
-
    /**
     * Burns the whole map
     */

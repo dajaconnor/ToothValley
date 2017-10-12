@@ -23,4 +23,8 @@ public class TheRandom {
     synchronized public boolean flipCoin() {
 		return rand.nextBoolean();
 	}
+    
+    synchronized public boolean percentChance(int percent) {
+		return rand.nextInt(100) < percent;
+	}
 }

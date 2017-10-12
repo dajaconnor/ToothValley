@@ -62,6 +62,7 @@ public class WaterService {
 			//leakFound = checkForLeak(findLeak, totalWater, leakFound, "flood leak");
 			hexService.topple(hexID, 0);
 			//leakFound = checkForLeak(findLeak, totalWater, leakFound, "topple leak");
+			hexService.grow(hexID);
 
 			Pair displayPair = map.updateHexDisplay(hex, displayType);
 
@@ -103,6 +104,7 @@ public class WaterService {
 		
 		HexMap.getInstance().getAppliedBlown().add(hex.getHexID());
 		hex.resolveMoistureInAir();
+		//hex.resolveMoisture();
 		hex.rain();
 	}
 }

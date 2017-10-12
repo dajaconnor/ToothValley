@@ -81,7 +81,7 @@ public class HexService {
 		
 		TheRandom rand = TheRandom.getInstance();
 		
-		//if (rand.flipCoin()) return returnBool;
+		if (!rand.percentChance(Environment.EVAPORATE_PERCENT)) return returnBool;
 
 		if (hex.getStandingWater() > 1
 				&& (hex.getMoistureInAir() + hex.getIncomingMoistureInAir()) > Environment.CLOUD

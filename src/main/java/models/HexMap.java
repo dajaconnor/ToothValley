@@ -264,6 +264,18 @@ public class HexMap {
 
 		return readMap;
 	}
+	
+	public void resetDisplayToBlack() {
+		
+		Map<Pair,Pair> display = getDisplayMap();
+		
+		for (Pair hexId : display.keySet()) {
+			
+			display.get(hexId).setX(0);
+		}
+		
+		setDisplayMap(display);
+	}
 
 	public DisplayType getDisplayType(){
 

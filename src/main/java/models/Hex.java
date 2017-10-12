@@ -692,7 +692,7 @@ public class Hex {
 		} 
 		else if (moistureInAir < 0){
 
-			return new Color(85, 85, 0);
+			return new Color(0, 0, 0);
 		}
 		else {
 

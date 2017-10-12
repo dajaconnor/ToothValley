@@ -17,6 +17,9 @@ public class Environment {
 
    // The percent of the map that quick grow will fill
    public static final double QUICK_GROW_LIMIT = 0.03;
+   
+   // Number of ticks to quick grow after the sim starts
+   public static final int QUICK_GROW_LENGTH = 100;
 
    // The percent of the map that quick grow will fill
    public static final double QUICK_GROW_RATE = 1;
@@ -52,11 +55,11 @@ public class Environment {
 
    // Defines the point of condensation (when moistureInAir + elevation >
    // RAIN_THRESHHOLD, it rains
-   public static final int RAIN_THRESHHOLD = 200;
+   public static final int RAIN_THRESHHOLD = 100;
    
    // The percent of moisture above the computed rain threshold to rain
    public static final int PERCENT_MOISTURE_EXCESS_TO_DROP = 10;
-   public static final int MAX_RAINFALL_PER_TICK = 30;
+   public static final int MAX_RAINFALL_PER_TICK = 1000;
 
    // Determines the amount of moistureInAir required to constitute a 'cloud'
    public static final int CLOUD = 64;
@@ -113,7 +116,7 @@ public class Environment {
    public static final int MAP_HEIGHT = 1500; // should correlate with screen
                                               // size in pixels
    public static final int MAP_WIDTH = 1900;
-   public static final double ZOOM = 6;
+   public static final double ZOOM = 8;
 
    public static final int FAST_PAN = 6;
    public static final int SLOW_PAN = 1;
@@ -136,6 +139,7 @@ public class Environment {
    public static final boolean QUICK_FLOW = true;
    public static final int FLOOD_WATER_CONTINUE_SIZE = 15;
    public static final int AVE_TICKS_BETWEEN_TECTONIC_VERTICAL_MOVE = 5;
+public static final int EVAPORATE_PERCENT = 10;
 
 
    // These are set when the map is generated, and never altered.

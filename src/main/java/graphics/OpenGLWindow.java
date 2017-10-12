@@ -366,7 +366,11 @@ public class OpenGLWindow {
 				}
 			}
 		}
+		
+		if (Keyboard.isKeyDown(Keyboard.KEY_Z)) HexMap.getInstance().incrementWaterChangedByUser(5);
+		if (Keyboard.isKeyDown(Keyboard.KEY_X)) HexMap.getInstance().incrementWaterChangedByUser(-5);
 
+		
 		if (!isAutoSpin()){
 			
 			if (Keyboard.isKeyDown(Keyboard.KEY_R)){
