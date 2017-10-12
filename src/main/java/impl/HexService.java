@@ -578,7 +578,7 @@ public class HexService {
 
 	public void forceGrow(Hex hex) {
 
-		int plant = TheRandom.getInstance().get().nextInt(4);
+		int plant = TheRandom.getInstance().get().nextInt(Environment.NUM_PLANT_TYPES);
 
 		switch(plant){
 

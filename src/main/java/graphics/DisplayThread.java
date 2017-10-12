@@ -4,6 +4,7 @@ import org.lwjgl.opengl.Display;
 
 import impl.HexMapService;
 import models.HexMap;
+import models.UserActions;
 
 public class DisplayThread implements Runnable {
 
@@ -35,7 +36,7 @@ public class DisplayThread implements Runnable {
          }
       }
       
-      HexMap.getInstance().setCloseProgram();
+      UserActions.getInstance().setCloseProgram();
    }
 		   
    public void start ()

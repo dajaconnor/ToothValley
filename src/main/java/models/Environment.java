@@ -4,10 +4,10 @@ public class Environment {
 
    // Maximum values
    public static final int MAX_ELEVATION = 512;
-   public static final int MAX_DENSITY = 63;
+   public static final int MAX_DENSITY = 64;
 
    // Defines the average amount of water for each hex
-   public static final int AVE_WATER = 500;
+   public static final int AVE_WATER = 1400;
    public static final int AVE_ELEVATION = 128;
    
    public static final int NUM_PLANTS_PER_HEX = 4;
@@ -51,7 +51,7 @@ public class Environment {
    public static final float FLOOD_STRENGTH = 0.1f;
 
    // Defines the change in water level required to alter hex color
-   public static final int WATER_BUFFER = 20;
+   public static final int WATER_BUFFER = 0;
 
    // Defines the point of condensation (when moistureInAir + elevation >
    // RAIN_THRESHHOLD, it rains
@@ -60,13 +60,17 @@ public class Environment {
    // The percent of moisture above the computed rain threshold to rain
    public static final int PERCENT_MOISTURE_EXCESS_TO_DROP = 10;
    public static final int MAX_RAINFALL_PER_TICK = 1000;
+   public static final int FLOOD_WATER_CONTINUE_SIZE = 10;
+   public static final int EVAPORATE_PERCENT = 50;
+   public static boolean REALISTIC_WATER_FLOW = false;
+   public static final int WATER_PER_ELEVATION = 64;
 
    // Determines the amount of moistureInAir required to constitute a 'cloud'
    public static final int CLOUD = 64;
    public static final int MAX_CLOUD_SIZE = 50;
    
    // The bigger, the more you see the coriolis
-   public static final double CORIOLIS_RELIANCE = 0.7;
+   public static final double CORIOLIS_RELIANCE = 0.6;
 
    // Plant resistance to evaporation
    public static final int EVAPORATION_RESISTANCE = 8;
@@ -82,7 +86,7 @@ public class Environment {
 
    // Number of tectonic movements per tick
    public static final int TECTONIC_ACTIVITY = 10;
-   public static final int TECTONIC_AMPLITUDE = 1;
+   public static final int TECTONIC_AMPLITUDE = 2;
 
    // Defines the number of times a hex can topple in a single run
    public static final int TOPPLE_DEPTH = 3;
@@ -105,13 +109,15 @@ public class Environment {
    public static final int JUNGLE_STRENGTH = 24;
    public static final int ROOT_STRENGTH_DEATH_GAIN = 150;
 
+   public static final int PERCENT_CHANCE_OF_SOIL_LOOSENING = 1;
+   
    public static final int WATER_CHANGE_PER_KEY_PRESS = 1;
    public static final int COLOR_CHANGE_CONSTANT = 1 / 2; // 0 is no color
                                                           // change with
                                                           // evolution
    public static final int TECTONIC_FIRST_STRETCH = 5;
    public static final int TECTONIC_MIN_STRAIGHT = 3;
-   public static final int WATER_PER_ELEVATION = 8;
+   
    public static final int DRAW_LINE_TOLERANCE = 2;
    public static final int MAP_HEIGHT = 1500; // should correlate with screen
                                               // size in pixels
@@ -137,9 +143,10 @@ public class Environment {
    // don't move stuff around underwater if it super deep
    public static final int STANDING_WATER_EROSION_CUTOFF = WATER_PER_ELEVATION * 10;
    public static final boolean QUICK_FLOW = true;
-   public static final int FLOOD_WATER_CONTINUE_SIZE = 15;
+
    public static final int AVE_TICKS_BETWEEN_TECTONIC_VERTICAL_MOVE = 5;
-public static final int EVAPORATE_PERCENT = 10;
+   public static final int NUM_PLANT_TYPES = 4;
+
 
 
    // These are set when the map is generated, and never altered.

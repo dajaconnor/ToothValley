@@ -39,6 +39,7 @@ import models.DPair;
 import models.Environment;
 import models.HexMap;
 import models.Pair;
+import models.UserActions;
 
 public class OpenGLWindow {
 
@@ -339,45 +340,75 @@ public class OpenGLWindow {
 					break;
 
 				case Keyboard.KEY_Z:
-					
+
 					if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
-						HexMap.getInstance().incrementWaterChangedByUser(1);
+						UserActions.getInstance().incrementWaterChangedByUser(1);
 					}
-					
-					else HexMap.getInstance().incrementWaterChangedByUser(5);
+
+					else UserActions.getInstance().incrementWaterChangedByUser(5);
 					break;
-					
+
 				case Keyboard.KEY_X:
-					
+
 					if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
-						HexMap.getInstance().incrementWaterChangedByUser(-2);
+						UserActions.getInstance().incrementWaterChangedByUser(-2);
 					}
-					
-					else HexMap.getInstance().incrementWaterChangedByUser(-10);
+
+					else UserActions.getInstance().incrementWaterChangedByUser(-10);
 					break;
-					
+
+				case Keyboard.KEY_V:
+
+					UserActions.getInstance().incrementTectonicActivity(100);
+					break;
+
+				case Keyboard.KEY_C:
+
+					UserActions.getInstance().toggleRealisticWaterFlow();
+					break;
+
 				case Keyboard.KEY_T:
-						
+
 					toggleFlyoverType = !toggleFlyoverType;
 					break;
-					
+
+				case Keyboard.KEY_1:
+
+					UserActions.getInstance().addPlants(0);
+					break;
+
+				case Keyboard.KEY_2:
+
+					UserActions.getInstance().addPlants(1);
+					break;
+
+				case Keyboard.KEY_3:
+
+					UserActions.getInstance().addPlants(2);
+					break;
+
+				case Keyboard.KEY_4:
+
+					UserActions.getInstance().addPlants(3);
+					break;
+
 				default:
 
 				}
 			}
 		}
-		
-		if (Keyboard.isKeyDown(Keyboard.KEY_Z)) HexMap.getInstance().incrementWaterChangedByUser(5);
-		if (Keyboard.isKeyDown(Keyboard.KEY_X)) HexMap.getInstance().incrementWaterChangedByUser(-5);
 
-		
+		if (Keyboard.isKeyDown(Keyboard.KEY_Z)) UserActions.getInstance().incrementWaterChangedByUser(5);
+		if (Keyboard.isKeyDown(Keyboard.KEY_X)) UserActions.getInstance().incrementWaterChangedByUser(-5);
+		if (Keyboard.isKeyDown(Keyboard.KEY_V)) UserActions.getInstance().incrementTectonicActivity(10);
+
 		if (!isAutoSpin()){
-			
+
 			if (Keyboard.isKeyDown(Keyboard.KEY_R)){
 
 				moveMapVertically(true);
 			}
-			
+
 			if (Keyboard.isKeyDown(Keyboard.KEY_F)){
 
 				moveMapVertically(false);
@@ -413,7 +444,7 @@ public class OpenGLWindow {
 
 						changeVantage(ControlDirection.DOWN, Environment.SLOW_PAN);
 					}else{
-						
+
 						changeVantage(ControlDirection.DOWN, Environment.FAST_PAN);
 					}
 
@@ -497,22 +528,22 @@ public class OpenGLWindow {
 	}
 
 	private void moveMapVertically(boolean UP) {
-		
+
 		if (toggleFlyoverType) UP = !UP;
-		
+
 		int amount = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)
 				? Environment.MOVE_MULTIPLIER*Environment.SLOW_PAN
-				: Environment.MOVE_MULTIPLIER*Environment.FAST_PAN;
-		
+						: Environment.MOVE_MULTIPLIER*Environment.FAST_PAN;
+
 		if (!UP) amount = -amount;
-		
+
 		glTranslatef(0, 0, amount);
 	}
-	
+
 	private void rotate(int amount, boolean clockwise){
-		
+
 		if (toggleFlyoverType) clockwise = !clockwise;
-		
+
 		if (clockwise) {
 			glRotatef(-amount,0f,0f,1f);
 			rotation -= amount;
@@ -522,63 +553,63 @@ public class OpenGLWindow {
 			rotation += amount;
 		}
 	}
-	
+
 	private void changeVantage(ControlDirection direction, int amount){
-		
+
 		direction = direction.correctForRotation(rotation, toggleFlyoverType);
-		
+
 		switch(direction){
-		
+
 		case UP:
-			
+
 			glTranslatef(0, Environment.MOVE_MULTIPLIER*amount, 0);
 			break;
-			
+
 		case DOWN:
-			
+
 			glTranslatef(0, -Environment.MOVE_MULTIPLIER*amount, 0);
 			break;
 
 		case LEFT:
-			
+
 			glTranslatef(-Environment.MOVE_MULTIPLIER*amount, 0, 0);
 			break;
-	
+
 		case RIGHT:
-			
+
 			glTranslatef(Environment.MOVE_MULTIPLIER*amount, 0, 0);
 			break;
 		}
 	}
 
 	private void pan(ControlDirection direction, int amount){
-		
+
 		direction = direction.correctForRotation(rotation, toggleFlyoverType);
-		
+
 		switch(direction){
-		
+
 		case UP:
-			
+
 			shiftUp(amount);
 			break;
-			
+
 		case DOWN:
-			
+
 			shiftDown(amount);
 			break;
 
 		case LEFT:
-			
+
 			shiftLeft(amount);
 			break;
-	
+
 		case RIGHT:
-			
+
 			shiftRight(amount);
 			break;
 		}
 	}
-	
+
 	private void shiftUp(int amount){
 
 		offset.setY(offset.getY() + amount);
@@ -598,33 +629,33 @@ public class OpenGLWindow {
 
 		offset.setX(offset.getX() + amount);
 	}
-	
+
 	private void shiftN(int amount) {
 
 		offset.setY(offset.getY() - amount);
 	}
-	
+
 	private void shiftNE(int amount) {
-		
+
 		offset.setX(offset.getX() + amount);
 	}
-	
+
 	private void shiftSE(int amount) {
-		
+
 		offset.setX(offset.getX() + amount);
 		offset.setY(offset.getY() + amount);
 	}
-	
+
 	private void shiftS(int amount) {
-		
+
 		offset.setY(offset.getY() + amount);		
 	}
-	
+
 	private void shiftSW(int amount) {
 
 		offset.setX(offset.getX() - amount);
 	}
-	
+
 	private void shiftNW(int amount) {
 
 		offset.setX(offset.getX() - amount);
@@ -746,43 +777,43 @@ public class OpenGLWindow {
 	}
 
 	private static void setupShaders(){
-		
+
 		int shaderProgram = glCreateProgram();
 		int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-		
+
 		StringBuilder fragmentShaderSource = new StringBuilder();
-		
+
 		try{
 			BufferedReader reader = new BufferedReader(new FileReader("src/main/shaders/lighting.frag"));
 			String line;
-			
+
 			while((line = reader.readLine()) != null){
-				
+
 				fragmentShaderSource.append(line).append("\n");
 			}
-			
+
 			reader.close();
-			
+
 		} catch(IOException e){
 			System.err.println("Shader failed to load from file");
 		}
-		
+
 		glShaderSource(fragmentShader, fragmentShaderSource);
 		glCompileShader(fragmentShader);
-		
+
 		if (glGetShaderi(fragmentShader, GL_COMPILE_STATUS) == 0){
 			System.err.println("Shader failed to compile");
 		}
-		
+
 		glAttachShader(shaderProgram, fragmentShader);
 		glLinkProgram(shaderProgram);
 		glValidateProgram(shaderProgram);
-		
+
 		glUseProgram(shaderProgram);
 		// to disable, glUseProgram(0); // uses default shader
-		
+
 		System.out.println(fragmentShaderSource);
-		
+
 		// to cleanup, use the following:
 		//glDeleteShader(fragmentShader);
 		//glDeleteProgram(shaderProgram);

@@ -15,6 +15,7 @@ import impl.HexMapService;
 import impl.WaterService;
 import models.Environment;
 import models.HexMap;
+import models.UserActions;
 
 @Component
 public class Main {
@@ -65,7 +66,7 @@ public class Main {
 		long printTime = 0;
 		long lastMark = 0;
 
-		while (!map.isCloseProgram()){
+		while (!UserActions.getInstance().isCloseProgram()){
 
 			if (findLeak && !foundLeak){
 				cycleTotal = hexMapService.allWater()[0];
@@ -126,6 +127,10 @@ public class Main {
 					totalWater = hexMapService.allWater()[0];
 				}
 
+				if (map.getTicks() == 100){
+					
+					UserActions.getInstance().setRealisticWaterFlow(false);
+				}
 			}
 		}
 		

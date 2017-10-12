@@ -39,15 +39,9 @@ public class HexMap {
 	private int tallestTargetForCloud = -1000;
 	private Direction directionToTarget = null;
 	private List<Pair> hexesInCloud = null;
-
-	private int waterChangedByUser = 0;
-	private static ReadWriteLock waterChangedByUserLock = new ReentrantReadWriteLock();
 	
 	private Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>();
 	private Map<Pair,Pair> readMap = new HashMap<Pair,Pair>();
-
-	private boolean closeProgram = false;
-	private static ReadWriteLock closeProgramLock = new ReentrantReadWriteLock();
 	
 	private static ReadWriteLock displayMapLock = new ReentrantReadWriteLock();
 
@@ -358,48 +352,5 @@ public class HexMap {
 		return Environment.AVE_ELEVATION * 2 + 
 				(int) (Environment.SNOW_LEVEL_AMPLITUDE * 
 						Math.sin(((double)ticks) / Environment.YEAR_IN_TICKS));
-	}
-
-	public int getWaterChangedByUser() {
-		
-		int change = 0;
-		waterChangedByUserLock.writeLock().lock();
-
-		try{ 
-			change = waterChangedByUser;
-			waterChangedByUser = 0;
-		} finally{
-			waterChangedByUserLock.writeLock().unlock();
-		}
-
-		return change;
-	}
-
-	public void incrementWaterChangedByUser(int change) {
-		
-		waterChangedByUserLock.writeLock().lock();
-
-		try{ 
-
-			this.waterChangedByUser += change;
-		} finally{
-			waterChangedByUserLock.writeLock().unlock();
-		}
-	}
-
-	public boolean isCloseProgram() {
-		return closeProgram;
-	}
-
-	public void setCloseProgram() {
-		
-		closeProgramLock.writeLock().lock();
-
-		try{ 
-
-			closeProgram = true;
-		} finally{
-			closeProgramLock.writeLock().unlock();
-		}
 	}
 }

@@ -13,6 +13,7 @@ import models.Environment;
 import models.Hex;
 import models.HexMap;
 import models.Pair;
+import models.UserActions;
 
 @Component
 public class WaterService {
@@ -45,7 +46,7 @@ public class WaterService {
 		map.resetWindBlown();
 
 		leakFound = checkForLeak(findLeak, totalWater, leakFound, "handleWeather leak");
-		int alterWaterBy = map.getWaterChangedByUser();
+		int alterWaterBy = UserActions.getInstance().getAndResetWaterChangedByUser();
 
 		for (Pair hexID : allHexes) {
 
@@ -74,6 +75,8 @@ public class WaterService {
 			}
 		}
 		
+		if (UserActions.getInstance().realisticWaterFlow()) flowAllHexesAgain(allHexes);
+		
 		map.resetAppliedBlown();
 
 		if (map.getTicks() % Environment.NORMALIZE_EVEL_FREQ == 0){
@@ -84,6 +87,14 @@ public class WaterService {
 		map.setDisplayMap(displayMap);
 
 		leakFound = checkForLeak(findLeak, totalWater, leakFound, "evaporate or flood leak");
+	}
+
+	private void flowAllHexesAgain(List<Pair> allHexes) {
+		for (Pair hexID : allHexes) {
+
+			Hex hex = map.getHex(hexID);
+			hexService.flood(hex);
+		}
 	}
 
 	private boolean checkForLeak(boolean findLeak, int totalWater, boolean leakFound, String message) {
@@ -105,6 +116,17 @@ public class WaterService {
 		HexMap.getInstance().getAppliedBlown().add(hex.getHexID());
 		hex.resolveMoistureInAir();
 		//hex.resolveMoisture();
-		hex.rain();
+		
+		// If max rain
+		if (hex.rain()){
+			
+			List<Pair> neighbors = hex.getHexID().getNeighbors();
+			int toDistribute = Environment.MAX_RAINFALL_PER_TICK / neighbors.size();
+			
+			for (Pair neighbor : neighbors){
+				
+				map.alterMoisture(neighbor, map.alterMoisture(hex, - toDistribute));
+			}
+		}
 	}
 }

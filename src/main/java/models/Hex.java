@@ -49,7 +49,7 @@ public class Hex {
 	}
 
 	public int getSoil(){
-		return Environment.MAX_DENSITY + 1 - density;
+		return Environment.MAX_DENSITY - density;
 	}
 
 	public int setDensity(int density) {
@@ -70,6 +70,11 @@ public class Hex {
 		}
 
 		return leftover;
+	}
+
+	private void alterDensity(int change) {
+		
+		setDensity(getDensity() + change);
 	}
 
 	public int getMoistureInAir() {
@@ -106,17 +111,20 @@ public class Hex {
 		incomingMoistureInAir = 0;
 	}
 	
-	public void rain(){
+	public boolean rain(){
 
 		int excessHumidity = elevation + moistureInAir - Environment.RAIN_THRESHHOLD;
 		
-		if (excessHumidity <= 0) return;
+		if (excessHumidity <= 0) return false;
 		
 		int amountToRain = (excessHumidity * Environment.PERCENT_MOISTURE_EXCESS_TO_DROP) / 100;
 
-		if (amountToRain > Environment.MAX_RAINFALL_PER_TICK) amountToRain = Environment.MAX_RAINFALL_PER_TICK;
+		boolean flood = amountToRain > Environment.MAX_RAINFALL_PER_TICK;
+		if (flood) amountToRain = Environment.MAX_RAINFALL_PER_TICK;
 		
 		alterMoisture(alterMoistureInAir(-amountToRain));
+		
+		return flood;
 	}
 
 	public Hex() {
@@ -245,12 +253,12 @@ public class Hex {
 	 * @return
 	 */
 	public double getSaturation() {
-		return ((double) getMoisture()) / (double) (Environment.MAX_DENSITY + 1 - this.density);
+		return ((double) getMoisture()) / (double) (Environment.MAX_DENSITY - this.density);
 	}
 
 	public int getStandingWater() {
 
-		int standingWater = getMoisture() - (Environment.MAX_DENSITY + 1 - this.density);
+		int standingWater = getMoisture() - (Environment.MAX_DENSITY - this.density);
 
 		if (standingWater < 0) {
 			standingWater = 0;
@@ -334,6 +342,11 @@ public class Hex {
 
 					success = true;
 				}
+			}
+			
+			if(success && TheRandom.getInstance().percentChance(Environment.PERCENT_CHANCE_OF_SOIL_LOOSENING)){
+				
+				alterDensity(-1);
 			}
 		}
 
@@ -710,15 +723,15 @@ public class Hex {
 	private Color getDensityColor() {
 		if (density * 4 > 255) {
 
-			return Color.BLACK;
+			return Color.WHITE;
 		}
 		if (density < 0) {
 
-			return Color.WHITE;
+			return Color.BLACK;
 		} else {
 
-			return new Color(255 - density * 4, 255 - density * 4,
-					255 - density * 4);
+			return new Color(density * 4, density * 4,
+					density * 4);
 		}
 	}
 
