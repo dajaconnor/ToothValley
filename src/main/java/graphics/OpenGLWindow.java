@@ -345,7 +345,7 @@ public class OpenGLWindow {
 						UserActions.getInstance().incrementWaterChangedByUser(1);
 					}
 
-					else UserActions.getInstance().incrementWaterChangedByUser(5);
+					else UserActions.getInstance().incrementWaterChangedByUser(20);
 					break;
 
 				case Keyboard.KEY_X:
@@ -354,12 +354,12 @@ public class OpenGLWindow {
 						UserActions.getInstance().incrementWaterChangedByUser(-2);
 					}
 
-					else UserActions.getInstance().incrementWaterChangedByUser(-10);
+					else UserActions.getInstance().incrementWaterChangedByUser(-40);
 					break;
 
 				case Keyboard.KEY_V:
 
-					UserActions.getInstance().incrementTectonicActivity(100);
+					UserActions.getInstance().incrementTectonicActivity(10);
 					break;
 
 				case Keyboard.KEY_C:
@@ -398,9 +398,9 @@ public class OpenGLWindow {
 			}
 		}
 
-		if (Keyboard.isKeyDown(Keyboard.KEY_Z)) UserActions.getInstance().incrementWaterChangedByUser(5);
-		if (Keyboard.isKeyDown(Keyboard.KEY_X)) UserActions.getInstance().incrementWaterChangedByUser(-5);
-		if (Keyboard.isKeyDown(Keyboard.KEY_V)) UserActions.getInstance().incrementTectonicActivity(10);
+		if (Keyboard.isKeyDown(Keyboard.KEY_Z)) UserActions.getInstance().incrementWaterChangedByUser(20);
+		if (Keyboard.isKeyDown(Keyboard.KEY_X)) UserActions.getInstance().incrementWaterChangedByUser(-40);
+		if (Keyboard.isKeyDown(Keyboard.KEY_V)) UserActions.getInstance().incrementTectonicActivity(4);
 
 		if (!isAutoSpin()){
 

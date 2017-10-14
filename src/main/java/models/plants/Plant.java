@@ -9,24 +9,21 @@ public abstract class Plant {
 	//put functions of plants
 	
 	private int rootstrength;
-	private double maxSaturation;
 	private int moistureRequired;
 	private int index;
 	private int moisture;
 	private int rot;
 	
-	public Plant(int rootstrength, double maxSaturation, int moistureRequired, int index){
+	public Plant(int rootstrength, int moistureRequired, int index){
 		this.rootstrength = rootstrength;
-		this.maxSaturation = maxSaturation;
 		this.moistureRequired = moistureRequired;
 		this.index = index;
 		this.moisture = moistureRequired;
 		this.rot = 0;
 	}
 	
-	public Plant(int rootstrength, double maxSaturation, int moistureRequired){
+	public Plant(int rootstrength, int moistureRequired){
 		this.rootstrength = rootstrength;
-		this.maxSaturation = maxSaturation;
 		this.moistureRequired = moistureRequired;
 		this.index = 0;
 		this.rot = 0;
@@ -45,15 +42,9 @@ public abstract class Plant {
 	}
 
 	public void setRootstrength(int rootstrength) {
-		this.rootstrength = rootstrength;
-	}
-
-	public double getMaxSaturation() {
-		return maxSaturation;
-	}
-
-	public void setMaxSaturation(double maxSaturation) {
-		this.maxSaturation = maxSaturation;
+		
+		if (rootstrength < 0) this.rootstrength = 0;
+		else this.rootstrength = rootstrength;
 	}
 
 	public int getMoistureRequired() {
@@ -61,7 +52,8 @@ public abstract class Plant {
 	}
 	
 	public void setMoistureRequired(int moistureRequired) {
-		this.moistureRequired = moistureRequired;
+		if (moistureRequired < 0) this.moistureRequired = 0;
+		else this.moistureRequired = moistureRequired;
 	}
 	
 	public int getMoisture() {
@@ -86,7 +78,7 @@ public abstract class Plant {
 		
 		if (rand.nextFloat() < Environment.CHANCE_OF_MUTATION){
 		
-			switch(rand.nextInt(6)){
+			switch(rand.nextInt(4)){
 			
 			case 0:
 			
@@ -107,16 +99,6 @@ public abstract class Plant {
 			case 3:
 				
 				setMoistureRequired(getMoistureRequired() + 1);
-				break;
-				
-			case 4:
-				
-				setMaxSaturation(getMaxSaturation() - 0.1);
-				break;
-				
-			case 5:
-				
-				setMaxSaturation(getMaxSaturation() + 0.1);
 				break;
 			}
 		}

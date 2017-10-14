@@ -55,13 +55,13 @@ public class Environment {
 
    // Defines the point of condensation (when moistureInAir + elevation >
    // RAIN_THRESHHOLD, it rains
-   public static final int RAIN_THRESHHOLD = 100;
+   public static final int RAIN_THRESHHOLD = 10;
    
    // The percent of moisture above the computed rain threshold to rain
-   public static final int PERCENT_MOISTURE_EXCESS_TO_DROP = 10;
+   public static final int PERCENT_MOISTURE_EXCESS_TO_DROP = 20;
    public static final int MAX_RAINFALL_PER_TICK = 1000;
    public static final int FLOOD_WATER_CONTINUE_SIZE = 10;
-   public static final int EVAPORATE_PERCENT = 50;
+   public static final int EVAPORATE_PERCENT = 100;
    public static boolean REALISTIC_WATER_FLOW = false;
    public static final int WATER_PER_ELEVATION = 64;
 
@@ -70,7 +70,7 @@ public class Environment {
    public static final int MAX_CLOUD_SIZE = 50;
    
    // The bigger, the more you see the coriolis
-   public static final double CORIOLIS_RELIANCE = 0.6;
+   public static final double CORIOLIS_RELIANCE = 0.9;
 
    // Plant resistance to evaporation
    public static final int EVAPORATION_RESISTANCE = 8;
@@ -86,7 +86,7 @@ public class Environment {
 
    // Number of tectonic movements per tick
    public static final int TECTONIC_ACTIVITY = 10;
-   public static final int TECTONIC_AMPLITUDE = 2;
+   public static final int TECTONIC_AMPLITUDE = 4;
 
    // Defines the number of times a hex can topple in a single run
    public static final int TOPPLE_DEPTH = 3;

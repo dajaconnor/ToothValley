@@ -72,9 +72,9 @@ public class Hex {
 		return leftover;
 	}
 
-	private void alterDensity(int change) {
+	public int alterDensity(int change) {
 		
-		setDensity(getDensity() + change);
+		return setDensity(getDensity() + change);
 	}
 
 	public int getMoistureInAir() {
@@ -305,7 +305,7 @@ public class Hex {
 		boolean success = false;
 
 		// If the new plant can tolerate the saturation range
-		if (plant != null && getSoil() > plant.getRootstrength() && plant.getMoistureRequired() < getMoisture()){
+		if (plant != null && getSoil() >= plant.getRootstrength() && plant.getMoistureRequired() <= getMoisture()){
 
 			Plant newPlant = null;
 			int index = 0;
@@ -342,11 +342,6 @@ public class Hex {
 
 					success = true;
 				}
-			}
-			
-			if(success && TheRandom.getInstance().percentChance(Environment.PERCENT_CHANCE_OF_SOIL_LOOSENING)){
-				
-				alterDensity(-1);
 			}
 		}
 

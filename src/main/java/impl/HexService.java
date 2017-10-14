@@ -194,12 +194,7 @@ public class HexService {
 
 	private boolean shouldTopple(int slope, int stability, Hex from){
 		// Slope is naturally unstable
-		return (slope > stability
-				/*           // slope is steeper than should be possible above ground
-            || (slope > Environment.MAX_SLOPE 
-                  && HexMap.getInstance().getPairToWaterBodies().get(from) == null)
-            // slope is steeper than it should be anywhere
-            || (slope > Environment.MAX_UNDERWATER_SLOPE)*/);
+		return (slope > stability);
 	}
 
 	private void handleAvalanche(Hex from, Hex to, int slope){
@@ -208,8 +203,8 @@ public class HexService {
 
 		to.setElevation(to.getElevation() + slope/4);
 
-		int left = to.setDensity(to.getDensity() - 1);
-		from.setDensity(from.getDensity() + 1 + left);
+		int left = to.alterDensity(- 1);
+		from.alterDensity(left);
 
 		if (slope > Environment.CATACLISMIC_AVALANCHE){
 			removeAllVegetation(from);
@@ -355,16 +350,14 @@ public class HexService {
 	private void drownPlant(Hex hex, int standingBodyWater) {
 
 		int standing = hex.getStandingWater();
-		int saturation = hex.getStandingWater();
 
 		for (int i = 0; i < hex.getVegetation().length; i++){
 
-			if (hex.getVegetation()[i] != null && saturation > hex.getVegetation()[i].getMaxSaturation()){
+			if (hex.getVegetation()[i] != null && standing > hex.getVegetation()[i].getRootstrength()){
 
-				int strength = hex.getVegetation()[i].getRootstrength();
 				TheRandom rand = TheRandom.getInstance();
 
-				if (rand.get().nextInt(1 + (int) (standing * Environment.FLOOD_STRENGTH)) > (strength - hex.getVegetation()[i].getRot())){
+				if (rand.get().nextInt(1 + (int) (standing * Environment.FLOOD_STRENGTH)) > (hex.getVegetation()[i].getRootstrength() - hex.getVegetation()[i].getRot())){
 
 					hex.deletePlant(i);
 				}

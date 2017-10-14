@@ -349,7 +349,7 @@ public class HexMap {
 	
 	public int getSnowLevel(){
 		
-		return Environment.AVE_ELEVATION * 2 + 
+		return Environment.AVE_ELEVATION * 3 + 
 				(int) (Environment.SNOW_LEVEL_AMPLITUDE * 
 						Math.sin(((double)ticks) / Environment.YEAR_IN_TICKS));
 	}
