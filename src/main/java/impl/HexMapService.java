@@ -1,6 +1,7 @@
 package impl;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,8 @@ public class HexMapService {
 		//int[][] plantMap = getPerlinPlants(perlin, noiseSize);
 		
 		HexMap map = HexMap.getInstance();
+		
+		map.setHexes(new Hashtable<Pair, Hex>(width * height));
 		
 		for (int x = 0; x < width; x++) {
 

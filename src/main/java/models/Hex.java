@@ -15,6 +15,7 @@ public class Hex {
 	private Pair hexID;
 	private int density;
 	private int moisture;
+	private int incomingMoisture;
 	private int moistureInAir;
 	private int incomingMoistureInAir;
 	private int elevation;
@@ -22,7 +23,8 @@ public class Hex {
 	private Color color = DIRT;
 	private int fire = 0;
 	private Integer tectonicState;
-
+	private short waterTurn = 0;
+	private short waterInAirTurn = 0;
 
 	public static int MAX_PLANT_STRENGTH = 16;
 	public static Color WATER = new Color(68, 247, 235);
@@ -78,19 +80,26 @@ public class Hex {
 	}
 
 	public int getMoistureInAir() {
+		
+		if (HexMap.getInstance().getTicks() % Environment.WATER_TURNS_TO_KEEP_TRACK_OF != waterInAirTurn % Environment.WATER_TURNS_TO_KEEP_TRACK_OF) {
+			
+			waterInAirTurn++;
+			resolveMoistureInAir();
+		}
+		
 		return moistureInAir;
 	}
 
 	public int alterMoistureInAir(int change){
 
-		if (this.moistureInAir + change >= 0){
+		if (getMoistureInAir() + incomingMoistureInAir + change >= 0){
 
-			this.moistureInAir += change;
+			this.incomingMoistureInAir += change;
 			return Math.abs(change);
 		} else {
 
-			int altered = this.moistureInAir;
-			this.moistureInAir = 0;
+			int altered = this.moistureInAir + incomingMoistureInAir;
+			this.incomingMoistureInAir = -this.moistureInAir;
 			return altered;
 		}
 	}
@@ -158,64 +167,70 @@ public class Hex {
 	}
 
 	public int getMoisture() {
+		
+		if (HexMap.getInstance().getTicks() % Environment.WATER_TURNS_TO_KEEP_TRACK_OF != waterTurn % Environment.WATER_TURNS_TO_KEEP_TRACK_OF) {
+			
+			waterTurn++;
+			resolveMoisture();
+		}
+		
 		return this.moisture;
+	}
+	
+	public void resolveMoisture(){
+		
+		moisture += incomingMoisture;
+		incomingMoisture = 0;
+		
+		distributeWaterToPlants();
 	}
 
 	public int alterMoisture(int change) {
 
 		int changed = 0;
 
-		// change is negative
-		if (change < 0) {
+		if (getMoisture() + incomingMoisture + change < 0) {
 
-			if (getMoisture() + change < 0) {
+			changed = moisture + incomingMoisture;
+			incomingMoisture = -moisture;
+		} else {
 
-				changed = getMoisture();
-				moisture = 0;
-			} else {
+			changed = Math.abs(change);
+			incomingMoisture += change;
+		}
+		
+		return changed;
+	}
 
-				changed = Math.abs(change);
-				moisture += change;
-			}
-		} 
+	private void distributeWaterToPlants() {
+		Plant[] plants = this.getVegetation();
 
-		// Change is positive
-		else {
+		for (Plant plant : plants) {
 
-			Plant[] plants = this.getVegetation();
+			if (plant != null &&
+					moisture > 0 &&
+					plant.getMoistureRequired() > plant.getMoisture()) {
 
-			for (Plant plant : plants) {
+				int needs = plant.getMoistureRequired() - plant.getMoisture();
 
-				if (plant != null &&
-						change > changed &&
-						plant.getMoistureRequired() > plant.getMoisture()) {
+				// Need more then there is
+				if (needs >= moisture){
 
-					int needs = plant.getMoistureRequired() - plant.getMoisture();
+					// just get what's left
+					plant.setMoisture(plant.getMoisture() + moisture);
+					moisture = 0;
+				}
 
-					// Need more then there is
-					if (needs >= (change - changed)){
+				// Don't need as much as there is
+				else{
 
-						// just get what's left
-						plant.setMoisture(plant.getMoisture() + change - changed);
-						changed = change;
-					}
+					plant.setMoisture(plant.getMoisture() + needs);
 
-					// Don't need as much as there is
-					else{
-
-						plant.setMoisture(plant.getMoisture() + needs);
-
-						// still some left over
-						changed += needs;
-					}
+					// still some left over
+					moisture -= needs;
 				}
 			}
-
-			// Ground gets whatever the plants leave behind
-			moisture += change - changed;
 		}
-
-		return changed;
 	}
 
 	public int getElevation() {
@@ -243,7 +258,7 @@ public class Hex {
 	}
 
 	public double getHumidity() {
-		return ((double) this.moistureInAir * ((double) this.elevation / Environment.MAX_ELEVATION))
+		return ((double) getMoistureInAir() * ((double) this.elevation / Environment.MAX_ELEVATION))
 				/ Environment.RAIN_THRESHHOLD;
 	}
 
@@ -399,7 +414,7 @@ public class Hex {
 	public void deletePlant(int index) {
 
 		if (this.vegetation[index] != null) {
-			this.moistureInAir += this.vegetation[index].getMoisture();
+			alterMoistureInAir(this.vegetation[index].getMoisture());
 			if (this.vegetation[index].getRootstrength() >= Environment.ROOT_STRENGTH_DEATH_GAIN) this.density--;
 			this.vegetation[index] = null;
 

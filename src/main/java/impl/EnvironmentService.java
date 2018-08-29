@@ -41,15 +41,15 @@ public class EnvironmentService {
 		HexMap map = HexMap.getInstance();
 		boolean quickGrow = quickGrowMode();
 
-		if (map.getTicks() % Environment.FORCE_GROW_INTERVAL == 0 && map.getHexes().size() > 0){
+		if (map.getTicks() % Environment.FORCE_GROW_INTERVAL == 0 && map.getHexes().size() > 0) {
 
 			Hex randomHex = hexMapService.pickRandomHex();
 			hexService.forceGrow(randomHex);
 		}
 
-		if (quickGrow){
+		if (quickGrow) {
 
-			for (int i = 0; i < 10; i++){
+			for (int i = 0; i < 10; i++) {
 
 				Hex randomHex = hexMapService.pickRandomHex();
 				hexService.forceGrow(randomHex);
@@ -59,21 +59,21 @@ public class EnvironmentService {
 		userGrowth();
 	}
 
-	private void userGrowth(){
+	private void userGrowth() {
 
 		boolean[] plantGrowth = UserActions.getInstance().getPlantGrowth();
 
 		HexMap map = HexMap.getInstance();
 
-		for (int i = 0; i < plantGrowth.length; i++){
+		for (int i = 0; i < plantGrowth.length; i++) {
 
-			if (plantGrowth[i]){
+			if (plantGrowth[i]) {
 
-				switch(i){
+				switch (i) {
 
 				case 0:
 
-					for (Pair pair : map.getHexes().keySet()){
+					for (Pair pair : map.getHexes().keySet()) {
 
 						Hex hex = map.getHex(pair);
 						hex.addPlant(new Grass());
@@ -83,7 +83,7 @@ public class EnvironmentService {
 
 				case 1:
 
-					for (Pair pair : map.getHexes().keySet()){
+					for (Pair pair : map.getHexes().keySet()) {
 
 						Hex hex = map.getHex(pair);
 						hex.addPlant(new Thicket());
@@ -93,7 +93,7 @@ public class EnvironmentService {
 
 				case 2:
 
-					for (Pair pair : map.getHexes().keySet()){
+					for (Pair pair : map.getHexes().keySet()) {
 
 						Hex hex = map.getHex(pair);
 						hex.addPlant(new Forest());
@@ -103,7 +103,7 @@ public class EnvironmentService {
 
 				case 3:
 
-					for (Pair pair : map.getHexes().keySet()){
+					for (Pair pair : map.getHexes().keySet()) {
 
 						Hex hex = map.getHex(pair);
 						hex.addPlant(new Jungle());
@@ -115,7 +115,7 @@ public class EnvironmentService {
 		}
 	}
 
-	private boolean quickGrowMode(){
+	private boolean quickGrowMode() {
 
 		HexMap map = HexMap.getInstance();
 
@@ -211,22 +211,23 @@ public class EnvironmentService {
 
 				TectonicPlate plate = hexMapService.pickRandomPlate();
 
-				if (rand.nextInt(Environment.CHANCE_OF_TECTONIC_PLATE_CHANGE) == 1){
+				if (rand.nextInt(Environment.CHANCE_OF_TECTONIC_PLATE_CHANGE) == 1) {
 
 					Direction newDirection = plate.getDirection().takeRandomTurn();
 					plate.setDirection(newDirection);
-					plate.setVerticalDirection(plate.getVerticalDirection() 
-							+ TheRandom.getInstance().get().nextInt(3) - 1);
+					plate.setVerticalDirection(
+							plate.getVerticalDirection() + TheRandom.getInstance().get().nextInt(3) - 1);
 				}
 
-				if (rand.nextInt(Environment.AVE_TICKS_BETWEEN_TECTONIC_VERTICAL_MOVE) == 1) plate.handleVerticalChange();
+				if (rand.nextInt(Environment.AVE_TICKS_BETWEEN_TECTONIC_VERTICAL_MOVE) == 1)
+					plate.handleVerticalChange();
 
 				for (Pair keyPair : plate.getActiveEdges().keySet()) {
 
 					if (plate.getActiveEdges().get(keyPair) == TectonicEdgeDirection.UP) {
 
 						map.getHex(hexService.getAreaPair(keyPair))
-						.setElevation(map.getHex(keyPair).getElevation() + Environment.TECTONIC_AMPLITUDE);
+								.setElevation(map.getHex(keyPair).getElevation() + Environment.TECTONIC_AMPLITUDE);
 
 						hexService.topple(keyPair, 0);
 
@@ -236,18 +237,18 @@ public class EnvironmentService {
 					if (plate.getActiveEdges().get(keyPair) == TectonicEdgeDirection.DOWN) {
 
 						map.getHex(hexService.getAreaPair(keyPair))
-						.setElevation(map.getHex(keyPair).getElevation() - Environment.TECTONIC_AMPLITUDE);
+								.setElevation(map.getHex(keyPair).getElevation() - Environment.TECTONIC_AMPLITUDE);
 
 						leftoverElev += Environment.TECTONIC_AMPLITUDE;
 					}
 				}
 
-				if (leftoverElev != 0){
+				if (leftoverElev != 0) {
 
-					for (Pair pair : plate.getAllEdges()){
+					for (Pair pair : plate.getAllEdges()) {
 
 						map.getHex(hexService.getAreaPair(pair))
-						.setElevation(map.getHex(pair).getElevation() + leftoverElev);
+								.setElevation(map.getHex(pair).getElevation() + leftoverElev);
 
 						leftoverElev = 0;
 

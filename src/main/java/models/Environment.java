@@ -61,8 +61,8 @@ public class Environment {
    public static final int PERCENT_MOISTURE_EXCESS_TO_DROP = 20;
    public static final int MAX_RAINFALL_PER_TICK = 1000;
    public static final int FLOOD_WATER_CONTINUE_SIZE = 10;
-   public static final int EVAPORATE_PERCENT = 100;
-   public static boolean REALISTIC_WATER_FLOW = false;
+   public static final int EVAPORATE_PERCENT = 10;
+   public static boolean REALISTIC_WATER_FLOW = true;
    public static final int WATER_PER_ELEVATION = 64;
 
    // Determines the amount of moistureInAir required to constitute a 'cloud'
@@ -119,10 +119,11 @@ public class Environment {
    public static final int TECTONIC_MIN_STRAIGHT = 3;
    
    public static final int DRAW_LINE_TOLERANCE = 2;
-   public static final int MAP_HEIGHT = 1500; // should correlate with screen
+   public static final int MAP_HEIGHT = 2160; // should correlate with screen
                                               // size in pixels
-   public static final int MAP_WIDTH = 1900;
-   public static final double ZOOM = 8;
+   public static final int MAP_WIDTH = 3840;
+   public static final double ZOOM = 4;
+   public static final short WATER_TURNS_TO_KEEP_TRACK_OF = 2;
 
    public static final int FAST_PAN = 6;
    public static final int SLOW_PAN = 1;

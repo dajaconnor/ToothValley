@@ -114,7 +114,7 @@ public class WaterService {
 	private void applyCloudMovementAndRain(Hex hex){
 		
 		HexMap.getInstance().getAppliedBlown().add(hex.getHexID());
-		hex.resolveMoistureInAir();
+		//hex.resolveMoistureInAir();
 		//hex.resolveMoisture();
 		
 		// If max rain

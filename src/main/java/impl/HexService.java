@@ -1,7 +1,11 @@
 package impl;
 
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.stereotype.Component;
@@ -220,9 +224,7 @@ public class HexService {
 	 * shared elevation
 	 */
 
-	/**
-	 * Attempt to flood a single hex
-	 */
+	
 	public boolean flood(Hex hex) {
 
 		int standingWater = hex.getStandingWater();
@@ -236,26 +238,78 @@ public class HexService {
 			//Kill plants that aren't strong enough
 			drownPlant(hex, standingWater);
 
-			int lowest = elev;
-			Hex flowTo = null;
+			flooded = floodInAllDirections(hex, elev, neighbors);
+		}
 
-			//Find a hex for it to flow to
-			for (Pair neighbor : neighbors) {
-
-				Hex adjHex = map.getHex(neighbor);
-				int adjElev = adjHex.getCombinedElevation();
-
-				if (adjElev < lowest) {
-					lowest = adjElev;
-					flowTo = adjHex;
+		return flooded;
+	}
+	
+	private boolean floodInAllDirections(Hex hex, int elev, List<Pair> neighbors) {
+		
+		int total = elev;
+		Map<Hex, Integer> combinedElevTable = new HashMap<Hex, Integer>(6);
+		int[] elevs = new int[6];
+		
+		int i = 0;
+		for (Pair neighbor : neighbors) {
+			
+			Hex adjHex = map.getHex(neighbor);
+			int combined = adjHex.getCombinedElevation();
+			elevs[i] = combined;
+			
+			if (combined < elev) {
+				
+				combinedElevTable.put(adjHex, combined);
+				total += combined;
+			}
+			
+			i++;
+		}
+		
+		int average = total / (combinedElevTable.size() + 1);
+		int supply = elev - average;
+		boolean flood = supply > 0;
+		
+		if (flood) {
+			
+			for(Hex neighbor : combinedElevTable.keySet()) {
+				
+				int difference = (average - combinedElevTable.get(neighbor)) / 2;
+				
+				if (difference > 0) {
+					
+					neighbor.alterMoisture(hex.alterMoisture(-difference * Environment.WATER_PER_ELEVATION));
 				}
 			}
+		}
+		
+		return flood;
+	}
 
-			if (Environment.QUICK_FLOW && flowTo != null) {
-				flooded = flowHexToHex(hex, standingWater, elev, lowest, flowTo, false);
+	/**
+	 * Attempt to flood a single hex
+	 */
+	private boolean floodToLowestHex(Hex hex, int standingWater, int elev, List<Pair> neighbors) {
+
+		boolean flooded = false;
+		int lowest = elev;
+		Hex flowTo = null;
+		
+		//Find a hex for it to flow to
+		for (Pair neighbor : neighbors) {
+
+			Hex adjHex = map.getHex(neighbor);
+			int adjElev = adjHex.getCombinedElevation();
+
+			if (adjElev < lowest) {
+				lowest = adjElev;
+				flowTo = adjHex;
 			}
 		}
 
+		if (Environment.QUICK_FLOW && flowTo != null) {
+			flooded = flowHexToHex(hex, standingWater, elev, lowest, flowTo, false);
+		}
 		return flooded;
 	}
 

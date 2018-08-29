@@ -1,6 +1,8 @@
 package controllers;
 
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.util.Date;
 
 import org.lwjgl.opengl.Display;
@@ -148,8 +150,9 @@ public class Main {
 
 	private void initializeBasicVars(){
 
-		int height = (Environment.MAP_HEIGHT * 3/2) / (int) Environment.HEX_HEIGHT;
-		int width = Environment.MAP_WIDTH / (int) (Environment.HEX_SIDE_WIDTH + Environment.HEX_BODY_WIDTH);
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		int height = (screenSize.height * 3/2) / (int) Environment.HEX_HEIGHT;
+		int width = screenSize.width / (int) (Environment.HEX_SIDE_WIDTH + Environment.HEX_BODY_WIDTH);
 
 		if (width % 2 == 1){
 
