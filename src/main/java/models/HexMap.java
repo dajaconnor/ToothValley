@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import enums.ControlDirection;
 import enums.Direction;
 import enums.DisplayType;
 import graphics.OpenGLWindow;
@@ -33,12 +34,20 @@ public class HexMap {
 
 	// for new cloud system to know what's already moved
 	private Set<Pair> windBlown = new HashSet<Pair>();
-	private Set<Pair> appliedBlown = new HashSet<Pair>();
 	
 	// got to be a better way to handle this guy's scope...
 	private int tallestTargetForCloud = -1000;
 	private Direction directionToTarget = null;
 	private List<Pair> hexesInCloud = null;
+	private int numRained = 0;
+	private int numStandingWater = 0;
+	private int numInCloud = 0;
+
+   // Defines the point of condensation (when moistureInAir + elevation >
+   // RAIN_THRESHHOLD, it rains
+	private int rainThreshhold = 0;
+	
+	private int percentExcessMoistureToDrop = 10;
 	
 	private Map<Pair,Pair> displayMap = new HashMap<Pair,Pair>();
 	private Map<Pair,Pair> readMap = new HashMap<Pair,Pair>();
@@ -284,13 +293,13 @@ public class HexMap {
 		this.windBlown = new HashSet<Pair>();
 	}
 
-	public Set<Pair> getAppliedBlown() {
+/*	public Set<Pair> getAppliedBlown() {
 		return appliedBlown;
 	}
 
 	public void resetAppliedBlown() {
 		this.appliedBlown = new HashSet<Pair>();
-	}
+	}*/
 	
 	public Direction getDirectionToTarget() {
 		return directionToTarget;
@@ -317,7 +326,16 @@ public class HexMap {
 	}
 
 	public void resetHexesInCloud() {
+		numInCloud += hexesInCloud.size();
 		hexesInCloud = new ArrayList<Pair>();
+	}
+	
+	public int getNumberOfHexesInCloud() {
+		return numInCloud;
+	}
+	
+	public void resetNumberOfHexesInCloud() {
+		numInCloud = 0;
 	}
 
 	public int getTicks() {
@@ -352,5 +370,73 @@ public class HexMap {
 		return Environment.AVE_ELEVATION * 3 + 
 				(int) (Environment.SNOW_LEVEL_AMPLITUDE * 
 						Math.sin(((double)ticks) / Environment.YEAR_IN_TICKS));
+	}
+
+	public int getNumRained() {
+		return numRained;
+	}
+
+	public void incrementNumRained() {
+		this.numRained ++;
+	}
+	
+	public void resetNumRained() {
+		this.numRained = 0;;
+	}
+	
+	public int getNumStandingWater() {
+		return numStandingWater;
+	}
+
+	public void incrementNumStandingWater() {
+		this.numStandingWater ++;
+	}
+	
+	public void resetNumStandingWater() {
+		this.numStandingWater = 0;;
+	}
+	
+	public int getRainThreshhold() {
+		return this.rainThreshhold;
+	}
+	
+	public void adjustRainThreshhold(ControlDirection direction) {
+
+		switch (direction) {
+		
+		case UP:
+			
+			rainThreshhold += Environment.RAIN_ADJUSTMENT_INDEX;
+			break;
+			
+		case DOWN:
+			
+			rainThreshhold -= Environment.RAIN_ADJUSTMENT_INDEX;
+			break;
+		default:
+			break;
+		}
+	}
+	
+	public int getPercentExcessMoistureToDrop() {
+		return this.percentExcessMoistureToDrop;
+	}
+	
+	public void adjustCloudCover(ControlDirection direction) {
+
+		switch (direction) {
+		
+		case UP:
+			
+			if (percentExcessMoistureToDrop < 100) percentExcessMoistureToDrop ++;
+			break;
+			
+		case DOWN:
+			
+			if (percentExcessMoistureToDrop > 0) percentExcessMoistureToDrop --;
+			break;
+		default:
+			break;
+		}
 	}
 }

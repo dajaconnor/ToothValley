@@ -5,7 +5,6 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.Date;
 
-import org.lwjgl.opengl.Display;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -65,8 +64,10 @@ public class Main {
 		long waterCycleTime = 0;
 		long growTime = 0;
 		long tectonicsTime = 0;
-		long printTime = 0;
 		long lastMark = 0;
+		
+//		WaterThread water = new WaterThread("waterThread", waterService);
+//		water.start();
 
 		while (!UserActions.getInstance().isCloseProgram()){
 
@@ -117,7 +118,7 @@ public class Main {
 				System.out.println("Water cycle time: " + waterCycleTime / 1000);
 				System.out.println("Grow time: " + growTime / 1000);
 				System.out.println("Tectonics time: " + tectonicsTime / 1000);
-				System.out.println("Print time: " + printTime / 1000);
+				System.out.println("Total water: " + hexMapService.allWater()[0]);
 
 				burnTime = 0;
 				waterCycleTime = 0;

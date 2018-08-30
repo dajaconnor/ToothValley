@@ -9,8 +9,8 @@ import enums.Direction;
 
 public class Pair {
 	
-    private int x;
-    private int y;
+    protected int x;
+    protected int y;
 
     public Pair(int x, int y) {
     	super();
@@ -24,7 +24,15 @@ public class Pair {
 	@Override
 	public int hashCode() {
 
-		return Environment.MAP_WIDTH * y + x;
+		return Environment.MAP_GRID[0] * y + x;
+	}
+	
+	public static Pair getPairByHash(int hash) {
+		
+		int y = hash / Environment.MAP_GRID[0];
+		int x = hash % Environment.MAP_GRID[0];
+		
+		return new Pair(x, y).wrap();
 	}
 
 	@Override
@@ -262,10 +270,10 @@ public class Pair {
        List<Pair> neighbors = new ArrayList<Pair>();
 
        neighbors.add(N());
-       neighbors.add(NW());
        neighbors.add(SW());
-       neighbors.add(S());
        neighbors.add(SE());
+       neighbors.add(NW());
+       neighbors.add(S());
        neighbors.add(NE());
        
        return neighbors;

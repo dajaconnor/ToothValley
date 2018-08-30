@@ -52,14 +52,7 @@ public class WeatherService {
 			return;
 
 		// this does the sanity checks for you
-		amount = from.alterMoistureInAir(-amount);
-		
-		if (map.getAppliedBlown().contains(to)){
-			map.getHex(to).alterMoistureInAir(amount);
-		} else{
-			map.getHex(to).alterIncomingMoistureInAir(amount);
-		}
-		
+		map.getHex(to).alterMoistureInAir(from.alterMoistureInAir(-amount));
 	}
 
 	public class CloudCollector implements DirectionalEvaluator {

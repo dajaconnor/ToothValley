@@ -7,7 +7,8 @@ public class Environment {
    public static final int MAX_DENSITY = 64;
 
    // Defines the average amount of water for each hex
-   public static final int AVE_WATER = 1400;
+   public static final int WATER_PER_ELEVATION = 128;
+   public static final int AVE_WATER = WATER_PER_ELEVATION * 20;
    public static final int AVE_ELEVATION = 128;
    
    public static final int NUM_PLANTS_PER_HEX = 4;
@@ -52,18 +53,31 @@ public class Environment {
 
    // Defines the change in water level required to alter hex color
    public static final int WATER_BUFFER = 0;
-
-   // Defines the point of condensation (when moistureInAir + elevation >
-   // RAIN_THRESHHOLD, it rains
-   public static final int RAIN_THRESHHOLD = 10;
+   
+   // percent of hexes we will try to have raining per tick
+   public static final int TARGET_PERCENT_RAIN = 90;
+   
+   // percent of hexes we will try to have standing water
+   public static final int TARGET_PERCENT_STANDING_WATER = 70;
+   
+   // percent of hexes we will try to have cloud cover
+   public static final int TARGET_PERCENT_CLOUD_COVER = 30;
+   
+   // amount to adjust the rain threshhold by if we miss the target
+   public static final int RAIN_ADJUSTMENT_INDEX = 10;
    
    // The percent of moisture above the computed rain threshold to rain
-   public static final int PERCENT_MOISTURE_EXCESS_TO_DROP = 20;
-   public static final int MAX_RAINFALL_PER_TICK = 1000;
+   //public static final int PERCENT_MOISTURE_EXCESS_TO_DROP = 10;
+   public static final int MAX_RAINFALL_PER_TICK = WATER_PER_ELEVATION * 10;
    public static final int FLOOD_WATER_CONTINUE_SIZE = 10;
-   public static final int EVAPORATE_PERCENT = 10;
-   public static boolean REALISTIC_WATER_FLOW = true;
-   public static final int WATER_PER_ELEVATION = 64;
+   public static final int OPENWATER_EVAPORATION_RESISTANCE = 1000;
+   // Plant resistance to evaporation
+   public static final int EVAPORATION_RESISTANCE = 20000;
+   public static boolean REALISTIC_WATER_FLOW = false;
+   
+   
+   // The percentage of stacked water to move per flood.  100 means it all moves.
+   public static final int WATER_VELOCITY = 100;
 
    // Determines the amount of moistureInAir required to constitute a 'cloud'
    public static final int CLOUD = 64;
@@ -71,9 +85,6 @@ public class Environment {
    
    // The bigger, the more you see the coriolis
    public static final double CORIOLIS_RELIANCE = 0.9;
-
-   // Plant resistance to evaporation
-   public static final int EVAPORATION_RESISTANCE = 8;
 
    // Defines the rate at which unneeded evolution occurs
    public static final float EVOLUTION_RATE = 1F;// 0.9F;
@@ -147,6 +158,7 @@ public class Environment {
 
    public static final int AVE_TICKS_BETWEEN_TECTONIC_VERTICAL_MOVE = 5;
    public static final int NUM_PLANT_TYPES = 4;
+
 
 
 

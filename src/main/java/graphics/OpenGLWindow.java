@@ -194,7 +194,7 @@ public class OpenGLWindow {
 
 		if(isAutoSpin()){
 
-			glRotatef(1f,0f,0f,1f);
+			rotate(1, false);
 		}
 
 		// Clear the screen.
@@ -342,7 +342,7 @@ public class OpenGLWindow {
 				case Keyboard.KEY_Z:
 
 					if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
-						UserActions.getInstance().incrementWaterChangedByUser(1);
+						UserActions.getInstance().incrementWaterChangedByUser(10);
 					}
 
 					else UserActions.getInstance().incrementWaterChangedByUser(20);
@@ -420,11 +420,11 @@ public class OpenGLWindow {
 
 					if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
 
-						changeVantage(ControlDirection.UP, Environment.SLOW_PAN);
+						changeVantage(ControlDirection.DOWN, Environment.SLOW_PAN);
 
 					}else{
 
-						changeVantage(ControlDirection.UP, Environment.FAST_PAN);
+						changeVantage(ControlDirection.DOWN, Environment.FAST_PAN);
 					}
 
 				}else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
@@ -442,10 +442,10 @@ public class OpenGLWindow {
 
 					if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
 
-						changeVantage(ControlDirection.DOWN, Environment.SLOW_PAN);
+						changeVantage(ControlDirection.UP, Environment.SLOW_PAN);
 					}else{
 
-						changeVantage(ControlDirection.DOWN, Environment.FAST_PAN);
+						changeVantage(ControlDirection.UP, Environment.FAST_PAN);
 					}
 
 				}else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
@@ -464,11 +464,11 @@ public class OpenGLWindow {
 
 					if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
 
-						changeVantage(ControlDirection.LEFT, Environment.SLOW_PAN);
+						changeVantage(ControlDirection.RIGHT, Environment.SLOW_PAN);
 
 					}else{
 
-						changeVantage(ControlDirection.LEFT, Environment.FAST_PAN);
+						changeVantage(ControlDirection.RIGHT, Environment.FAST_PAN);
 					}
 
 				}else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
@@ -487,10 +487,10 @@ public class OpenGLWindow {
 
 					if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
 
-						changeVantage(ControlDirection.RIGHT, Environment.SLOW_PAN);
+						changeVantage(ControlDirection.LEFT, Environment.SLOW_PAN);
 					}else{
 
-						changeVantage(ControlDirection.RIGHT, Environment.FAST_PAN);
+						changeVantage(ControlDirection.LEFT, Environment.FAST_PAN);
 					}
 
 				}else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)){
@@ -668,22 +668,28 @@ public class OpenGLWindow {
 
 	private void printDiamond(Pair top, DPair baseTop, Pair bottom, DPair baseBottom, Pair left, DPair baseLeft, Pair right, DPair baseRight, Map<Pair, Pair> normalDisplayMap){
 
-		// draw ground first
-		int topColor = normalDisplayMap.get(top).getX();
-		int bottomColor = normalDisplayMap.get(bottom).getX();
-		int topGroundElev = normalDisplayMap.get(top).getY();
-		int leftGroundElev = getGroundVerticeElevation(top, left, bottom, normalDisplayMap);
-		int bottomGroundElev = normalDisplayMap.get(bottom).getY();
-		int rightGroundElev = getGroundVerticeElevation(top, right, bottom, normalDisplayMap);
-
-		drawTriangle(baseTop, topGroundElev, baseLeft, leftGroundElev, baseRight, rightGroundElev, topColor);
-		drawTriangle(baseBottom, bottomGroundElev, baseLeft, leftGroundElev, baseRight, rightGroundElev, bottomColor);
-
-		// prints the line as long as both aren't water
-		if (drawLinesToggle 
-				&& !dontDraw(topColor, bottomColor, leftGroundElev, rightGroundElev)){
-			//Border
-			drawLine(baseLeft, baseRight, leftGroundElev, rightGroundElev, 0.5f, 0.5f, 0.5f, true);
+		try {
+			// draw ground first
+			int topColor = normalDisplayMap.get(top).getX();
+			int bottomColor = normalDisplayMap.get(bottom).getX();
+			int topGroundElev = normalDisplayMap.get(top).getY();
+			int leftGroundElev = getGroundVerticeElevation(top, left, bottom, normalDisplayMap);
+			int bottomGroundElev = normalDisplayMap.get(bottom).getY();
+			int rightGroundElev = getGroundVerticeElevation(top, right, bottom, normalDisplayMap);
+		
+		
+			drawTriangle(baseTop, topGroundElev, baseLeft, leftGroundElev, baseRight, rightGroundElev, topColor);
+			drawTriangle(baseBottom, bottomGroundElev, baseLeft, leftGroundElev, baseRight, rightGroundElev, bottomColor);
+	
+			// prints the line as long as both aren't water
+			if (drawLinesToggle 
+					&& !dontDraw(topColor, bottomColor, leftGroundElev, rightGroundElev)){
+				//Border
+				drawLine(baseLeft, baseRight, leftGroundElev, rightGroundElev, 0.5f, 0.5f, 0.5f, true);
+			}
+		} catch(Exception e) {
+			
+			System.out.println("Couldn't print " + bottom.toString());
 		}
 	}
 

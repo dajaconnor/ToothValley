@@ -1,6 +1,8 @@
 package models;
 
 import java.awt.Color;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import enums.DisplayType;
 import enums.TectonicEdgeDirection;
@@ -15,7 +17,6 @@ public class Hex {
 	private Pair hexID;
 	private int density;
 	private int moisture;
-	private int incomingMoisture;
 	private int moistureInAir;
 	private int incomingMoistureInAir;
 	private int elevation;
@@ -23,8 +24,9 @@ public class Hex {
 	private Color color = DIRT;
 	private int fire = 0;
 	private Integer tectonicState;
-	private short waterTurn = 0;
 	private short waterInAirTurn = 0;
+	private ReadWriteLock waterLock = new ReentrantReadWriteLock();
+	private ReadWriteLock elevationLock = new ReentrantReadWriteLock();
 
 	public static int MAX_PLANT_STRENGTH = 16;
 	public static Color WATER = new Color(68, 247, 235);
@@ -89,22 +91,36 @@ public class Hex {
 		
 		return moistureInAir;
 	}
+	
+	public int getMoistureInAirForAccounting() {
+		
+		return getMoistureInAir() + incomingMoistureInAir;
+	}
 
 	public int alterMoistureInAir(int change){
 
-		if (getMoistureInAir() + incomingMoistureInAir + change >= 0){
+		if (change < 0) {
+			
+			if (getMoistureInAir() + incomingMoistureInAir + change >= 0){
 
+				this.incomingMoistureInAir += change;
+				return -change;
+			} else {
+
+				int altered = this.moistureInAir + incomingMoistureInAir;
+				this.incomingMoistureInAir = -this.moistureInAir;
+				return altered;
+			}
+		}
+		
+		else {
+			
 			this.incomingMoistureInAir += change;
-			return Math.abs(change);
-		} else {
-
-			int altered = this.moistureInAir + incomingMoistureInAir;
-			this.incomingMoistureInAir = -this.moistureInAir;
-			return altered;
+			return -change;
 		}
 	}
 	
-	public int getIncomingMoistureInAir() {
+/*	public int getIncomingMoistureInAir() {
 		return incomingMoistureInAir;
 	}
 
@@ -112,7 +128,7 @@ public class Hex {
 		
 		incomingMoistureInAir += incoming;
 		return incoming;
-	}
+	}*/
 	
 	public void resolveMoistureInAir(){
 		
@@ -120,20 +136,20 @@ public class Hex {
 		incomingMoistureInAir = 0;
 	}
 	
-	public boolean rain(){
+	public int rain(){
 
-		int excessHumidity = elevation + moistureInAir - Environment.RAIN_THRESHHOLD;
+		int excessHumidity = getElevation() + moistureInAir - HexMap.getInstance().getRainThreshhold();
 		
-		if (excessHumidity <= 0) return false;
+		if (excessHumidity <= 0) return 0;
 		
-		int amountToRain = (excessHumidity * Environment.PERCENT_MOISTURE_EXCESS_TO_DROP) / 100;
+		int amountToRain = (excessHumidity * HexMap.getInstance().getPercentExcessMoistureToDrop()) / 100;
 
 		boolean flood = amountToRain > Environment.MAX_RAINFALL_PER_TICK;
 		if (flood) amountToRain = Environment.MAX_RAINFALL_PER_TICK;
 		
 		alterMoisture(alterMoistureInAir(-amountToRain));
 		
-		return flood;
+		return amountToRain;
 	}
 
 	public Hex() {
@@ -167,58 +183,57 @@ public class Hex {
 	}
 
 	public int getMoisture() {
+
+		int returnMoisture = 0;
+		waterLock.readLock().lock();
+
+
+		returnMoisture = this.moisture;
+		waterLock.readLock().unlock();
 		
-		if (HexMap.getInstance().getTicks() % Environment.WATER_TURNS_TO_KEEP_TRACK_OF != waterTurn % Environment.WATER_TURNS_TO_KEEP_TRACK_OF) {
-			
-			waterTurn++;
-			resolveMoisture();
-		}
-		
-		return this.moisture;
-	}
-	
-	public void resolveMoisture(){
-		
-		moisture += incomingMoisture;
-		incomingMoisture = 0;
-		
-		distributeWaterToPlants();
+
+		return returnMoisture;
 	}
 
 	public int alterMoisture(int change) {
 
 		int changed = 0;
+		waterLock.writeLock().lock();
 
-		if (getMoisture() + incomingMoisture + change < 0) {
-
-			changed = moisture + incomingMoisture;
-			incomingMoisture = -moisture;
-		} else {
-
-			changed = Math.abs(change);
-			incomingMoisture += change;
+		if( getMoisture() + change < 0 ) {
+			
+			changed = getMoisture();
+			this.moisture = 0;
+		}else {
+			
+			this.moisture += change;
+			changed = -change;
 		}
+		
+		waterLock.writeLock().unlock();
 		
 		return changed;
 	}
 
-	private void distributeWaterToPlants() {
+	public void distributeWaterToPlants() {
 		Plant[] plants = this.getVegetation();
 
+		waterLock.writeLock().lock();
+		
 		for (Plant plant : plants) {
 
 			if (plant != null &&
-					moisture > 0 &&
+					this.moisture > 0 &&
 					plant.getMoistureRequired() > plant.getMoisture()) {
 
 				int needs = plant.getMoistureRequired() - plant.getMoisture();
 
 				// Need more then there is
-				if (needs >= moisture){
+				if (needs >= this.moisture){
 
 					// just get what's left
-					plant.setMoisture(plant.getMoisture() + moisture);
-					moisture = 0;
+					plant.setMoisture(plant.getMoisture() + this.moisture);
+					this.moisture = 0;
 				}
 
 				// Don't need as much as there is
@@ -227,39 +242,58 @@ public class Hex {
 					plant.setMoisture(plant.getMoisture() + needs);
 
 					// still some left over
-					moisture -= needs;
+					this.moisture -= needs;
 				}
 			}
 		}
+		
+		waterLock.writeLock().unlock();
 	}
 
 	public int getElevation() {
-		return this.elevation;
+		
+		int returnElevation = 0;
+		
+		elevationLock.readLock().lock();
+		
+		returnElevation = this.elevation;
+		
+		elevationLock.readLock().unlock();
+		
+		return returnElevation;
 	}
 
 	// returns true if it needs to be evaluated for a body
-	public boolean setElevation(int elevation) {
+	public boolean setElevation(int incomingElevation) {
 
 		boolean evaluateThis = false;
+		
+		elevationLock.writeLock().lock();
 
-		if (elevation > this.elevation){
+		if (incomingElevation > this.elevation){
 
 			evaluateThis= true;
 		}
 
-		this.elevation = elevation;
+		this.elevation = incomingElevation;
+		
+		elevationLock.writeLock().unlock();
 
 		return evaluateThis;
 	}
 	
 	public void alterElevation(int changeRequired) {
 		
+		elevationLock.writeLock().lock();
+		
 		this.elevation += changeRequired;
+		
+		elevationLock.writeLock().unlock();
 	}
 
 	public double getHumidity() {
-		return ((double) getMoistureInAir() * ((double) this.elevation / Environment.MAX_ELEVATION))
-				/ Environment.RAIN_THRESHHOLD;
+		return ((double) getMoistureInAir() * ((double) getElevation() / Environment.MAX_ELEVATION))
+				/ HexMap.getInstance().getRainThreshhold();
 	}
 
 	/**
@@ -284,18 +318,22 @@ public class Hex {
 	
 	public int getDisplayElevation(int snowLevel){
 		
-		if (elevation > snowLevel) return getStandingWater() / (Environment.WATER_PER_ELEVATION * 2) + elevation;
-		return getCombinedElevation();
+		if (getElevation() > snowLevel) return getStandingWater() / (Environment.WATER_PER_ELEVATION * 2) + getElevation();
+		return getCombinedElevation().getX();
 	}
 
-	public int getCombinedElevation() {
+	public WaterElevationPair getCombinedElevation() {
 		
-		return getStandingWater() / Environment.WATER_PER_ELEVATION + elevation;
+		int standingWater = getStandingWater();
+		int elevation = standingWater / Environment.WATER_PER_ELEVATION + getElevation();
+		int leftoverWater = standingWater % Environment.WATER_PER_ELEVATION;
+		
+		return new WaterElevationPair(elevation, leftoverWater);
 	}
 
 	public int getPrintElevation() {
 
-		return getStandingWater() + elevation;
+		return getStandingWater() + getElevation();
 	}
 
 	public int getSoilStability() {
@@ -395,7 +433,7 @@ public class Hex {
 
 		if (success) {
 
-			this.moisture -= plant.getMoistureRequired();
+			alterMoisture( -plant.getMoistureRequired() );
 			plant.setMoisture(plant.getMoistureRequired());
 			plant.setIndex(index);
 			this.vegetation[index] = plant;
@@ -536,7 +574,7 @@ public class Hex {
 	 */
 	public int getTotalWater() {
 
-		return getPlantMoisture() + getMoisture() + getMoistureInAir() + getIncomingMoistureInAir();
+		return getPlantMoisture() + getMoisture() + getMoistureInAirForAccounting();
 	}
 
 	/**
@@ -666,7 +704,7 @@ public class Hex {
 
 			// only snow if there's standing water and no plant, 
 			// or the snow is above the rootstrength
-			if (elevation > snowLevel){
+			if (getElevation() > snowLevel){
 				if (plant == null || standingWater > plant.getRootstrength()){
 					color = SNOW;
 				}
@@ -694,7 +732,7 @@ public class Hex {
 
 	private Color getElevationColor() {
 		
-		int color = elevation / 2;
+		int color = getElevation() / 2;
 		
 		if (color > 255) {
 
@@ -768,9 +806,9 @@ public class Hex {
 	}
 
 	private Color getMoistureColor() {
-		int moisture = getMoisture();
+		int moistureForColor = getMoisture();
 
-		if (moisture > 255 || moisture > 255) {
+		if (moistureForColor > 255 || moistureForColor > 255) {
 
 			return new Color(0, 0, 255);
 		}
@@ -778,7 +816,7 @@ public class Hex {
 
 			return new Color(0, 0, 0);
 		} else {
-			return new Color(0, 0, moisture);
+			return new Color(0, 0, moistureForColor);
 		}
 	}
 

@@ -16,6 +16,7 @@ import models.Hex;
 import models.HexMap;
 import models.Pair;
 import models.TheRandom;
+import models.WaterElevationPair;
 import models.plants.Forest;
 import models.plants.Grass;
 import models.plants.Jungle;
@@ -79,20 +80,19 @@ public class HexService {
 	 * @param hex
 	 * @return
 	 */
-	public boolean evaporate(Hex hex, boolean findLeak) {
+	public boolean evaporate(Hex hex, boolean findLeak, int standingWater) {
 
 		boolean returnBool = false;
 		
 		TheRandom rand = TheRandom.getInstance();
 		
-		if (!rand.percentChance(Environment.EVAPORATE_PERCENT)) return returnBool;
+		if (!(0 == rand.get().nextInt(Environment.OPENWATER_EVAPORATION_RESISTANCE))) return returnBool;
 
-		if (hex.getStandingWater() > 1
-				&& (hex.getMoistureInAir() + hex.getIncomingMoistureInAir()) > Environment.CLOUD
-				&& map.alterMoisture(hex, -1) > 0){// 
+		if (standingWater > 1
+				&& hex.getMoistureInAir() > Environment.CLOUD){// 
 
 			//WATER MOVEMENT
-			hex.alterMoistureInAir(1);
+			hex.alterMoistureInAir(hex.alterMoisture(-1));
 
 			returnBool = true;
 		}
@@ -207,8 +207,8 @@ public class HexService {
 
 		to.setElevation(to.getElevation() + slope/4);
 
-		int left = to.alterDensity(- 1);
-		from.alterDensity(left);
+//		int left = to.alterDensity(- 1);
+//		from.alterDensity(left);
 
 		if (slope > Environment.CATACLISMIC_AVALANCHE){
 			removeAllVegetation(from);
@@ -216,93 +216,24 @@ public class HexService {
 		}
 	}
 
-	/**
-	 * Body of water:
-	 * No erosion in body
-	 * added or subtracted by unrelated services (grow, blow, etc)... alg might be tricky
-	 * shared sum of water
-	 * shared elevation
-	 */
-
-	
-	public boolean flood(Hex hex) {
-
-		int standingWater = hex.getStandingWater();
-		boolean flooded = false;
-
-		//If there is standing water, shove it around
-		if (standingWater > 1) {
-			int elev = hex.getCombinedElevation();
-			List<Pair> neighbors = hex.getHexID().getNeighbors();
-
-			//Kill plants that aren't strong enough
-			drownPlant(hex, standingWater);
-
-			flooded = floodInAllDirections(hex, elev, neighbors);
-		}
-
-		return flooded;
-	}
-	
-	private boolean floodInAllDirections(Hex hex, int elev, List<Pair> neighbors) {
-		
-		int total = elev;
-		Map<Hex, Integer> combinedElevTable = new HashMap<Hex, Integer>(6);
-		int[] elevs = new int[6];
-		
-		int i = 0;
-		for (Pair neighbor : neighbors) {
-			
-			Hex adjHex = map.getHex(neighbor);
-			int combined = adjHex.getCombinedElevation();
-			elevs[i] = combined;
-			
-			if (combined < elev) {
-				
-				combinedElevTable.put(adjHex, combined);
-				total += combined;
-			}
-			
-			i++;
-		}
-		
-		int average = total / (combinedElevTable.size() + 1);
-		int supply = elev - average;
-		boolean flood = supply > 0;
-		
-		if (flood) {
-			
-			for(Hex neighbor : combinedElevTable.keySet()) {
-				
-				int difference = (average - combinedElevTable.get(neighbor)) / 2;
-				
-				if (difference > 0) {
-					
-					neighbor.alterMoisture(hex.alterMoisture(-difference * Environment.WATER_PER_ELEVATION));
-				}
-			}
-		}
-		
-		return flood;
-	}
 
 	/**
 	 * Attempt to flood a single hex
 	 */
-	private boolean floodToLowestHex(Hex hex, int standingWater, int elev, List<Pair> neighbors) {
+	private boolean floodToLowestHex(Hex hex, int standingWater, WaterElevationPair elev, List<Pair> neighbors) {
 
 		boolean flooded = false;
-		int lowest = elev;
+		WaterElevationPair lowest = elev.clone();
 		Hex flowTo = null;
 		
 		//Find a hex for it to flow to
 		for (Pair neighbor : neighbors) {
 
 			Hex adjHex = map.getHex(neighbor);
-			int adjElev = adjHex.getCombinedElevation();
+			WaterElevationPair adjElev = adjHex.getCombinedElevation();
 
-			if (adjElev < lowest) {
-				lowest = adjElev;
+			if (adjElev.compareTo(lowest) < 0) {
+				lowest = adjElev.clone();
 				flowTo = adjHex;
 			}
 		}
@@ -313,18 +244,18 @@ public class HexService {
 		return flooded;
 	}
 
-	private boolean flowHexToHex(Hex hex, int standingWater, int realElev, int realLowest, Hex flowTo, boolean beenHereOnce) {
+	private boolean flowHexToHex(Hex hex, int standingWater, WaterElevationPair realElev, WaterElevationPair realLowest, Hex flowTo, boolean beenHereOnce) {
 		boolean flooded;
-		flooded = realLowest < realElev;
+		flooded = realLowest.compareTo(realElev) < 0;
 		
-		int waterElev = realElev * Environment.WATER_PER_ELEVATION;
-		int waterLowest = realLowest * Environment.WATER_PER_ELEVATION;
+		int waterElev = realElev.getX() * Environment.WATER_PER_ELEVATION + realElev.getY();
+		int waterLowest = realLowest.getX() * Environment.WATER_PER_ELEVATION + realLowest.getY();
 		int flowToStandingWater = flowTo.getStandingWater();
 		int toDistribute = 0;
 
-		if (realLowest < realElev && flowTo != null){
+		if (realLowest.compareTo(realElev) < 0 && flowTo != null){
 
-			if (realElev > map.getSnowLevel()){
+			if (realElev.getX() > map.getSnowLevel()){
 
 				toDistribute = getSnowMelt(waterElev, waterLowest);
 			}else{
@@ -351,8 +282,8 @@ public class HexService {
 	}
 
 	private void continueFlowing(Hex hex, Hex flowTo, int oldFlowToStandingWater, int toDistribute, boolean beenHereOnce) {
-		int realElev;
-		int realLowest;
+		WaterElevationPair realElev;
+		WaterElevationPair realLowest;
 		int newFlowToStandingWater = flowTo.getStandingWater();
 		
 		if ((newFlowToStandingWater > 0) 
@@ -360,15 +291,15 @@ public class HexService {
 			
 			List<Pair> flowToNeighbors = flowTo.getHexID().getNeighbors();
 			realElev = flowTo.getCombinedElevation();
-			realLowest = realElev;
+			realLowest = realElev.clone();
 			Hex nextFlowTo = null;
 			
 			for (Pair neighberPair : flowToNeighbors){
 				
 				Hex neighbor = map.getHex(neighberPair);
-				int neighborCombined = neighbor.getCombinedElevation();
+				WaterElevationPair neighborCombined = neighbor.getCombinedElevation();
 				
-				if (neighborCombined < realLowest){
+				if (neighborCombined.compareTo(realLowest) < 0){
 					
 					realLowest = neighborCombined;
 					nextFlowTo = neighbor;
@@ -401,9 +332,7 @@ public class HexService {
 	}
 
 	// Deletes plants if the standing water is greater than the rootstrength of the plant
-	private void drownPlant(Hex hex, int standingBodyWater) {
-
-		int standing = hex.getStandingWater();
+	public void drownPlant(Hex hex, int standing) {
 
 		for (int i = 0; i < hex.getVegetation().length; i++){
 
@@ -522,10 +451,13 @@ public class HexService {
 	 * @param hex
 	 * @return
 	 */
-	public boolean grow(Pair id) {
+	public boolean grow(Pair id, int standingWater) {
 
 		Hex hex = map.getHex(id);
 		boolean grew = false;
+		
+		//Kill plants that aren't strong enough
+		drownPlant(hex, standingWater);
 
 		//Shouldn't grow out when on fire
 		if (hex.getFire() <= 0){
@@ -626,6 +558,7 @@ public class HexService {
 	public void forceGrow(Hex hex) {
 
 		int plant = TheRandom.getInstance().get().nextInt(Environment.NUM_PLANT_TYPES);
+		hex.distributeWaterToPlants();
 
 		switch(plant){
 

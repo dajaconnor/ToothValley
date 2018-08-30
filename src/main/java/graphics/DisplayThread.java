@@ -3,12 +3,11 @@ package graphics;
 import org.lwjgl.opengl.Display;
 
 import impl.HexMapService;
-import models.HexMap;
 import models.UserActions;
 
 public class DisplayThread implements Runnable {
 
-   private HexMapService hexMapService;
+    private HexMapService hexMapService;
    
 	private Thread t;
 	private String threadName;
